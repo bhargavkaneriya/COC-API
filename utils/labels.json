@@ -1,0 +1,143 @@
+{
+    "LBL_MISSING_PARAMETERS": {
+        "EN": "There are one or more parameters missing in the supplied request"
+    },
+    "LBL_INTERNAL_SERVER": {
+        "EN": "Internal server error"
+    },
+    "LBL_USER_NOT_FOUND": {
+        "EN": "This account has not been setup on the platform"
+    },
+    "LBL_REQUIRED_AUTH_TOKEN": {
+        "EN": "Auth token must be required"
+    },
+    "LBL_JWT_TOKEN_EXPIRED": {
+        "EN": "Auth token has been expired"
+    },
+    "LBL_TEMPLATE_ALREADY_EXIST": {
+        "EN": "This template already exist"
+    },
+    "LBL_SOCIAL_ID_ALREADY_EXIST": {
+      "EN": "Social ID already exists"
+    },
+    "LBL_NFC_ID_ALREADY_EXIST": {
+      "EN": "NFC ID already exists"
+    },
+    "LBL_LANGUAGE_NOT_FOUND": {
+        "EN": "language not found"
+    },
+    "LBL_LANGUAGE_ALREADY_EXIST": {
+      "EN": "language already exits"
+    },
+    "LBL_CURRENCY_ALREADY_EXIST": {
+      "EN": "currency already exits"
+    },
+    "LBL_CURRENCY_NOT_FOUND": {
+      "EN": "Currency not available"
+    },
+    "LBL_TAX_NOT_FOUND": {
+      "EN": "Tax not found"
+    },
+    "LBL_COUNTRY_NOT_FOUND": {
+      "EN": "Country not found"
+    },
+    "LBL_TEMPLATE_CODE_NOT_FOUND": {
+      "EN": "Template code not found"
+    },
+    "LBL_COUNTRY_ALREADY_EXIST": {
+      "EN": "country already exits"
+    },
+    "LBL_STATE_NOT_FOUND": {
+      "EN": "State not found"
+    },
+    "LBL_STATE_ALREADY_EXIST": {
+      "EN": "state already exits"
+    },
+    "LBL_CITY_ALREADY_EXIST": {
+      "EN": "city already exits"
+    },
+    "LBL_CITY_NOT_FOUND": {
+      "EN": "City not found"
+    },
+    "LBL_AREA_ALREADY_EXIST": {
+      "EN": "city already exits"
+    },
+    "LBL_AREA_NOT_FOUND": {
+      "EN": "City not found"
+    },
+    "LBL_ZIPCODE_ALREADY_EXIST": {
+      "EN": "Zip codes  already exits"
+    },
+    "LBL_ZIPCODE_NOT_FOUND": {
+      "EN": "Zipcode not found"
+    },
+    "LBL_CURRENCY_SYMBOL_ALREADY_EXIST": {
+      "EN": "currency symbol already exits"
+    },
+    "LBL_CURRENCY_CODE_ALREADY_EXIST": {
+      "EN": "currency code already exits"
+    },
+    "LBL_LANGUAGE_CODE_ALREADY_EXIST": {
+      "EN": "language code already exits"
+    },
+    "LBL_ZIP_CODE_ALREADY_EXIST": {
+      "EN": "Zip code already exits"
+    },
+    "LBL_INVALID_EMAIL": {
+      "EN": "This email address does not exist",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
+    "LBL_INVALID_MOBILE": {
+      "EN": "This phone number does not exist",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
+    "LBL_INVALID_SERVICE": {
+      "EN": "This service does not exist",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
+    "LBL_INVALID_USER_SERVICE": {
+      "EN": "This service does not exist with this user",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
+    "LBL_INVALID_CONNECTION": {
+      "EN": "This connection does not exist with this user",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
+    "LBL_ACCOUNT_INACTIVE": {
+      "EN": "Your account is inactive, Contact to administrator",
+      "FR": "Your account is inactive, Contact to administrator"
+    },
+    "LBL_INVALID_PASSWORD": {
+      "EN": "The password entered is incorrect",
+      "FR": "Les mots de passe ne correspondent pas"
+    },
+    "LBL_INVALID_OTP": {
+      "EN": "The otp entered is incorrect",
+      "FR": "L'otp saisi est incorrect"
+    },
+    "LBL_CODE_ALREADY_USED": {
+      "EN": "This link is already used please try again",
+      "FR": "This link is already used please try again"
+    },
+    "LBL_LANGUAGE_LABEL_ALREADY_EXIST": {
+      "EN": "Language label already exits"
+    },
+    "LBL_EMAIL_ALREADY_EXIST": {
+      "EN": "This email address already exist"
+    },
+    "LBL_MOBILE_ALREADY_EXIST": {
+      "EN": "This phone number already exist"
+    },
+    "LBL_CATEGORY_ALREADY_EXIST": {
+      "EN": "category already exits"
+    },
+    "LBL_CATEGORY_NOT_FOUND": {
+      "EN": "category not found"
+    },
+    "LBL_SERVICE_NOT_FOUND": {
+      "EN": "Service not found"
+    },
+    "LBL_SERVICE_ALREADY_EXIST": {
+      "EN": "service already exits"
+    }
+}

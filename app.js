@@ -34,6 +34,7 @@ const auth = require("./routes/api/auth");
 const dealer = require("./routes/api/dealer");
 const quotation = require("./routes/api/quotation");
 const request = require("./routes/api/request");
+const customer = require("./routes/api/customer");
 
 //other configurations
 const favicon = require("serve-favicon");
@@ -60,6 +61,7 @@ app.use("/api/auth", auth);
 app.use("/api/dealer", dealer);
 app.use("/api/quotation", quotation);
 app.use("/api/request", request);
+app.use("/api/customer", customer);
 
 app.use(upload());
 

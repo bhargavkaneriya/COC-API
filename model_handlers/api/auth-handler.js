@@ -80,20 +80,20 @@ const signIn = (requestParam) => {
     async function main() {
       try {
         let modelName = "";
-        if (user_type === "customer") {
+        if (requestParam.user_type === "customer") {
           modelName = dbConstants.dbSchema.customers;
-        } else if (user_type === "dealer") {
+        } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
         const exist_user = await query.selectWithAndOne(
           modelName,
           {
-            email: requestParam.email,
+            phone_number: requestParam.phone_number,
           },
           { _id: 0 }
         );
         if (!exist_user) {
-          reject(errors(labels.LBL_INVALID_EMAIL["EN"], responseCodes.Invalid));
+          reject(errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid));
           return;
         }
         if (exist_user.status == "inactive") {
@@ -135,9 +135,9 @@ const sendOTP = (requestParam) => {
     async function main() {
       try {
         let modelName = "";
-        if (user_type === "customer") {
+        if (requestParam.user_type === "customer") {
           modelName = dbConstants.dbSchema.customers;
-        } else if (user_type === "dealer") {
+        } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
         const exist_user = await query.selectWithAndOne(
@@ -180,9 +180,9 @@ const verifyOTP = (requestParam) => {
     async function main() {
       try {
         let modelName = "";
-        if (user_type === "customer") {
+        if (requestParam.user_type === "customer") {
           modelName = dbConstants.dbSchema.customers;
-        } else if (user_type === "dealer") {
+        } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
         const exist_user = await query.selectWithAndOne(
@@ -198,10 +198,8 @@ const verifyOTP = (requestParam) => {
           );
           return;
         }
-        if (exist_user.otp !== requestParam.otp) {
-          reject(
-            errors(labels.LBL_INVALID_OTP["EN"], responseCodes.InvalidOTP)
-          );
+        if (exist_user.otp !== Number(requestParam.otp)) {
+          reject(errors(labels.LBL_INVALID_OTP["EN"], responseCodes.InvalidOTP));
           return;
         }
         const otp = await idGeneratorHandler.generateString(
@@ -232,10 +230,10 @@ const updateProfile = (requestParam) => {
       try {
         let modelName = "";
         let compareData = {};
-        if (user_type === "customer") {
+        if (requestParam.user_type === "customer") {
           modelName = dbConstants.dbSchema.customers;
           compareData = { customer_id: requestParam.user_id };
-        } else if (user_type === "dealer") {
+        } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
           compareData = { dealer_id: requestParam.user_id };
         }

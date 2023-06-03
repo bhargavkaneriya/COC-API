@@ -37,7 +37,7 @@ router.post("/sign-up", async (req, res) => {
 
 router.post("/sign-in", async (req, res) => {
   try {
-    if (!req.body.user_type || !req.body.phone_number || !req.body.password) {
+    if (!req.body.user_type || !req.body.email || !req.body.password) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

@@ -59,6 +59,18 @@ const customerSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  gst_no: {
+    type: String,
+    default: "",
+  },
+  pan_no: {
+    type: String,
+    default: "",
+  },
+  is_company:{
+    type: Boolean,
+    default: false
+  }
 });
 
 const Customer = model("Customer", customerSchema);

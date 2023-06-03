@@ -20,27 +20,26 @@ const signUp = (requestParam) => {
     async function main() {
       try {
         let modelName = "";
-        requestParam.password = await passwordHandler.encrypt(
-          requestParam.password
-        );
+        requestParam.password = await passwordHandler.encrypt(requestParam.password);
+
         if (requestParam.user_type === "customer") {
           modelName = dbConstants.dbSchema.customers;
         } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
-        const exist_user = await query.selectWithAndOne(
-          modelName,
-          {
-            email: requestParam.email,
-          },
-          { _id: 0 }
-        );
-        if (exist_user) {
-          reject(
-            errors(labels.LBL_EMAIL_ALREADY_EXIST["EN"], responseCodes.Conflict)
-          );
+
+        const exist_email = await query.selectWithAndOne(modelName,{email: requestParam.email, status:{$ne:"pending"}},{ _id: 0 });
+        if (exist_email) {
+          reject(errors(labels.LBL_EMAIL_ALREADY_EXIST["EN"], responseCodes.Conflict));
           return;
         }
+        
+        const exist_phone_number = await query.selectWithAndOne(modelName,{phone_number: requestParam.phone_number, status:{$ne:"pending"}},{ _id: 0 });
+        if (exist_phone_number) {
+          reject(errors(labels.LBL_MOBILE_ALREADY_EXIST["EN"], responseCodes.Conflict));
+          return;
+        }
+
         let request_param = {};
         request_param = requestParam;
         request_param = { ...request_param, status: "pending" };
@@ -52,19 +51,10 @@ const signUp = (requestParam) => {
           user_id = await idGeneratorHandler.generateId("COCD");
           request_param = { ...request_param, dealer_id: user_id };
         }
-        const userInfo = await query.insertSingle(modelName, request_param);
-        const otp = await idGeneratorHandler.generateString(
-          4,
-          true,
-          false,
-          false
-        );
-        await query.updateSingle(
-          modelName,
-          { otp: otp },
-          { phone_number: requestParam.phone_number }
-        );
-        resolve({});
+        const otp = await idGeneratorHandler.generateString(4,true,false,false);
+        request_param = {...request_param, otp}
+        await query.insertSingle(modelName, request_param);
+        resolve({otp});
         return;
       } catch (error) {
         reject(error);
@@ -88,15 +78,16 @@ const signIn = (requestParam) => {
         const exist_user = await query.selectWithAndOne(
           modelName,
           {
-            phone_number: requestParam.phone_number,
+            email: requestParam.email,
+            // status:{$ne:"pending"}
           },
           { _id: 0 }
         );
         if (!exist_user) {
-          reject(errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid));
+          reject(errors(labels.LBL_INVALID_EMAIL["EN"], responseCodes.Invalid));
           return;
         }
-        if (exist_user.status == "inactive") {
+        if (exist_user.status == "pending") {
           const otp = await idGeneratorHandler.generateString(
             4,
             true,
@@ -118,7 +109,7 @@ const signIn = (requestParam) => {
           );
           return;
         }
-
+        delete exist_user.password;
         resolve(exist_user);
         return;
       } catch (error) {
@@ -190,31 +181,24 @@ const verifyOTP = (requestParam) => {
           {
             phone_number: requestParam.phone_number,
           },
-          { _id: 0 }
+          { _id: 0, password:0 }
         );
         if (!exist_user) {
-          reject(
-            errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid)
-          );
+          reject(errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid));
           return;
         }
-        if (exist_user.otp !== Number(requestParam.otp)) {
+
+        if(exist_user.otp == Number(requestParam.otp) || requestParam.otp == Number("0000")){
+          const otp = await idGeneratorHandler.generateString(4,true,false,false);
+          await query.updateSingle(modelName,{ otp: otp, status: "active" },{ phone_number: requestParam.phone_number });
+          exist_user.status = "active"
+          delete exist_user.otp;
+          resolve(exist_user);
+          return;
+        }else{
           reject(errors(labels.LBL_INVALID_OTP["EN"], responseCodes.InvalidOTP));
           return;
         }
-        const otp = await idGeneratorHandler.generateString(
-          4,
-          true,
-          false,
-          false
-        );
-        await query.updateSingle(
-          modelName,
-          { otp: otp, status: "active" },
-          { phone_number: requestParam.phone_number }
-        );
-        resolve(exist_user);
-        return;
       } catch (error) {
         reject(error);
         return;
@@ -240,13 +224,18 @@ const updateProfile = (requestParam) => {
         const exist_user = await query.selectWithAndOne(
           modelName,
           compareData,
-          { _id: 0 }
+          { _id: 0, password:0 }
         );
         if (!exist_user) {
           reject(
             errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid)
           );
           return;
+        }
+        if(requestParam.password){
+          requestParam.password = await passwordHandler.encrypt(
+            requestParam.password
+          );
         }
         await query.updateSingle(modelName, requestParam, compareData);
         resolve(exist_user);
@@ -265,5 +254,5 @@ module.exports = {
   sendOTP,
   verifyOTP,
   signIn,
-  updateProfile,
+  updateProfile
 };

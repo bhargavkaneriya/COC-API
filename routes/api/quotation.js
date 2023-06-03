@@ -11,7 +11,7 @@ const errors = errorHandler;
 
 router.post("/create", async (req, res) => {
   try {
-    if (!req.body.product_id) {
+    if (!req.body.dealer_id || !req.body.customer_id || !req.body.product_id || !req.body.qty || !req.body.product_price || !req.body.total_price || !req.body.grand_total) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

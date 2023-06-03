@@ -4,6 +4,7 @@ const responseCodes = require("./../../helpers/response-codes");
 const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/dealer");
+require("./../../models/product");
 const _ = require("underscore");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
@@ -38,12 +39,12 @@ const productAdd = (requestParam) => {
           });
         }
 
-        await query.updateSingle(
-          dbConstants.dbSchema.dealers,
-          { products: existProduct },
-          { dealer_id: requestParam.dealer_id }
-        );
-        resolve({});
+        await query.updateSingle(dbConstants.dbSchema.dealers,{ products: existProduct },{ dealer_id: requestParam.dealer_id });
+        if(requestParam.type == "add"){
+          resolve({message:"Product added successfully"});
+        }else{
+          resolve({message:"Product updated successfully"});
+        }
         return;
       } catch (error) {
         reject(error);
@@ -63,7 +64,7 @@ const productList = (requestParam) => {
           { dealer_id: requestParam.dealer_id },
           { _id: 0 }
         );
-        resolve(dealer);
+        resolve(dealer.products);
         return;
       } catch (error) {
         reject(error);
@@ -93,7 +94,7 @@ const productDelete = (requestParam) => {
           { products: existProduct },
           { dealer_id: requestParam.dealer_id }
         );
-        resolve({});
+        resolve({message:"Product deleted successfully"});
         return;
       } catch (error) {
         reject(error);
@@ -136,7 +137,6 @@ const customerList = (requestParam) => {
           comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
         }
         const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
-
         resolve(response);
         return;
       } catch (error) {
@@ -202,6 +202,27 @@ const quotationList = (requestParam) => {
   });
 };
 
+const commonProductList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAnd(
+          dbConstants.dbSchema.products,
+          {
+            status: "active",
+          }
+        );
+        resolve(resData);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -209,4 +230,5 @@ module.exports = {
   customerList,
   requestList,
   quotationList,
+  commonProductList
 };

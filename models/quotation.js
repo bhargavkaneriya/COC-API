@@ -18,16 +18,20 @@ const quotationSchema = new Schema({
         default: '',
     },
     product_price: {
-        type: Object,
-        default: {}
+        type: Number,
+        default: 0
     },
     qty: {
-        type: String,
-        default: ''
+        type: Number,
+        default: 0
     },
-    total: {
-        type: String,
-        default: ''
+    total_price: {
+        type: Number,
+        default: 0
+    },
+    grand_total: {
+        type: Number,
+        default: 0
     },
     status: {
         type: String,

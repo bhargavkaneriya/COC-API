@@ -159,4 +159,20 @@ router.get("/quotation-list", async (req, res) => {
   }
 });
 
+router.get("/common-product-list", async (req, res) => {
+  try {
+    const response = await dealerHandler.commonProductList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

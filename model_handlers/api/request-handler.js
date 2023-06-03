@@ -15,7 +15,7 @@ const createRequest = (requestParam) => {
         let request_id = await idGeneratorHandler.generateId("COCR");
         requestParam = { ...requestParam, request_id };
         await query.insertSingle(dbConstants.dbSchema.requests, requestParam);
-        resolve({});
+        resolve({message:"Request created successfully"});
         return;
       } catch (error) {
         reject(error);

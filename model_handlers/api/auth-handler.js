@@ -227,18 +227,19 @@ const updateProfile = (requestParam) => {
           { _id: 0, password:0 }
         );
         if (!exist_user) {
-          reject(
-            errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid)
-          );
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;
         }
+        let columnToUpdate = {name : requestParam.name};
         if(requestParam.password){
           requestParam.password = await passwordHandler.encrypt(
             requestParam.password
           );
+          columnToUpdate = {...columnToUpdate, password:requestParam.password}
         }
-        await query.updateSingle(modelName, requestParam, compareData);
-        resolve(exist_user);
+        await query.updateSingle(modelName, columnToUpdate, compareData);
+        const response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0})
+        resolve(response);
         return;
       } catch (error) {
         reject(error);

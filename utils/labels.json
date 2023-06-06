@@ -8,6 +8,13 @@
     "LBL_USER_NOT_FOUND": {
         "EN": "This account has not been setup on the platform"
     },
+    "LBL_PRODUCT_ALREADY_EXIST": {
+      "EN": "This product is already added"
+    },
+    "LBL_INVALID_PRODUCT": {
+      "EN": "The product entered is invalid",
+      "FR": "L'otp saisi est incorrect"
+    },
     "LBL_REQUIRED_AUTH_TOKEN": {
         "EN": "Auth token must be required"
     },

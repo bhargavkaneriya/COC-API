@@ -10,5 +10,6 @@ module.exports = {
     requests: "Request",
     roles: "Role",
     settings: "Settings",
+    dealer_product: "Dealer_Product",
   },
 };

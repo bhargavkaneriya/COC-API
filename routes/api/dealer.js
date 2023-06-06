@@ -61,7 +61,7 @@ router.get("/product-list", async (req, res) => {
 
 router.delete("/product-delete", async (req, res) => {
   try {
-    if (!req.body.dealer_id && !req.body.product_id) {
+    if (!req.body.dealer_product_id) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

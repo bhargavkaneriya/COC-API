@@ -58,12 +58,12 @@ const productList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const dealer = await query.selectWithAndOne(
+        const dealer = await query.selectWithAnd(
           dbConstants.dbSchema.dealer_product,
           { dealer_id: requestParam.dealer_id },
           { _id: 0 }
         );
-        resolve(dealer.products);
+        resolve(dealer);
         return;
       } catch (error) {
         reject(error);

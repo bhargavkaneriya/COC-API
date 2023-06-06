@@ -81,7 +81,7 @@ const signIn = (requestParam) => {
             email: requestParam.email,
             // status:{$ne:"pending"}
           },
-          { _id: 0 }
+          { _id: 0,  }
         );
         if (!exist_user) {
           reject(errors(labels.LBL_INVALID_EMAIL["EN"], responseCodes.Invalid));
@@ -114,6 +114,15 @@ const signIn = (requestParam) => {
         delete exist_user.otp;
         delete exist_user.products;
         delete exist_user.role_id;
+        if(requestParam.user_type === "dealer"){
+        delete exist_user.is_verified;
+        delete exist_user.business_name;
+        delete exist_user.business_address;
+        delete exist_user.state;
+        delete exist_user.city;
+        delete exist_user.pincode;
+        delete exist_user.business_profile_status;
+        }
         resolve(exist_user);
         return;
       } catch (error) {
@@ -180,7 +189,7 @@ const verifyOTP = (requestParam) => {
         } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
-        const exist_user = await query.selectWithAndOne(
+        let exist_user = await query.selectWithAndOne(
           modelName,
           {
             phone_number: requestParam.phone_number,
@@ -197,6 +206,16 @@ const verifyOTP = (requestParam) => {
           await query.updateSingle(modelName,{ otp: otp, status: "active" },{ phone_number: requestParam.phone_number });
           exist_user.status = "active"
           delete exist_user.otp;
+          exist_user =  JSON.parse(JSON.stringify(exist_user))
+          if(requestParam.user_type === "dealer"){
+            delete exist_user.is_verified;
+            delete exist_user.business_name;
+            delete exist_user.business_address;
+            delete exist_user.state;
+            delete exist_user.city;
+            delete exist_user.pincode;
+            delete exist_user.business_profile_status;
+            }
           resolve(exist_user);
           return;
         }else{
@@ -245,7 +264,17 @@ const updateProfile = (requestParam) => {
           columnToUpdate = {...columnToUpdate, password:requestParam.password}
         }
         await query.updateSingle(modelName, columnToUpdate, compareData);
-        const response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0, role_id:0})
+        let response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0, role_id:0})
+        response =  JSON.parse(JSON.stringify(response))
+        if(requestParam.user_type === "dealer"){
+          delete response.is_verified;
+          delete response.business_name;
+          delete response.business_address;
+          delete response.state;
+          delete response.city;
+          delete response.pincode;
+          delete response.business_profile_status;
+          }
         resolve(response);
         return;
       } catch (error) {

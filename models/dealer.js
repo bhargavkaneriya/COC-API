@@ -63,6 +63,34 @@ const dealerSchema = new Schema({
     type: Array,
     default: [],
   },
+  is_verified:{
+    type: Boolean,
+    default: false
+  },
+  business_name: {
+    type: String,
+    default: "",
+  },
+  business_address: {
+    type: String,
+    default: "",
+  },
+  state: {
+    type: String,
+    default: "",
+  },
+  city: {
+    type: String,
+    default: "",
+  },
+  pincode: {
+    type: String,
+    default: "",
+  },
+  business_profile_status:{
+    type: String,
+    default: "not_added",
+  }
 });
 
 const Dealer = model("Dealer", dealerSchema);

@@ -75,7 +75,7 @@ const signIn = (requestParam) => {
         } else if (requestParam.user_type === "dealer") {
           modelName = dbConstants.dbSchema.dealers;
         }
-        const exist_user = await query.selectWithAndOne(
+        let exist_user = await query.selectWithAndOne(
           modelName,
           {
             email: requestParam.email,
@@ -109,7 +109,11 @@ const signIn = (requestParam) => {
           );
           return;
         }
+        exist_user =  JSON.parse(JSON.stringify(exist_user))
         delete exist_user.password;
+        delete exist_user.otp;
+        delete exist_user.products;
+        delete exist_user.role_id;
         resolve(exist_user);
         return;
       } catch (error) {
@@ -181,7 +185,7 @@ const verifyOTP = (requestParam) => {
           {
             phone_number: requestParam.phone_number,
           },
-          { _id: 0, password:0 }
+          { _id: 0, password:0, products: 0, role_id: 0 }
         );
         if (!exist_user) {
           reject(errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid));
@@ -230,7 +234,10 @@ const updateProfile = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;
         }
-        let columnToUpdate = {name : requestParam.name};
+        let columnToUpdate = {};
+        if(requestParam.name){
+          columnToUpdate = {...columnToUpdate, name:requestParam.name}
+        }
         if(requestParam.password){
           requestParam.password = await passwordHandler.encrypt(
             requestParam.password
@@ -238,7 +245,7 @@ const updateProfile = (requestParam) => {
           columnToUpdate = {...columnToUpdate, password:requestParam.password}
         }
         await query.updateSingle(modelName, columnToUpdate, compareData);
-        const response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0})
+        const response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0, role_id:0})
         resolve(response);
         return;
       } catch (error) {

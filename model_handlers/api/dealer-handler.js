@@ -130,7 +130,7 @@ const customerList = (requestParam) => {
         if(requestParam.searchKey){
           comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
         }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
+        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0, customer_id:1, name:1, is_company:1, company_name:1, phone_number:1,email:1 }, sizePerPage, page, {created_at: -1});
         resolve(response);
         return;
       } catch (error) {

@@ -56,11 +56,24 @@ const quotationDetails = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const details = await query.selectWithAndOne(
+        const quotationDetails = await query.selectWithAndOne(
           dbConstants.dbSchema.quotations,
           { quotation_id: requestParam.quotation_id },
           { _id: 0 }
         );
+
+        const productDetails = await query.selectWithAndOne(dbConstants.dbSchema.products, {product_id:quotationDetails.product_id}, {_id:0, name:1, image:1})
+        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, {customer_id:quotationDetails.customer_id}, {_id:0})
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id:quotationDetails.dealer_id, product_id:quotationDetails.product_id}, {_id:0, dealer_product_id:1, discount_percentage:1, discount_amount:1, price: 1})
+        reqDetails = JSON.parse(JSON.stringify(reqDetails))
+        reqDetails.dealer_product_id = dealerProduct.dealer_product_id;
+        reqDetails.discount_percentage = dealerProduct.discount_percentage;
+        reqDetails.discount_amount = dealerProduct.discount_amount;
+        reqDetails.price = dealerProduct.price;
+        reqDetails.product_name = productDetails.name;
+        reqDetails.product_image = productDetails.image;
+        reqDetails.customer_name = customerDetails.name;
+
         resolve(details);
         return;
       } catch (error) {

@@ -65,15 +65,16 @@ const requestDetails = (requestParam) => {
           { request_id: requestParam.request_id },
           { _id: 0 }
         );
-        const productDetails = await query.selectWithAndOne(dbConstants.dbSchema.products, {product_id:reqDetails.product_id}, {_id:0})
+        const productDetails = await query.selectWithAndOne(dbConstants.dbSchema.products, {product_id:reqDetails.product_id}, {_id:0, name:1, image:1})
         const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, {customer_id:reqDetails.customer_id}, {_id:0})
-        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id:reqDetails.dealer_id, product_id:reqDetails.product_id}, {_id:0})
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id:reqDetails.dealer_id, product_id:reqDetails.product_id}, {_id:0, dealer_product_id:1, discount_percentage:1, discount_amount:1, price: 1})
         reqDetails = JSON.parse(JSON.stringify(reqDetails))
         reqDetails.dealer_product_id = dealerProduct.dealer_product_id;
         reqDetails.discount_percentage = dealerProduct.discount_percentage;
         reqDetails.discount_amount = dealerProduct.discount_amount;
         reqDetails.price = dealerProduct.price;
         reqDetails.product_name = productDetails.name;
+        reqDetails.product_image = productDetails.image;
         reqDetails.customer_name = customerDetails.name;
         resolve(reqDetails);
         return;

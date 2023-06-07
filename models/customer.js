@@ -70,6 +70,10 @@ const customerSchema = new Schema({
   is_company:{
     type: Boolean,
     default: false
+  },
+  company_name: {
+    type: String,
+    default: "",
   }
 });
 

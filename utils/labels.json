@@ -90,6 +90,10 @@
     "LBL_ZIP_CODE_ALREADY_EXIST": {
       "EN": "Zip code already exits"
     },
+    "LBL_INVALID_QUOTATION_ID": {
+      "EN": "This quotation id does not exist",
+      "FR": "L'adresse e-mail n'existe pas"
+    },
     "LBL_INVALID_EMAIL": {
       "EN": "This email address does not exist",
       "FR": "L'adresse e-mail n'existe pas"

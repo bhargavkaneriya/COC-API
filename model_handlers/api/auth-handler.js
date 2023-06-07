@@ -205,8 +205,8 @@ const verifyOTP = (requestParam) => {
           const otp = await idGeneratorHandler.generateString(4,true,false,false);
           await query.updateSingle(modelName,{ otp: otp, status: "active" },{ phone_number: requestParam.phone_number });
           exist_user.status = "active"
-          delete exist_user.otp;
           exist_user =  JSON.parse(JSON.stringify(exist_user))
+          delete exist_user.otp;
           if(requestParam.user_type === "dealer"){
             delete exist_user.is_verified;
             delete exist_user.business_name;

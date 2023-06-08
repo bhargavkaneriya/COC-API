@@ -58,11 +58,13 @@ const productList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const dealer = await query.selectWithAnd(
-          dbConstants.dbSchema.dealer_product,
-          { dealer_id: requestParam.dealer_id },
-          { _id: 0 }
-        );
+        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
+        let page = requestParam.page ? requestParam.page : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        const dealer = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealer_product,{ dealer_id: requestParam.dealer_id },{ _id: 0 },sizePerPage, page, {created_at: -1});
         resolve(dealer);
         return;
       } catch (error) {
@@ -151,13 +153,56 @@ const requestList = (requestParam) => {
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
+
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id,
         }
         // if(requestParam.searchKey){
         //   comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
         // }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.requests,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
+        // const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.requests,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              request_id: "$request_id",
+              customer_id: "$customer_id",
+              request_date: "$created_at",
+              customer_name: "$customerDetail.name",
+            },
+          },
+          {
+            $sort:{created_at:-1}
+          },
+          {
+            $skip: (page * sizePerPage)
+          },
+          {
+            $limit: sizePerPage,
+          },
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.requests,
+          joinArr
+        );
         resolve(response);
         return;
       } catch (error) {
@@ -184,7 +229,50 @@ const quotationList = (requestParam) => {
         // if(requestParam.searchKey){
         //   comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
         // }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.quotations,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
+        // const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.quotations,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              quotation_id: "$quotation_id",
+              customer_id: "$customer_id",
+              quotation_date: "$created_at",
+              customer_name: "$customerDetail.name",
+            },
+          },
+          {
+            $sort:{created_at:-1}
+          },
+          {
+            $skip: (page * sizePerPage)
+          },
+          {
+            $limit: sizePerPage,
+          },
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.quotations,
+          joinArr
+        );
+        // resolve({response,total:10});
         resolve(response);
         return;
       } catch (error) {
@@ -200,12 +288,13 @@ const commonProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const resData = await query.selectWithAnd(
-          dbConstants.dbSchema.products,
-          {
-            status: "active",
-          }
-        );
+        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
+        let page = requestParam.page ? requestParam.page : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+        
+        const resData = await query.selectWithAndSortPaginate(dbConstants.dbSchema.products,{status: "active"}, {_id:0}, sizePerPage, page, {created_at: -1});
         resolve(resData);
         return;
       } catch (error) {

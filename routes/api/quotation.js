@@ -61,7 +61,7 @@ router.get("/list", async (req, res) => {
 
 router.get("/quotation-details", async (req, res) => {
   try {
-    if (!req.body.quotation_id) {
+    if (!req.query.quotation_id) {
       jsonResponse(
         res,
         responseCodes.BadRequest,
@@ -70,7 +70,7 @@ router.get("/quotation-details", async (req, res) => {
       );
       return;
     }
-    const response = await quotationHandler.quotationDetails(req.body);
+    const response = await quotationHandler.quotationDetails(req.query);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

@@ -33,6 +33,12 @@ const requestList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
+        let page = requestParam.page ? requestParam.page : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
         let compareData = {};
         if (requestParam.customer_id) {
           compareData = {...compareData,customer_id:requestParam.customer_id}
@@ -40,11 +46,7 @@ const requestList = (requestParam) => {
           compareData = {...compareData,dealer_id:requestParam.dealer_id}
         }
 
-        const response = await query.selectWithAnd(
-          dbConstants.dbSchema.requests,
-          compareData,
-          { _id: 0 }
-        );
+        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.requests,compareData,{ _id: 0 },sizePerPage, page, {created_at: -1});
         resolve(response);
         return;
       } catch (error) {
@@ -76,6 +78,7 @@ const requestDetails = (requestParam) => {
         reqDetails.product_name = productDetails.name;
         reqDetails.product_image = productDetails.image;
         reqDetails.customer_name = customerDetails.name;
+        reqDetails.request_date = reqDetails.created_at;
         resolve(reqDetails);
         return;
       } catch (error) {

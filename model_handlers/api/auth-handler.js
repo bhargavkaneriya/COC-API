@@ -122,6 +122,11 @@ const signIn = (requestParam) => {
         delete exist_user.city;
         delete exist_user.pincode;
         delete exist_user.business_profile_status;
+        delete exist_user.company_pan;
+        delete exist_user.company_registration;
+        delete exist_user.company_payment_details;
+        delete exist_user.dealer_agreement_with_COC;
+        delete exist_user.aadhar_card_of_director;
         }
         resolve(exist_user);
         return;
@@ -215,6 +220,11 @@ const verifyOTP = (requestParam) => {
             delete exist_user.city;
             delete exist_user.pincode;
             delete exist_user.business_profile_status;
+            delete exist_user.company_pan;
+            delete exist_user.company_registration;
+            delete exist_user.company_payment_details;
+            delete exist_user.dealer_agreement_with_COC;
+            delete exist_user.aadhar_card_of_director;
             }
           resolve(exist_user);
           return;
@@ -274,6 +284,11 @@ const updateProfile = (requestParam) => {
           delete response.city;
           delete response.pincode;
           delete response.business_profile_status;
+          delete response.company_pan;
+          delete response.company_registration;
+          delete response.company_payment_details;
+          delete response.dealer_agreement_with_COC;
+          delete response.aadhar_card_of_director;
           }
         resolve(response);
         return;

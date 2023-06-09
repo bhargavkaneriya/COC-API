@@ -65,7 +65,8 @@ const productList = (requestParam) => {
         }
 
         const dealer = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealer_product,{ dealer_id: requestParam.dealer_id },{ _id: 0 },sizePerPage, page, {created_at: -1});
-        resolve(dealer);
+
+        resolve({response_data: dealer, total_page:((dealer.length < 10 || dealer.length == 10)?0 :(Math.ceil(dealer.length/sizePerPage)))});
         return;
       } catch (error) {
         reject(error);
@@ -129,11 +130,11 @@ const customerList = (requestParam) => {
         let comparisonColumnsAndValues = {
           customer_id: {$in:totalCustomer},
         }
-        if(requestParam.searchKey){
-          comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
+        if(requestParam.search_key){
+          comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.search_key}
         }
         const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0, customer_id:1, name:1, is_company:1, company_name:1, phone_number:1,email:1 }, sizePerPage, page, {created_at: -1});
-        resolve(response);
+        resolve({response_data:response, total_page:(  (response.length < 10 || response.length == 10)?0 :(Math.ceil(response.length/sizePerPage)))});
         return;
       } catch (error) {
         reject(error);
@@ -203,7 +204,7 @@ const requestList = (requestParam) => {
           dbConstants.dbSchema.requests,
           joinArr
         );
-        resolve(response);
+        resolve({response_data: response, total_page:((response.length < 10 || response.length == 10)?0 :(Math.ceil(response.length/sizePerPage)))});
         return;
       } catch (error) {
         reject(error);
@@ -272,8 +273,7 @@ const quotationList = (requestParam) => {
           dbConstants.dbSchema.quotations,
           joinArr
         );
-        // resolve({response,total:10});
-        resolve(response);
+        resolve({response_data: response, total_page:((response.length < 10 || response.length == 10)?0 :(Math.ceil(response.length/sizePerPage)))});
         return;
       } catch (error) {
         reject(error);
@@ -295,7 +295,7 @@ const commonProductList = (requestParam) => {
         }
         
         const resData = await query.selectWithAndSortPaginate(dbConstants.dbSchema.products,{status: "active"}, {_id:0}, sizePerPage, page, {created_at: -1});
-        resolve(resData);
+        resolve({response_data: resData, total_page:((resData.length < 10 || resData.length == 10)?0 :(Math.ceil(resData.length/sizePerPage)))});
         return;
       } catch (error) {
         reject(error);
@@ -370,7 +370,12 @@ const updateBusinessProfile = (requestParam) => {
           state:requestParam.state,
           city:requestParam.city,
           pincode:requestParam.pincode,
-          business_profile_status:"added"
+          business_profile_status:"added",
+          company_pan:requestParam.company_pan,
+          company_registration:requestParam.company_registration,
+          company_payment_details:requestParam.company_payment_details,
+          dealer_agreement_with_COC:requestParam.dealer_agreement_with_COC,
+          aadhar_card_of_director:requestParam.aadhar_card_of_director
         }, {dealer_id: requestParam.dealer_id})
 
         resolve({message:"Profile details updated successfully"});

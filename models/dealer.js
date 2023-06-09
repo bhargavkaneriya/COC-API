@@ -90,6 +90,30 @@ const dealerSchema = new Schema({
   business_profile_status:{
     type: String,
     default: "not_added",
+  },
+  gst_certificate: {
+    type: String,
+    default: "",
+  },
+  company_pan: {
+    type: String,
+    default: "",
+  },
+  company_registration: {
+    type: String,
+    default: "",
+  },
+  company_payment_details: {
+    type: String,
+    default: "",
+  },
+  dealer_agreement_with_COC: {
+    type: String,
+    default: "",
+  },
+  aadhar_card_of_director: {
+    type: String,
+    default: "",
   }
 });
 

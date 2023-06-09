@@ -133,7 +133,7 @@ const customerList = (requestParam) => {
         if(requestParam.search_key){
           comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.search_key}
         }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0, customer_id:1, name:1, is_company:1, company_name:1, phone_number:1,email:1 }, sizePerPage, page, {created_at: -1});
+        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0, customer_id:1, name:1, is_company:1, company_name:1, phone_number:1,email:1, gst_no:1, pan_no: 1 }, sizePerPage, page, {created_at: -1});
         resolve({response_data:response, total_page:(  (response.length < 10 || response.length == 10)?0 :(Math.ceil(response.length/sizePerPage)))});
         return;
       } catch (error) {
@@ -294,8 +294,8 @@ const commonProductList = (requestParam) => {
           page = parseInt(page) - 1;
         }
         
-        const resData = await query.selectWithAndSortPaginate(dbConstants.dbSchema.products,{status: "active"}, {_id:0}, sizePerPage, page, {created_at: -1});
-        resolve({response_data: resData, total_page:((resData.length < 10 || resData.length == 10)?0 :(Math.ceil(resData.length/sizePerPage)))});
+        const resData = await query.selectWithAnd(dbConstants.dbSchema.products,{status: "active"}, {_id:0},{created_at: -1});
+        resolve(resData);
         return;
       } catch (error) {
         reject(error);

@@ -9,7 +9,7 @@ const labels = require("./../../utils/labels.json");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
 
-router.get("/dealer-list", async (req, res) => {
+router.get("/product-list", async (req, res) => {
   try {
     if (!req.query.pincode) {
       jsonResponse(
@@ -20,7 +20,7 @@ router.get("/dealer-list", async (req, res) => {
       );
       return;
     }
-    const response = await customerHandler.dealerList(req.query);
+    const response = await customerHandler.productList(req.query);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

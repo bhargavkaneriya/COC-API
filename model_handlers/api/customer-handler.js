@@ -7,41 +7,28 @@ require("./../../models/dealer");
 const _ = require("underscore");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
+const axios = require('axios');
 
-const dealerList = (requestParam) => {
+const productList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const requestCustomers = await query.selectWithAnd(
-          dbConstants.dbSchema.requests,
-          { dealer_id: requestParam.dealer_id },
-          { _id: 0, customer_id: 1 }
-        );
+        // const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
+        // let page = requestParam.page ? requestParam.page : 0;
+        // if (page >= 1) {
+        //   page = parseInt(page) - 1;
+        // }
+        // let comparisonColumnsAndValues = {
+        //   pincode: {$in:pincode},
+        // }
+        // if(requestParam.search_key){
+        //   comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.search_key}
+        // }
+        // const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
 
-        const quationCustomers = await query.selectWithAnd(
-          dbConstants.dbSchema.quotations,
-          { dealer_id: requestParam.dealer_id },
-          { _id: 0, customer_id: 1 }
-        );
-
-        let totalCustomer = requestCustomers.concat(quationCustomers);
-        totalCustomer = _.uniq(_.pluck(totalCustomer, "customer_id"));
-        
-        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
-        let page = requestParam.page ? requestParam.page : 0;
-        if (page >= 1) {
-          page = parseInt(page) - 1;
-        }
-
-        let comparisonColumnsAndValues = {
-          customer_id: {$in:totalCustomer},
-        }
-        if(requestParam.searchKey){
-          comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
-        }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
-
-        resolve(response);
+        // resolve(response);
+  const response = await fetch(`https://api.geonames.org/postalCodeSearchJSON?lat=${23.038380}&lng=${72.565080  }&country=IN&radius=100`);
+console.log("response", response);
         return;
       } catch (error) {
         reject(error);
@@ -154,7 +141,7 @@ const deleteQuotation =  (requestParam) => {
 };
 
 module.exports = {
-  dealerList,
+  productList,
   requestList,
   quotationList,
   getProfile,

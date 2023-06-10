@@ -21,6 +21,7 @@
     "express-session": "^1.15.4",
     "https": "^1.0.0",
     "mongoose": "^5.10.18",
+    "p-iteration": "^1.1.8",
     "request": "^2.88.2",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",

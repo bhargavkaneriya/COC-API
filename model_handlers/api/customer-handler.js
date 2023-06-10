@@ -31,7 +31,48 @@ const dealerProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAnd(dbConstants.dbSchema.dealer_product, {dealer_id: requestParam.dealer_id}, { _id: 0}, {created_at: -1});
+        const joinArr = [
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {dealer_id: requestParam.dealer_id},
+          },
+          {
+            $project: {
+              _id: 0,
+              dealer_product_id: 1,
+              dealer_id: 1,
+              product_id: 1,
+              name: 1,
+              image: 1,
+              code: 1,
+              discount_percentage: 1,
+              discount_amount: 1,
+              price: 1,
+              created_at: 1,
+              dealer_name: "$dealerDetail.name"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.dealer_product,
+          joinArr
+        );
         resolve(response);
         return;
       } catch (error) {
@@ -47,7 +88,13 @@ const productDetail = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_product_id: requestParam.dealer_product_id}, { _id: 0}, {created_at: -1});
+        let response = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_product_id: requestParam.dealer_product_id}, { _id: 0}, {created_at: -1});
+        if(response){
+          response = JSON.parse(JSON.stringify(response));
+          const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, {dealer_id: response.dealer_id}, {_id:0, name:1})
+          response.dealer_name = dealerDetail.name
+        }
+
         resolve(response);
         return;
       } catch (error) {

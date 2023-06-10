@@ -11,16 +11,57 @@ const errors = errorHandler;
 
 router.get("/popular-product-list", async (req, res) => {
   try {
-    // if (!req.query.customer_id) {
-    //   jsonResponse(
-    //     res,
-    //     responseCodes.BadRequest,
-    //     errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
-    //     null
-    //   );
-    //   return;
-    // }
     const response = await customerHandler.popularProductList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.get("/dealer-product-list", async (req, res) => {
+  try {
+    if (!req.query.dealer_id) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await customerHandler.dealerProductList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.get("/product-detail", async (req, res) => {
+  try {
+    if (!req.query.dealer_product_id) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await customerHandler.productDetail(req.query);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

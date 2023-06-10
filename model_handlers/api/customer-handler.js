@@ -27,6 +27,37 @@ const popularProductList = (requestParam) => {
   });
 };
 
+const dealerProductList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const response = await query.selectWithAnd(dbConstants.dbSchema.dealer_product, {dealer_id: requestParam.dealer_id}, { _id: 0}, {created_at: -1});
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const productDetail = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const response = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_product_id: requestParam.dealer_product_id}, { _id: 0}, {created_at: -1});
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
 
 const getLatLngFromPincode = async (pincode) => {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
@@ -200,6 +231,8 @@ const deleteQuotation =  (requestParam) => {
 
 module.exports = {
   popularProductList,
+  dealerProductList,
+  productDetail,
   productList,
   requestList,
   quotationList,

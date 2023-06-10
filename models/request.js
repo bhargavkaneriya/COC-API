@@ -18,7 +18,7 @@ const requestSchema = new Schema({
         default: '',
     },
     qty: {
-        type: String,
+        type: Number,
         default: ''
     },
     status: {

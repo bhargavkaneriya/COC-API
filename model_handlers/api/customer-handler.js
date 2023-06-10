@@ -9,6 +9,7 @@ const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
 const request = require('request');
 const apiKey = process.env.GOOGLE_API_KEY;
+const { forEach } = require("p-iteration");
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -76,15 +77,139 @@ const dealerOrProductList = (requestParam) => {
           return;
         }
 
-        const testPincodes = ['','',''];
-        let dealerList = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealers, {pincode: {$in:testpincodes}}, {_id:0, dealer_id:1, name:1}, sizePerPage, page,  {created_at:-1})
-        if(requestParam.search_type === "product"){
-          // const productList = 
-          console.log("if");
-
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage): 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
         }
-        else{
-          console.log("else");
+
+        let comparisonColumnsAndValues = {
+          "pincode": {$in:['360450']},
+        };
+
+        let model_name = "";
+        if(requestParam.search_type === "product"){
+          model_name = dbConstants.dbSchema.products
+        }else{
+          model_name = dbConstants.dbSchema.dealers
+        }
+
+        let totalRecords = await query.countRecord(model_name,{});
+        console.log("totalRecords",totalRecords);
+
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+        
+        // let dealerList = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealers, comparisonColumnsAndValues, {_id:0, dealer_id:1, name:1}, sizePerPage, page,  {created_at:-1})
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "dealer_product",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerProductDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerProductDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              dealer_id: "$dealer_id",
+              name: "$name"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          },
+        ];
+        let  dealerList = await query.joinWithAnd(
+          dbConstants.dbSchema.dealers,
+          joinArr
+        );
+        console.log("dealerList",dealerList);
+        dealerList = JSON.parse(JSON.stringify(dealerList));
+        if(requestParam.search_type === "product"){
+          const dealerIds = _.pluck(dealerList, 'dealer_id');
+          const joinArr = [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealer_id",
+                foreignField: "dealer_id",
+                as: "dealerDetail",
+              },
+            },
+            {
+              $unwind: {
+                path: "$dealerDetail",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $match: {dealer_id:{$in:dealerIds}},
+            },
+            {
+              $project: {
+                _id: 0,
+                dealer_product_id: "$dealer_product_id",
+                dealer_id: "$dealer_id",
+                product_id: "$product_id",
+                name: "$name",
+                image: "$image",
+                code: "$code",
+                discount_percentage: "$discount_percentage",
+                discount_amount: "$discount_amount",
+                price: "$price",
+                dealer_name:"$dealerDetail.name"
+              },
+            },
+            {
+              $sort: { created_at: -1 },
+            },
+            {
+              $skip: page * sizePerPage,
+            },
+            {
+              $limit: sizePerPage,
+            },
+          ];
+          const productList = await query.joinWithAnd(
+            dbConstants.dbSchema.dealer_product,
+            joinArr
+          );
+          resolve({response_data: productList, total_page})
+        }else{
+          // dealerList.map(async(singleDealer)=>{
+          //   const total_records = await query.countRecord(dbConstants.dbSchema.dealer_product,{dealer_id:singleDealer.dealer_id});
+          //   console.log("total_records",total_records);
+          //   singleDealer.product_count = total_records
+          //   console.log("singleDealer",singleDealer);
+          // });
+
+          await forEach(dealerList, async (singleDealer, x) => {
+            const total_records = await query.countRecord(dbConstants.dbSchema.dealer_product,{dealer_id:singleDealer.dealer_id});
+            singleDealer.product_count = total_records
+          });
+
+          resolve({response_data: dealerList, total_page})
         }
         return;
       } catch (error) {

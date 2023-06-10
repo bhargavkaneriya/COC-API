@@ -74,7 +74,11 @@ const customerSchema = new Schema({
   company_name: {
     type: String,
     default: "",
-  }
+  },
+  pincode: {
+    type: String,
+    default: "",
+  },
 });
 
 const Customer = model("Customer", customerSchema);

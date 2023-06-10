@@ -25,6 +25,31 @@ router.get("/popular-product-list", async (req, res) => {
   }
 });
 
+router.get("/dealer-or-product-list", async (req, res) => {
+  try {
+    if (!req.query.customer_id || !req.query.search_type) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await customerHandler.dealerOrProductList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 router.get("/dealer-product-list", async (req, res) => {
   try {
     if (!req.query.dealer_id) {
@@ -62,31 +87,6 @@ router.get("/product-detail", async (req, res) => {
       return;
     }
     const response = await customerHandler.productDetail(req.query);
-    jsonResponse(res, responseCodes.OK, null, response);
-  } catch (error) {
-    console.log("error", error);
-    try {
-      jsonResponse(res, responseCodes.Conflict, error, null);
-      return;
-    } catch (err) {
-      jsonResponse(res, responseCodes.InternalServer, err, null);
-      return;
-    }
-  }
-});
-
-router.get("/product-list", async (req, res) => {
-  try {
-    if (!req.query.customer_id) {
-      jsonResponse(
-        res,
-        responseCodes.BadRequest,
-        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
-        null
-      );
-      return;
-    }
-    const response = await customerHandler.productList(req.query);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

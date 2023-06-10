@@ -10,13 +10,82 @@ const errors = errorHandler;
 const request = require('request');
 const apiKey = process.env.GOOGLE_API_KEY;
 
-
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
         const response = await query.selectWithAnd(dbConstants.dbSchema.products, {is_popular:true}, { _id: 0, product_id: 1, name: 1, image: 1 }, {created_at: -1});
         resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const getLatLngFromPincode = async (pincode) => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
+  const response = await request.get(url);
+  if (response.statusCode === 200) {
+    const data = await response.json();
+    const lat = data.results[0].geometry.location.lat;
+    const lng = data.results[0].geometry.location.lng;
+    console.log("lat",lat);
+    console.log("lng",lng);
+    return { lat, lng };
+  } else {
+    throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
+  }
+};
+
+const getPincodesAroundLatLng = async (lat, lng, radius) => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
+  const response = await request.get(url);
+  if (response.statusCode === 200) {
+    const data = await response.json();
+    const pincodes = data.results.map(result => result.formatted_address);
+    console.log("pincodes 34",pincodes);
+    return pincodes;
+  } else {
+    throw new Error(`Error getting pincodes around lat ${lat} and lng ${lng}`);
+  }
+};
+
+const dealerOrProductList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        // const pincode = '380052';
+        // const { lat, lng } = await getLatLngFromPincode(pincode);
+        // console.log("49 lat",lat);
+        // console.log("49 lng",lng);
+        // console.log(`The latitude and longitude of pincode ${pincode} is ${lat}, ${lng}`);
+
+        // if(lat && lng){
+        //   const radius = 100;
+        //   const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
+        //   console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
+        // }
+
+        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, {customer_id: requestParam.customer_id}, {_id:0, pincode:1});
+        if(!customerDetails){
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
+          return;
+        }
+
+        const testPincodes = ['','',''];
+        let dealerList = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealers, {pincode: {$in:testpincodes}}, {_id:0, dealer_id:1, name:1}, sizePerPage, page,  {created_at:-1})
+        if(requestParam.search_type === "product"){
+          // const productList = 
+          console.log("if");
+
+        }
+        else{
+          console.log("else");
+        }
         return;
       } catch (error) {
         reject(error);
@@ -96,75 +165,6 @@ const productDetail = (requestParam) => {
         }
 
         resolve(response);
-        return;
-      } catch (error) {
-        reject(error);
-        return;
-      }
-    }
-    main();
-  });
-};
-
-const getLatLngFromPincode = async (pincode) => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
-  const response = await request.get(url);
-  if (response.statusCode === 200) {
-    const data = await response.json();
-    const lat = data.results[0].geometry.location.lat;
-    const lng = data.results[0].geometry.location.lng;
-    console.log("lat",lat);
-    console.log("lng",lng);
-    return { lat, lng };
-  } else {
-    throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
-  }
-};
-
-const getPincodesAroundLatLng = async (lat, lng, radius) => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
-  const response = await request.get(url);
-  if (response.statusCode === 200) {
-    const data = await response.json();
-    const pincodes = data.results.map(result => result.formatted_address);
-    console.log("pincodes 34",pincodes);
-    return pincodes;
-  } else {
-    throw new Error(`Error getting pincodes around lat ${lat} and lng ${lng}`);
-  }
-};
-
-
-const productList = (requestParam) => {
-  return new Promise((resolve, reject) => {
-    async function main() {
-      try {
-        // const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
-        // let page = requestParam.page ? requestParam.page : 0;
-        // if (page >= 1) {
-        //   page = parseInt(page) - 1;
-        // }
-        // let comparisonColumnsAndValues = {
-        //   pincode: {$in:pincode},
-        // }
-        // if(requestParam.search_key){
-        //   comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.search_key}
-        // }
-        // const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.customers,comparisonColumnsAndValues,{ _id: 0 }, sizePerPage, page, {created_at: -1});
-        // resolve(response);
-
-        const pincode = '380052';
-        const { lat, lng } = await getLatLngFromPincode(pincode);
-        console.log("49 lat",lat);
-        console.log("49 lng",lng);
-        console.log(`The latitude and longitude of pincode ${pincode} is ${lat}, ${lng}`);
-
-        if(lat && lng){
-          const radius = 100;
-          const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
-          console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
-        }
-
         return;
       } catch (error) {
         reject(error);
@@ -278,9 +278,9 @@ const deleteQuotation =  (requestParam) => {
 
 module.exports = {
   popularProductList,
+  dealerOrProductList,
   dealerProductList,
   productDetail,
-  productList,
   requestList,
   quotationList,
   getProfile,

@@ -8,6 +8,9 @@
     "LBL_USER_NOT_FOUND": {
         "EN": "This account has not been setup on the platform"
     },
+    "LBL_RECORD_NOT_AVAILABLE": {
+      "EN": "There is not record available"
+  },
     "LBL_PRODUCT_ALREADY_EXIST": {
       "EN": "This product is already added"
     },

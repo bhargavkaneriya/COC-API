@@ -13,6 +13,10 @@ const productSchema = new Schema({
     type: String,
     default: "",
   },
+  is_popular: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: String,
     enum: ["active", "inactive"],

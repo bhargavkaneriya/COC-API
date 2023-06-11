@@ -17,6 +17,14 @@ const cartSchema = new Schema({
     type: String,
     default: "",
   },
+  quotation_id:{
+    type:String,
+    default:""
+  },
+  dealer_product_id:{
+    type:String,
+    default:""
+  },
   qty: {
     type: Number,
     default: 0,
@@ -25,6 +33,15 @@ const cartSchema = new Schema({
     type: String,
     enum: ["active", "inactive", "pending"],
     default: "inactive",
+  },
+  cart_type:{
+    type:String,
+    enum:["normal","quotation"],
+    default:"normal"
+  },
+  offline_payment: {
+    type: Boolean,
+    default: false,
   },
   created_at: {
     type: Date,

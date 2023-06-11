@@ -47,14 +47,23 @@ const addToCart = (requestParam) => {
                     return
                 }
                 const cart_id = await idGeneratorHandler.generateId("COCC");
-                await query.insertSingle(dbConstants.dbSchema.carts, {
+                let insertRecord = {
                     cart_id: cart_id,
                     customer_id: requestParam.customer_id,
                     dealer_id: requestParam.dealer_id,
                     product_id: requestParam.product_id,
                     qty: requestParam.qty,
-                    dealer_product_id: requestParam.dealer_product_id
-                });
+                    dealer_product_id: requestParam.dealer_product_id,
+                    cart_type: requestParam.cart_type
+                }
+
+                if (requestParam.cart_type === "quotation") {
+                    offline_payment = true
+                    insertRecord = { ...insertRecord, offline_payment, quotation_id: requestParam.quotation_id }
+                    await query.updateSingle(dbConstants.dbSchema.quotations, { delete_allowed: false }, { quotation_id: requestParam.quotation_id })
+                }
+
+                await query.insertSingle(dbConstants.dbSchema.carts, insertRecord);
                 resolve({ message: "Product added in cart successfully" });
                 return;
             } catch (error) {
@@ -88,7 +97,7 @@ const cartList = (requestParam) => {
                     cartDetails.price = dealerProductDetail.price;
                     const totalPrice = Number(cartDetails.qty * dealerProductDetail.price);
                     cartDetails['total_price'] = totalPrice
-                    const gstAmount = Number((totalPrice * 16) / 100)
+                    const gstAmount = Number((totalPrice * 18) / 100)
                     // cartDetails['gst_amount'] = gstAmount;
                     cartDetails['grand_total'] = Number(totalPrice + gstAmount);
                     cartDetails['cart_created'] = cartDetails.created_at;
@@ -108,10 +117,13 @@ const deleteCart = (requestParam) => {
     return new Promise((resolve, reject) => {
         async function main() {
             try {
-                const response = await query.selectWithAndOne(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id }, { _id: 0, cart_id: 1 });
+                const response = await query.selectWithAndOne(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id }, { _id: 0, cart_id: 1, quotation_id: 1 });
                 if (!response) {
                     reject(errors(labels.LBL_INVALID_CART_ID["EN"], responseCodes.Invalid));
                     return;
+                }
+                if (response.quotation_id) {
+                    await query.updateSingle(dbConstants.dbSchema.quotations, { delete_allowed: true }, { quotation_id: requestParam.quotation_id })
                 }
                 await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id })
                 resolve({ message: "Product removed from cart successfully" });

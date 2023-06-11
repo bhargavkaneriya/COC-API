@@ -21,7 +21,7 @@ const quotationSchema = new Schema({
         type: String,
         default: '',
     },
-    dealer_product_id:{
+    dealer_product_id: {
         type: String,
         default: '',
     },
@@ -40,6 +40,10 @@ const quotationSchema = new Schema({
     grand_total: {
         type: Number,
         default: 0
+    },
+    delete_allowed: {
+        type: Boolean,
+        default: true
     },
     status: {
         type: String,

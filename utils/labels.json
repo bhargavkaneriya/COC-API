@@ -17,6 +17,9 @@
   "LBL_PRODUCT_ALREADY_EXIST_IN_CART": {
     "EN": "This product is already added. If you want to add more quantity then remove product from my cart and add again."
   },
+  "LBL_CART_NOT_EMPTY": {
+    "EN": "Youneed remove exist product."
+  },
   "LBL_OTHER_PRODUCT_EXIST": {
     "EN": "If you want to add this product remove exist product from cart"
   },

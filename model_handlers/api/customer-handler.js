@@ -390,7 +390,8 @@ const quotationList = (requestParam) => {
               product_name: "$dealerProductDetail.name",
               dealer_name: "$dealerDetail.name",
               quotation_date: "$created_at",
-              product_image:"$dealerProductDetail.image"
+              product_image:"$dealerProductDetail.image",
+              quotation_pdf:"https://drive.google.com/file/d/1JHacEfYcaTgaYzrkvUhL1okeRTzm8ssd/view?usp=sharing"
             },
           },
           {

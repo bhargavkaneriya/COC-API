@@ -21,8 +21,7 @@
     "EN": "If you want to add this product remove exist product from cart"
   },
   "LBL_INVALID_PRODUCT": {
-    "EN": "The product entered is invalid",
-    "FR": "L'otp saisi est incorrect"
+    "EN": "The product entered is invalid"
   },
   "LBL_REQUIRED_AUTH_TOKEN": {
     "EN": "Auth token must be required"
@@ -100,48 +99,40 @@
     "EN": "Zip code already exits"
   },
   "LBL_INVALID_SEARCH_TYPE": {
-    "EN": "This search type is invalid",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This search type is invalid"
   },
   "LBL_INVALID_QUOTATION_ID": {
-    "EN": "This quotation id does not exist",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This quotation id does not exist"
+  },
+  "LBL_INVALID_CART_ID":{
+    "EN": "This cart id does not exist"
   },
   "LBL_INVALID_EMAIL": {
-    "EN": "This email address does not exist",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This email address does not exist"
   },
   "LBL_INVALID_MOBILE": {
-    "EN": "This phone number does not exist",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This phone number does not exist"
   },
   "LBL_INVALID_SERVICE": {
-    "EN": "This service does not exist",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This service does not exist"
   },
   "LBL_INVALID_USER_SERVICE": {
-    "EN": "This service does not exist with this user",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This service does not exist with this user"
   },
   "LBL_INVALID_CONNECTION": {
-    "EN": "This connection does not exist with this user",
-    "FR": "L'adresse e-mail n'existe pas"
+    "EN": "This connection does not exist with this user"
   },
   "LBL_ACCOUNT_INACTIVE": {
-    "EN": "Your account is inactive, Contact to administrator",
-    "FR": "Your account is inactive, Contact to administrator"
+    "EN": "Your account is inactive, Contact to administrator"
   },
   "LBL_INVALID_PASSWORD": {
-    "EN": "The password entered is incorrect",
-    "FR": "Les mots de passe ne correspondent pas"
+    "EN": "The password entered is incorrect"
   },
   "LBL_INVALID_OTP": {
-    "EN": "The otp entered is incorrect",
-    "FR": "L'otp saisi est incorrect"
+    "EN": "The otp entered is incorrect"
   },
   "LBL_CODE_ALREADY_USED": {
-    "EN": "This link is already used please try again",
-    "FR": "This link is already used please try again"
+    "EN": "This link is already used please try again"
   },
   "LBL_LANGUAGE_LABEL_ALREADY_EXIST": {
     "EN": "Language label already exits"

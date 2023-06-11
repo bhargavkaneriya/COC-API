@@ -21,6 +21,10 @@ const quotationSchema = new Schema({
         type: String,
         default: '',
     },
+    dealer_product_id:{
+        type: String,
+        default: '',
+    },
     product_price: {
         type: Number,
         default: 0

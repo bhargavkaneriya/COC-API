@@ -46,7 +46,8 @@ const addToCart = (requestParam) => {
                     customer_id: requestParam.customer_id,
                     dealer_id: requestParam.dealer_id,
                     product_id: requestParam.product_id,
-                    qty: requestParam.qty
+                    qty: requestParam.qty,
+                    dealer_product_id:requestParam.dealer_product_id
                 });
                 resolve({ message: "Product added in cart successfully" });
                 return;
@@ -88,15 +89,15 @@ const cartList = (requestParam) => {
                     },
                     {
                         $lookup: {
-                            from: "dealers",
-                            localField: "dealer_id",
-                            foreignField: "dealer_id",
-                            as: "dealerDetail",
+                            from: "dealer_product",
+                            localField: "dealer_product_id",
+                            foreignField: "dealer_product_id",
+                            as: "dealerProductDetail",
                         },
                     },
                     {
                         $unwind: {
-                            path: "$dealerDetail",
+                            path: "$dealerProductDetail",
                             preserveNullAndEmptyArrays: true,
                         },
                     },
@@ -124,11 +125,12 @@ const cartList = (requestParam) => {
                             customer_id: "$customer_id",
                             customer_name: "$customerDetail.name",
                             dealer_id: "$dealer_id",
-                            dealer_name: "$dealerDetail.name",
+                            dealer_name: "$dealerProductDetail.name",
                             product_id: "$product_id",
                             product_name: "$productDetail.name",
                             product_image: "$productDetail.image",
                             qty: "$qty",
+                            price:"$dealerProductDetail.price",
                             cart_created:"$created_at"
                         },
                     },
@@ -157,7 +159,29 @@ const cartList = (requestParam) => {
     });
 };
 
+const deleteCart = (requestParam) => {
+    return new Promise((resolve, reject) => {
+      async function main() {
+        try {
+          const response = await query.selectWithAndOne(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id }, { _id: 0, cart_id: 1 });
+          if (!response) {
+            reject(errors(labels.LBL_INVALID_CART_ID["EN"], responseCodes.Invalid));
+            return;
+          }
+          await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id })
+          resolve({ message: "Product removed from cart successfully" });
+          return;
+        } catch (error) {
+          reject(error);
+          return;
+        }
+      }
+      main();
+    });
+  };
+
 module.exports = {
     addToCart,
-    cartList
+    cartList,
+    deleteCart
 };

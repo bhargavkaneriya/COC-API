@@ -83,13 +83,13 @@ const cartList = (requestParam) => {
                     let dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetails.dealer_id }, { _id: 0, name: 1 });
                     cartDetails.dealer_name = dealerDetail.name;
                     let dealerProductDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetails.dealer_id, product_id: cartDetails.product_id }, { _id: 0, name: 1, image: 1, price: 1 });
-                    cartDetails.product_name = dealerProductDetail.name;
-                    cartDetails.product_image = dealerProductDetail.image;
-                    cartDetails.product_price = dealerProductDetail.price;
+                    cartDetails.name = dealerProductDetail.name;
+                    cartDetails.image = dealerProductDetail.image;
+                    cartDetails.price = dealerProductDetail.price;
                     const totalPrice = Number(cartDetails.qty * dealerProductDetail.price);
                     cartDetails['total_price'] = totalPrice
-                    const gstAmount = Number((totalPrice * 16) / 100)
-                    cartDetails['gst_amount'] = gstAmount;
+                    // const gstAmount = Number((totalPrice * 16) / 100)
+                    // cartDetails['gst_amount'] = gstAmount;
                     cartDetails['grand_total'] = Number(totalPrice + gstAmount);
                 }
                 resolve(cartDetails);

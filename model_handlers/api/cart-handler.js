@@ -37,7 +37,7 @@ const addToCart = (requestParam) => {
                 }
                 const existRecord = await query.selectWithAndOne(dbConstants.dbSchema.carts, { customer_id: requestParam.customer_id, dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, customer_id: 1 });
                 if (existRecord) {
-                    reject(errors(labels.LBL_PRODUCT_ALREADY_EXIST["EN"], responseCodes.Conflict));
+                    reject(errors(labels.LBL_PRODUCT_ALREADY_EXIST_IN_CART["EN"], responseCodes.Conflict));
                     return
                 }
                 const cart_id = await idGeneratorHandler.generateId("COCC");
@@ -125,10 +125,11 @@ const cartList = (requestParam) => {
                             customer_name: "$customerDetail.name",
                             dealer_id: "$dealer_id",
                             dealer_name: "$dealerDetail.name",
-                            product_id: "$product",
+                            product_id: "$product_id",
                             product_name: "$productDetail.name",
                             product_image: "$productDetail.image",
-                            qty: "$qty"
+                            qty: "$qty",
+                            cart_created:"$created_at"
                         },
                     },
                     {

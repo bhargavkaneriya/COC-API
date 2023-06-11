@@ -90,8 +90,11 @@ const dealerOrProductList = (requestParam) => {
         let model_name = "";
         if (requestParam.search_type === "product") {
           model_name = dbConstants.dbSchema.products
-        } else {
+        } else if(requestParam.search_type === "dealer"){
           model_name = dbConstants.dbSchema.dealers
+        }else{
+          reject(errors(labels.LBL_INVALID_SEARCH_TYPE["EN"], responseCodes.Invalid));
+          return;
         }
 
         let totalRecords = await query.countRecord(model_name, {});

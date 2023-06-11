@@ -26,6 +26,10 @@ const requestSchema = new Schema({
         enum: ["active", "inactive"],
         default: "inactive"
     },
+    is_quotation_created:{
+        type: Boolean,
+        default: false,
+    },
     created_at: {
         type: Date,
         default: Date.now

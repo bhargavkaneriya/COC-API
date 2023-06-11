@@ -172,7 +172,7 @@ const customerList = (requestParam) => {
         }
 
         let comparisonColumnsAndValues = {
-          customer_id: { $in: totalCustomer},
+          customer_id: { $in: totalCustomer },
         };
 
         let totalRecords = await query.countRecord(
@@ -255,6 +255,7 @@ const requestList = (requestParam) => {
 
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id,
+          is_quotation_created: false
         };
 
         let totalRecords = await query.countRecord(
@@ -340,7 +341,7 @@ const quotationList = (requestParam) => {
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id,
         };
-        
+
         let totalRecords = await query.countRecord(
           dbConstants.dbSchema.quotations,
           comparisonColumnsAndValues

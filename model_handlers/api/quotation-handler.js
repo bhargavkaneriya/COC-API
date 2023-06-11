@@ -15,6 +15,7 @@ const createQuotation = (requestParam) => {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
         requestParam = { ...requestParam, quotation_id };
         await query.insertSingle(dbConstants.dbSchema.quotations, requestParam);
+        await query.updateSingle(dbConstants.dbSchema.requests, {is_quotation_created:true}, {request_id:requestParam.request_id});
         resolve({message:"Quotation sent successfully"});
         return;
       } catch (error) {

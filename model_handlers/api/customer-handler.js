@@ -395,13 +395,20 @@ const updatePincode = (requestParam) => {
           dbConstants.dbSchema.customers,
           {
             customer_id: requestParam.customer_id
-          }, { _id: 0 }
+          }, { _id: 0, password:0, otp: 0, role_id: 0 }
         );
         if (!response) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        resolve(response);
+        await query.updateSingle(dbConstants.dbSchema.customers, {pincode: requestParam.pincode}, {customer_id: requestParam.customer_id});
+        const sendRes = await query.selectWithAndOne(
+          dbConstants.dbSchema.customers,
+          {
+            customer_id: requestParam.customer_id
+          }, { _id: 0, password:0, otp: 0, role_id: 0 }
+        );
+        resolve(sendRes);
         return;
       } catch (error) {
         reject(error);

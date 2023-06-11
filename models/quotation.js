@@ -5,6 +5,10 @@ const quotationSchema = new Schema({
         type: String,
         default: '',
     },
+    request_id: {
+        type: String,
+        default: '',
+    },
     customer_id: {
         type: String,
         default: '',

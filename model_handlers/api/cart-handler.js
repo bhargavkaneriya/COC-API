@@ -91,6 +91,7 @@ const cartList = (requestParam) => {
                     const gstAmount = Number((totalPrice * 16) / 100)
                     // cartDetails['gst_amount'] = gstAmount;
                     cartDetails['grand_total'] = Number(totalPrice + gstAmount);
+                    cartDetails['cart_created'] = cartDetails.created_at;
                 }
                 resolve(cartDetails);
                 return;

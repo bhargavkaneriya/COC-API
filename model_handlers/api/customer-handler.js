@@ -130,7 +130,7 @@ const dealerOrProductList = (requestParam) => {
             $project: {
               _id: 0,
               dealer_id: "$dealer_id",
-              name: "$name"
+              dealer_name: "$name"
             },
           },
           {

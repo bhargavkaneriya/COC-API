@@ -88,7 +88,7 @@ const cartList = (requestParam) => {
                     cartDetails.price = dealerProductDetail.price;
                     const totalPrice = Number(cartDetails.qty * dealerProductDetail.price);
                     cartDetails['total_price'] = totalPrice
-                    // const gstAmount = Number((totalPrice * 16) / 100)
+                    const gstAmount = Number((totalPrice * 16) / 100)
                     // cartDetails['gst_amount'] = gstAmount;
                     cartDetails['grand_total'] = Number(totalPrice + gstAmount);
                 }

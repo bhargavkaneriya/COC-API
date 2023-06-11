@@ -11,7 +11,7 @@ const errors = errorHandler;
 
 router.post("/add-to-cart", async (req, res) => {
   try {
-    if (!req.body.customer_id || !req.body.dealer_id || !req.body.product_id || !req.body.dealer_product_id || !req.body.qty) {
+    if (!req.body.customer_id || !req.body.dealer_id || !req.body.product_id || !req.body.dealer_product_id || !req.body.qty || !req.body.cart_type) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

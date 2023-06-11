@@ -14,6 +14,8 @@ const createQuotation = (requestParam) => {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
         requestParam = { ...requestParam, quotation_id };
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id: requestParam.dealer_id, product_id:requestParam.product_id}, {_id: 0, dealer_product_id: 1});
+        requestParam = { ...requestParam, dealer_product_id: dealerProduct.dealer_product_id };
         await query.insertSingle(dbConstants.dbSchema.quotations, requestParam);
         await query.updateSingle(dbConstants.dbSchema.requests, {is_quotation_created:true}, {request_id:requestParam.request_id});
         resolve({message:"Quotation sent successfully"});

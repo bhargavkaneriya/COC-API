@@ -147,7 +147,7 @@ const dealerOrProductList = (requestParam) => {
           dbConstants.dbSchema.dealers,
           joinArr
         );
-        console.log("dealerList", dealerList);
+
         dealerList = JSON.parse(JSON.stringify(dealerList));
         if (requestParam.search_type === "product") {
           const dealerIds = _.pluck(dealerList, 'dealer_id');
@@ -340,18 +340,67 @@ const quotationList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : 10;
-        let page = requestParam.page ? requestParam.page : 0;
-        if (page >= 1) {
-          page = parseInt(page) - 1;
-        }
         let comparisonColumnsAndValues = {
           customer_id: requestParam.customer_id,
         }
-        // if(requestParam.searchKey){
-        //   comparisonColumnsAndValues={...comparisonColumnsAndValues, name: requestParam.searchKey}
-        // }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.quotations, comparisonColumnsAndValues, { _id: 0 }, sizePerPage, page, { created_at: -1 });
+        const joinArr = [
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "dealer_product",
+              localField: "dealer_product_id",
+              foreignField: "dealer_product_id",
+              as: "dealerProductDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerProductDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              quotation_id: "$quotation_id",
+              dealer_id: "$dealer_id",
+              product_id: "$product_id",
+              customer_id: "$customer_id",
+              dealer_product_id: "$dealer_product_id",
+              product_price: "$product_price",
+              qty: "$qty",
+              total_price: "$total_price",
+              grand_total: "$grand_total",
+              product_name: "$dealerProductDetail.name",
+              dealer_name: "$dealerDetail.name",
+              quotation_date: "$created_at",
+              product_image:"$dealerProductDetail.image"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          }
+        ];
+        let response = await query.joinWithAnd(
+          dbConstants.dbSchema.quotations,
+          joinArr
+        );
         resolve(response);
         return;
       } catch (error) {

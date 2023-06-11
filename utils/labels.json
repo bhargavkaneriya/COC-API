@@ -14,6 +14,9 @@
     "LBL_PRODUCT_ALREADY_EXIST": {
       "EN": "This product is already added"
     },
+    "LBL_OTHER_PRODUCT_EXIST": {
+      "EN": "If you want to add this product remove exist product from cart"
+    },
     "LBL_INVALID_PRODUCT": {
       "EN": "The product entered is invalid",
       "FR": "L'otp saisi est incorrect"

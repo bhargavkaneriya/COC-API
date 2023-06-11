@@ -175,6 +175,31 @@ router.get("/get-profile", async (req, res) => {
   }
 });
 
+router.post("/update-pincode", async (req, res) => {
+  try {
+    if (!req.body.customer_id || !req.body.pincode) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await customerHandler.updatePincode(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 router.delete("/delete-quotation", async (req, res) => {
   try {
     if (!req.body.quotation_id) {

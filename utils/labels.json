@@ -18,13 +18,16 @@
     "EN": "This product is already added. If you want to add more quantity then remove product from my cart and add again."
   },
   "LBL_CART_NOT_EMPTY": {
-    "EN": "Youneed remove exist product."
+    "EN": "You need remove exist product."
   },
   "LBL_OTHER_PRODUCT_EXIST": {
     "EN": "If you want to add this product remove exist product from cart"
   },
   "LBL_INVALID_PRODUCT": {
     "EN": "The product entered is invalid"
+  },
+  "LBL_INVALID_PINCODE": {
+    "EN": "Entered pincode is invalid"
   },
   "LBL_REQUIRED_AUTH_TOKEN": {
     "EN": "Auth token must be required"

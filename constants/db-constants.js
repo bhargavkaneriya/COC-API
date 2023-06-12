@@ -11,6 +11,8 @@ module.exports = {
     roles: "Role",
     settings: "Settings",
     dealer_product: "Dealer_Product",
-    carts:"Cart"
+    carts:"Cart",
+    orders:"Order",
+    delivery_detail: "Delivery_Detail",
   },
 };

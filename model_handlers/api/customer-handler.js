@@ -90,9 +90,9 @@ const dealerOrProductList = (requestParam) => {
         let model_name = "";
         if (requestParam.search_type === "product") {
           model_name = dbConstants.dbSchema.products
-        } else if(requestParam.search_type === "dealer"){
+        } else if (requestParam.search_type === "dealer") {
           model_name = dbConstants.dbSchema.dealers
-        }else{
+        } else {
           reject(errors(labels.LBL_INVALID_SEARCH_TYPE["EN"], responseCodes.Invalid));
           return;
         }
@@ -390,8 +390,8 @@ const quotationList = (requestParam) => {
               product_name: "$dealerProductDetail.name",
               dealer_name: "$dealerDetail.name",
               quotation_date: "$created_at",
-              product_image:"$dealerProductDetail.image",
-              quotation_pdf:"https://drive.google.com/file/d/1JHacEfYcaTgaYzrkvUhL1okeRTzm8ssd/view?usp=sharing",
+              product_image: "$dealerProductDetail.image",
+              quotation_pdf: "https://drive.google.com/file/d/1JHacEfYcaTgaYzrkvUhL1okeRTzm8ssd/view?usp=sharing",
               delete_allowed: "$delete_allowed"
             },
           },
@@ -449,18 +449,18 @@ const updatePincode = (requestParam) => {
           dbConstants.dbSchema.customers,
           {
             customer_id: requestParam.customer_id
-          }, { _id: 0, password:0, otp: 0, role_id: 0 }
+          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
         );
         if (!response) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        await query.updateSingle(dbConstants.dbSchema.customers, {pincode: requestParam.pincode}, {customer_id: requestParam.customer_id});
+        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode }, { customer_id: requestParam.customer_id });
         const sendRes = await query.selectWithAndOne(
           dbConstants.dbSchema.customers,
           {
             customer_id: requestParam.customer_id
-          }, { _id: 0, password:0, otp: 0, role_id: 0 }
+          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
         );
         resolve(sendRes);
         return;
@@ -494,6 +494,31 @@ const deleteQuotation = (requestParam) => {
   });
 };
 
+const verifyPincode = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        // const response = await query.selectWithAndOne(
+        //   dbConstants.dbSchema.customers,
+        //   { customer_id: requestParam.customer_id },
+        //   { _id: 0, customer_id: 1, name: 1, phone_number: 1, email: 1, is_company: 1, pan_no: 1, gst_no: 1 }
+        // );
+        // console.log("response", response);
+        // if (!response) {
+        //   reject(errors(labels.LBL_INVALID_PINCODE["EN"], responseCodes.Invalid));
+        //   return;
+        // }
+        resolve({ message: "Entered pincode is valid" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   popularProductList,
   dealerOrProductList,
@@ -503,5 +528,6 @@ module.exports = {
   quotationList,
   getProfile,
   deleteQuotation,
-  updatePincode
+  updatePincode,
+  verifyPincode
 };

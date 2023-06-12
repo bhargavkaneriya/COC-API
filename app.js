@@ -36,6 +36,8 @@ const quotation = require("./routes/api/quotation");
 const request = require("./routes/api/request");
 const customer = require("./routes/api/customer");
 const cart = require("./routes/api/cart");
+const order = require("./routes/api/order");
+const deliveryDetail = require("./routes/api/delivery-detail");
 
 //other configurations
 const favicon = require("serve-favicon");
@@ -64,6 +66,8 @@ app.use("/api/quotation", quotation);
 app.use("/api/request", request);
 app.use("/api/customer", customer);
 app.use("/api/cart", cart);
+app.use("/api/order", order);
+app.use("/api/delivery-detail", deliveryDetail);
 
 app.use(upload());
 

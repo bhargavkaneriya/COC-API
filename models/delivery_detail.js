@@ -17,6 +17,10 @@ const deliveryDetailSchema = new Schema({
     type: String,
     default: "",
   },
+  phone_number: {
+    type: String,
+    default: "",
+  },
   address: {
     type: String,
     default: ""

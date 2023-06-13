@@ -55,7 +55,7 @@ const createOrder = (requestParam) => {
                     product_discount_amount: dealerProduct.discount_amount,
                 }
                 await query.insertSingle(dbConstants.dbSchema.orders, requestParam);
-                resolve({ message: "Order created successfully" });
+                resolve({ order_id, message: "Order created successfully" });
                 return;
             } catch (error) {
                 reject(error);

@@ -77,6 +77,29 @@ const orderList = (requestParam) => {
                     );
                     return;
                 }
+
+                const sizePerPage = requestParam.sizePerPage
+                    ? parseInt(requestParam.sizePerPage)
+                    : 10;
+                let page = requestParam.page ? parseInt(requestParam.page) : 0;
+                if (page >= 1) {
+                    page = parseInt(page) - 1;
+                }
+
+                let totalRecords = await query.countRecord(
+                    dbConstants.dbSchema.orders,
+                    { customer_id: requestParam.customer_id, payment_method: requestParam.order_type }
+                );
+
+                const total_page =
+                    totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+                if (requestParam.page && requestParam.page > total_page) {
+                    reject(
+                        errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid)
+                    );
+                    return;
+                }
+
                 const joinArr = [
                     {
                         $lookup: {
@@ -103,7 +126,7 @@ const orderList = (requestParam) => {
                             quotation_id: "$quotation_id",
                             customer_id: "$customer_id",
                             dealer_id: "$dealer_id",
-                            payment_method:"$payment_method",
+                            payment_method: "$payment_method",
                             dealer_name: "$dealerDetail.name",
                             name: "$product_name",
                             qty: "$product_qty",
@@ -118,18 +141,21 @@ const orderList = (requestParam) => {
                     {
                         $sort: { created_at: -1 },
                     },
-                    // {
-                    //     $skip: page * sizePerPage,
-                    // },
-                    // {
-                    //     $limit: sizePerPage,
-                    // },
+                    {
+                        $skip: page * sizePerPage,
+                    },
+                    {
+                        $limit: sizePerPage,
+                    },
                 ];
                 const response = await query.joinWithAnd(
                     dbConstants.dbSchema.orders,
                     joinArr
                 );
-                resolve(response);
+                resolve({
+                    response_data: response,
+                    total_page,
+                });
                 return;
             } catch (error) {
                 reject(error);

@@ -575,7 +575,7 @@ const notificationList = (requestParam) => {
               description: "$description",
               type: "$type",
               status: "$status",
-              notification_date: "$notification_date",
+              notification_date: "$created_at",
               customer_name: "$customerDetail.name"
             },
           },

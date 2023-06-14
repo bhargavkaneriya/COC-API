@@ -6,6 +6,8 @@ const labels = require("./../../utils/labels.json");
 require("./../../models/dealer");
 require("./../../models/product");
 require("./../../models/dealer_product");
+require("./../../models/invoice");
+require("./../../models/notification");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;

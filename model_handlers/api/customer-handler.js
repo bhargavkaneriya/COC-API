@@ -4,6 +4,8 @@ const responseCodes = require("./../../helpers/response-codes");
 const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/dealer");
+require("./../../models/invoice");
+require("./../../models/notification");
 const _ = require("underscore");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;

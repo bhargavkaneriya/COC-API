@@ -14,5 +14,7 @@ module.exports = {
     carts:"Cart",
     orders:"Order",
     delivery_detail: "Delivery_Detail",
+    notifications:"Notification",
+    invoices:"Invoice"
   },
 };

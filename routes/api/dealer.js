@@ -227,7 +227,7 @@ router.get("/get-business-profile", async (req, res) => {
 
 router.post("/update-business-profile", async (req, res) => {
   try {
-    if (!req.body.dealer_id || !req.body.business_name || !req.body.business_address || !req.body.state || !req.body.city ||!req.body.pincode) {
+    if (!req.body.dealer_id || !req.body.business_name || !req.body.business_address || !req.body.state || !req.body.city || !req.body.pincode) {
       jsonResponse(
         res,
         responseCodes.BadRequest,
@@ -237,6 +237,56 @@ router.post("/update-business-profile", async (req, res) => {
       return;
     }
     const response = await dealerHandler.updateBusinessProfile(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.get("/notification-list", async (req, res) => {
+  try {
+    if (!req.query.dealer_id) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await dealerHandler.notificationList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.get("/invoice-list", async (req, res) => {
+  try {
+    if (!req.query.dealer_id) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await dealerHandler.invoiceList(req.query);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

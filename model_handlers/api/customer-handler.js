@@ -519,6 +519,116 @@ const verifyPincode = (requestParam) => {
   });
 };
 
+const notificationList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const joinArr = [
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: { customer_id: requestParam.customer_id },
+          },
+          {
+            $project: {
+              _id: 0,
+              notification_id: "$notification_id",
+              customer_id: "$customer_id",
+              dealer_id: "$dealer_id",
+              title: "$title",
+              description: "$description",
+              type: "$type",
+              status: "$status",
+              notification_date: "$notification_date",
+              dealer_name: "$dealerDetail.name"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.notifications,
+          joinArr
+        );
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const invoiceList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        let comparisonColumnsAndValues = { customer_id: requestParam.customer_id };
+        if (requestParam.search_key) {
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: requestParam.order_id }
+        }
+        const joinArr = [
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              invoice_id: "$invoice_id",
+              customer_id: "$customer_id",
+              dealer_id: "$dealer_id",
+              dealer_name: "$dealerDetail.name",
+              invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.invoices,
+          joinArr
+        );
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   popularProductList,
   dealerOrProductList,
@@ -529,5 +639,7 @@ module.exports = {
   getProfile,
   deleteQuotation,
   updatePincode,
-  verifyPincode
+  verifyPincode,
+  notificationList,
+  invoiceList
 };

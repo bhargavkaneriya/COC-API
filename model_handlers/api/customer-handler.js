@@ -525,6 +525,21 @@ const notificationList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        const comparisonColumnsAndValues = { customer_id: requestParam.customer_id };
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.notifications, comparisonColumnsAndValues);
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
         const joinArr = [
           {
             $lookup: {
@@ -541,7 +556,7 @@ const notificationList = (requestParam) => {
             },
           },
           {
-            $match: { customer_id: requestParam.customer_id },
+            $match: comparisonColumnsAndValues,
           },
           {
             $project: {
@@ -559,13 +574,19 @@ const notificationList = (requestParam) => {
           },
           {
             $sort: { created_at: -1 },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
           }
         ];
         const response = await query.joinWithAnd(
           dbConstants.dbSchema.notifications,
           joinArr
         );
-        resolve(response);
+        resolve({ response_data: response, total_page });
         return;
       } catch (error) {
         reject(error);
@@ -580,10 +601,25 @@ const invoiceList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
         let comparisonColumnsAndValues = { customer_id: requestParam.customer_id };
         if (requestParam.search_key) {
           comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: requestParam.order_id }
         }
+
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.invoices, comparisonColumnsAndValues);
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
         const joinArr = [
           {
             $lookup: {
@@ -614,13 +650,19 @@ const invoiceList = (requestParam) => {
           },
           {
             $sort: { created_at: -1 },
-          }
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          },
         ];
         const response = await query.joinWithAnd(
           dbConstants.dbSchema.invoices,
           joinArr
         );
-        resolve(response);
+        resolve({ response_data: response, total_page });
         return;
       } catch (error) {
         reject(error);

@@ -106,10 +106,10 @@ const orderSchema = new Schema({
     enum: ["pending", "approved", "rejected"],
     default: "pending"
   },
-  order_status: {
+  delivery_status: {
     type: String,
-    enum: ["pending", "delivered"],
-    default: "pending"
+    enum: ["accepted", "transit", "delivered"],
+    default: "accepted"
   },
   created_at: {
     type: Date,

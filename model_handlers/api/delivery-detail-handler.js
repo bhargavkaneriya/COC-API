@@ -33,7 +33,7 @@ const updateDeliveryDetail = (requestParam) => {
 
                 await query.insertSingle(dbConstants.dbSchema.delivery_detail, updateData, { customer_id: requestParam.customer_id });
                 const response = await query.selectWithAndOne(dbConstants.dbSchema.delivery_detail, { delivery_detail_id}, {_id: 0})
-                resolve({ response, message: "Detail updated successfully" });
+                resolve({ delivery_detail_id, message: "Detail updated successfully" });
                 return;
             } catch (error) {
                 reject(error);

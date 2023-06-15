@@ -300,4 +300,29 @@ router.get("/invoice-list", async (req, res) => {
   }
 });
 
+router.post("/update-delivery-status", async (req, res) => {
+  try {
+    if (!req.body.order_id || !req.body.delivery_status) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await dealerHandler.updatedeliveryStatus(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

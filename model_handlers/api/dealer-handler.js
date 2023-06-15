@@ -696,6 +696,60 @@ const invoiceList = (requestParam) => {
   });
 };
 
+const updatedeliveryStatus = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAndOne(
+          dbConstants.dbSchema.orders,
+          {
+            order_id: requestParam.order_id,
+          },
+          { _id: 0, order_id: 1, delivery_status: 1 }
+        );
+
+        if (!resData) {
+          reject(
+            errors(labels.LBL_INVALID_ORDER_ID["EN"], responseCodes.Invalid)
+          );
+          return;
+        }
+
+        if (requestParam.delivery_status === "accepted") {
+          if (resData.delivery_status !== "pending") {
+            reject(
+              errors(`You can not update this status for this order.Because your order is ${resData.delivery_status}`, 402)
+            );
+            return;
+          }
+        } else if (requestParam.delivery_status === "in_transit") {
+          if (resData.delivery_status !== "accepted") {
+            reject(
+              errors(`You can not update this status for this order.Because your order is ${resData.delivery_status}`, 402)
+            );
+            return;
+          }
+        } else if (requestParam.delivery_status === "delivered") {
+          if (resData.delivery_status !== "in_transit") {
+            reject(
+              errors(`You can not update this status for this order.Because your order is ${resData.delivery_status}`, 402)
+            );
+            return;
+          }
+        }
+
+        await query.updateSingle(dbConstants.dbSchema.orders, { delivery_status: requestParam.delivery_status }, { order_id: requestParam.order_id });
+        resolve({ message: "Delivery status updated successfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -708,5 +762,6 @@ module.exports = {
   getBusinessProfile,
   updateBusinessProfile,
   notificationList,
-  invoiceList
+  invoiceList,
+  updatedeliveryStatus
 };

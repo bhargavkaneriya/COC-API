@@ -108,8 +108,12 @@ const orderSchema = new Schema({
   },
   delivery_status: {
     type: String,
-    enum: ["accepted", "transit", "delivered"],
-    default: "accepted"
+    enum: ["pending", "accepted", "in_transit", "delivered", "rejected"],
+    default: "pending"
+  },
+  transaction_id: {
+    type: String,
+    default: "",
   },
   created_at: {
     type: Date,

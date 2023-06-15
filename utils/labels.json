@@ -29,6 +29,18 @@
   "LBL_INVALID_PINCODE": {
     "EN": "Entered pincode is invalid"
   },
+  "LBL_INVALID_ORDER_ID": {
+    "EN": "This order id is invalid"
+  },
+  "LBL_INVALID_ORDER_STATUS": {
+    "EN": "You can not update this status for this order.Because your order is"
+  },
+  "LBL_ORDER_ACCEPTED": {
+    "EN": "This order is already accepted."
+  },
+  "LBL_ORDER_IN_TRANSIT": {
+    "EN": "This order is already in transit."
+  },
   "LBL_REQUIRED_AUTH_TOKEN": {
     "EN": "Auth token must be required"
   },
@@ -110,7 +122,7 @@
   "LBL_INVALID_QUOTATION_ID": {
     "EN": "This quotation id does not exist"
   },
-  "LBL_INVALID_CART_ID":{
+  "LBL_INVALID_CART_ID": {
     "EN": "This cart id does not exist"
   },
   "LBL_INVALID_EMAIL": {

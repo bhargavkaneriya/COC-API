@@ -8,6 +8,7 @@ require("./../../models/product");
 require("./../../models/dealer_product");
 require("./../../models/invoice");
 require("./../../models/notification");
+require("./../../models/transaction");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
@@ -750,6 +751,84 @@ const updatedeliveryStatus = (requestParam) => {
   });
 };
 
+const transactionList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id, type: requestParam.type }
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "orders",
+              localField: "order_id",
+              foreignField: "order_id",
+              as: "orderDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$orderrDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              transaction_id: "$transaction_id",
+              order_id: "$order_id",
+              cart_id: "$orderDetail.cart_id",
+              quotation_id: "$orderDetail.quotation_id",
+              customer_name: "$orderDetail.customer_name",
+              name: "$orderDetail.product_name",
+              image: "$orderDetail.product_image",
+              qty: "$orderDetail.product_qty",
+              grand_total: "$orderDetail.grand_total",
+              transaction_date: "$created_at",
+              delivery_status: "$orderDetail.delivery_status",
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.transactions,
+          joinArr
+        );
+        resolve({ response_data: response, total_page });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -763,5 +842,6 @@ module.exports = {
   updateBusinessProfile,
   notificationList,
   invoiceList,
-  updatedeliveryStatus
+  updatedeliveryStatus,
+  transactionList
 };

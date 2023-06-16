@@ -53,8 +53,11 @@ const createOrder = (requestParam) => {
                     product_image: dealerProduct.image,
                     product_discount_percentage: dealerProduct.discount_percentage,
                     product_discount_amount: dealerProduct.discount_amount,
+                    payment_method: requestParam.payment_method
                 }
                 await query.insertSingle(dbConstants.dbSchema.orders, requestParam);
+                const transaction = await idGeneratorHandler.generateId("COCT");
+                await query.insertSingle(dbConstants.dbSchema.transactions, { transaction_id, order_id, type: requestParam.payment_method })
                 resolve({ order_id, message: "Order created successfully" });
                 return;
             } catch (error) {

@@ -829,6 +829,48 @@ const transactionList = (requestParam) => {
   });
 };
 
+const dashboard = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const total_transaction = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
+
+        const requestCustomers = await query.selectWithAnd(dbConstants.dbSchema.requests, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
+        const quationCustomers = await query.selectWithAnd(dbConstants.dbSchema.quotations, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
+        let total_customer = requestCustomers.concat(quationCustomers);
+        total_customer = total_customer.length;
+
+        const joinArr = [
+          { $match: { dealer_id: requestParam.dealer_id } },
+          {
+            $group:
+            {
+              _id: null,
+              total: { $sum: "$grand_total" }
+            }
+          },
+          {
+            $project: {
+              _id: "$_id",
+              total: "$total"
+            }
+          }
+        ];
+        const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
+
+        const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
+
+        resolve({ total_transaction, total_customer, total_sales: total_sales[0].total, top_sales });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -843,5 +885,7 @@ module.exports = {
   notificationList,
   invoiceList,
   updatedeliveryStatus,
-  transactionList
+  transactionList,
+  dashboard
 };
+

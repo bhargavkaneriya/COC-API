@@ -11,10 +11,11 @@ module.exports = {
     roles: "Role",
     settings: "Settings",
     dealer_product: "Dealer_Product",
-    carts:"Cart",
-    orders:"Order",
+    carts: "Cart",
+    orders: "Order",
     delivery_detail: "Delivery_Detail",
-    notifications:"Notification",
-    invoices:"Invoice"
+    notifications: "Notification",
+    invoices: "Invoice",
+    transactions: "Transaction"
   },
 };

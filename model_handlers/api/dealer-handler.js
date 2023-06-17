@@ -871,6 +871,69 @@ const dashboard = (requestParam) => {
   });
 };
 
+
+const totalTopSalesProducts = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, dealer_id: 1 });
+        if (!dealerData) {
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
+          return;
+        }
+
+        let comparisonColumnsAndValues = {
+          dealer_id: requestParam.dealer_id
+        };
+
+        let totalRecords = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
+
+        if (requestParam.type === "top_selling") {
+          totalRecords = 5
+        }
+
+        const joinArr = [
+          { $match: comparisonColumnsAndValues },
+          {
+            $group: {
+              _id: { product_id: "$product_id" },
+              "product_id": { "$first": "$product_id" },
+              "name": { "$first": "$product_name" },
+              "image": { "$first": "$product_image" },
+              "qty": { $sum: "$product_qty" },
+              "grand_total": { $sum: "$grand_total" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              "product_id": "$product_id",
+              "name": "$name",
+              "image": "$image",
+              "qty": "$qty",
+              "grand_total": "$grand_total",
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          }, {
+            $limit: totalRecords
+          }
+        ];
+
+        const product_list = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
+
+        resolve(product_list);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -886,6 +949,6 @@ module.exports = {
   invoiceList,
   updatedeliveryStatus,
   transactionList,
-  dashboard
+  dashboard,
+  totalTopSalesProducts
 };
-

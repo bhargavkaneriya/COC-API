@@ -716,6 +716,13 @@ const updatedeliveryStatus = (requestParam) => {
           return;
         }
 
+        if (!(requestParam.delivery_status == "accepted" || requestParam.delivery_status == "pending" || requestParam.delivery_status == "in_transit" || requestParam.delivery_status == "delivered")) {
+          reject(
+            errors(labels.LBL_STATUS_INVALID["EN"], responseCodes.Invalid)
+          );
+          return;
+        }
+
         if (requestParam.delivery_status === "accepted") {
           if (resData.delivery_status !== "pending") {
             reject(

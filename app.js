@@ -28,6 +28,7 @@ mongoose
 
 //backend
 const productBackend = require("./routes/backend/product");
+const commonBackend = require("./routes/backend/common");
 
 //api
 const auth = require("./routes/api/auth");
@@ -58,6 +59,8 @@ app.use(multipartyMiddleWare);
 app.use("/", routes);
 //backend
 app.use("/backend/product", productBackend);
+app.use("/backend/common", commonBackend);
+
 
 //api
 app.use("/api/auth", auth);

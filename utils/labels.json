@@ -35,6 +35,9 @@
   "LBL_INVALID_ORDER_ID": {
     "EN": "This order id is invalid"
   },
+  "LBL_INVALID_INVOICE_ID": {
+    "EN": "This invoice id is invalid"
+  },
   "LBL_INVALID_ORDER_STATUS": {
     "EN": "You can not update this status for this order.Because your order is"
   },

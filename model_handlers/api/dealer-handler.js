@@ -706,7 +706,7 @@ const updatedeliveryStatus = (requestParam) => {
           {
             order_id: requestParam.order_id,
           },
-          { _id: 0, order_id: 1, delivery_status: 1, dealer_id:1, customer_id:1 }
+          { _id: 0, order_id: 1, delivery_status: 1, dealer_id: 1, customer_id: 1 }
         );
 
         if (!resData) {
@@ -960,6 +960,42 @@ const totalTopSalesProducts = (requestParam) => {
   });
 };
 
+const sendInvoice = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { invoice_id: requestParam.invoice_id }, { _id: 0, customer_id: 1, dealer_id:1 });
+        if (!resData) {
+          reject(errors(labels.LBL_INVALID_INVOICE_ID["EN"], responseCodes.Invalid));
+          return;
+        }
+        const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1 });
+        //send invoice from here via email or whatsup
+
+        const notification_id = await idGeneratorHandler.generateId("COCN");
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1 });
+        // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+        let insertData = {
+          notification_id,
+          title: "Send Invoice",
+          description: `${dealerName.name} send you invoice`,
+          customer_id: resData.customer_id,
+          dealer_id: resData.dealer_id,
+          type: "customer"
+        }
+        await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+
+        resolve({ message: "Invoice send successfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -976,5 +1012,6 @@ module.exports = {
   updatedeliveryStatus,
   transactionList,
   dashboard,
-  totalTopSalesProducts
+  totalTopSalesProducts,
+  sendInvoice
 };

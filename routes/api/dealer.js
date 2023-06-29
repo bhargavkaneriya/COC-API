@@ -400,5 +400,29 @@ router.get("/total-top-sales-products", async (req, res) => {
   }
 });
 
+router.post("/send-invoice", async (req, res) => {
+  try {
+    if (!req.body.invoice_id || !req.body.send_type) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await dealerHandler.sendInvoice(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
 
 module.exports = router;

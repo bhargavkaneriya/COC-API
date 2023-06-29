@@ -14,11 +14,26 @@ const createQuotation = (requestParam) => {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
         requestParam = { ...requestParam, quotation_id };
-        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id: requestParam.dealer_id, product_id:requestParam.product_id}, {_id: 0, dealer_product_id: 1});
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1 });
         requestParam = { ...requestParam, dealer_product_id: dealerProduct.dealer_product_id };
         await query.insertSingle(dbConstants.dbSchema.quotations, requestParam);
-        await query.updateSingle(dbConstants.dbSchema.requests, {is_quotation_created:true}, {request_id:requestParam.request_id});
-        resolve({message:"Quotation sent successfully"});
+        await query.updateSingle(dbConstants.dbSchema.requests, { is_quotation_created: true }, { request_id: requestParam.request_id });
+        //notification add
+        const notification_id = await idGeneratorHandler.generateId("COCN");
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1 });
+        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+
+        let insertData = {
+          notification_id,
+          title: "Quotation send to customer",
+          description: `${dealerName.name} send quotation to ${customerName.name}`,
+          customer_id: requestParam.customer_id,
+          dealer_id: requestParam.dealer_id,
+          type: "customer"
+        }
+        await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        //
+        resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
         reject(error);
@@ -41,11 +56,11 @@ const quotationList = (requestParam) => {
 
         let compareData = {};
         if (requestParam.customer_id) {
-          compareData = {...compareData,customer_id: requestParam.customer_id};
+          compareData = { ...compareData, customer_id: requestParam.customer_id };
         } else {
           compareData = { ...compareData, dealer_id: requestParam.dealer_id };
         }
-        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.quotations,compareData,{ _id: 0 },sizePerPage, page, {created_at: -1});
+        const response = await query.selectWithAndSortPaginate(dbConstants.dbSchema.quotations, compareData, { _id: 0 }, sizePerPage, page, { created_at: -1 });
         resolve(response);
         return;
       } catch (error) {
@@ -67,9 +82,9 @@ const quotationDetails = (requestParam) => {
           { _id: 0 }
         );
 
-        const productDetails = await query.selectWithAndOne(dbConstants.dbSchema.products, {product_id:quotationDetails.product_id}, {_id:0, name:1, image:1})
-        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, {customer_id:quotationDetails.customer_id}, {_id:0, name:1})
-        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, {dealer_id:quotationDetails.dealer_id, product_id:quotationDetails.product_id}, {_id:0, dealer_product_id:1, discount_percentage:1, discount_amount:1, price: 1})
+        const productDetails = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: quotationDetails.product_id }, { _id: 0, name: 1, image: 1 })
+        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: quotationDetails.customer_id }, { _id: 0, name: 1 })
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: quotationDetails.dealer_id, product_id: quotationDetails.product_id }, { _id: 0, dealer_product_id: 1, discount_percentage: 1, discount_amount: 1, price: 1 })
         quotationDetails = JSON.parse(JSON.stringify(quotationDetails))
         quotationDetails.dealer_product_id = dealerProduct.dealer_product_id;
         quotationDetails.discount_percentage = dealerProduct.discount_percentage;

@@ -28,13 +28,13 @@ const signUp = (requestParam) => {
           modelName = dbConstants.dbSchema.dealers;
         }
 
-        const exist_email = await query.selectWithAndOne(modelName,{email: requestParam.email, status:{$ne:"pending"}},{ _id: 0 });
+        const exist_email = await query.selectWithAndOne(modelName, { email: requestParam.email, status: { $ne: "pending" } }, { _id: 0 });
         if (exist_email) {
           reject(errors(labels.LBL_EMAIL_ALREADY_EXIST["EN"], responseCodes.Conflict));
           return;
         }
-        
-        const exist_phone_number = await query.selectWithAndOne(modelName,{phone_number: requestParam.phone_number, status:{$ne:"pending"}},{ _id: 0 });
+
+        const exist_phone_number = await query.selectWithAndOne(modelName, { phone_number: requestParam.phone_number, status: { $ne: "pending" } }, { _id: 0 });
         if (exist_phone_number) {
           reject(errors(labels.LBL_MOBILE_ALREADY_EXIST["EN"], responseCodes.Conflict));
           return;
@@ -51,10 +51,23 @@ const signUp = (requestParam) => {
           user_id = await idGeneratorHandler.generateId("COCD");
           request_param = { ...request_param, dealer_id: user_id };
         }
-        const otp = await idGeneratorHandler.generateString(4,true,false,false);
-        request_param = {...request_param, otp}
+        const otp = await idGeneratorHandler.generateString(4, true, false, false);
+        request_param = { ...request_param, otp }
         await query.insertSingle(modelName, request_param);
-        resolve({otp});
+        //notification add
+        const notification_id = await idGeneratorHandler.generateId("COCN");
+        let insertData = {
+          notification_id,
+          title: "sign_up",
+          description: "send otp on your register phone no. check your message"
+        }
+        if (requestParam.user_type === "customer") {
+          insertData = { ...insertData, customer_id: user_id, type:"customer" }
+        } else if (requestParam.user_type === "dealer") {
+          insertData = { ...insertData, dealer_id: user_id, type:"dealer" }
+        }
+        await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        resolve({ otp });
         return;
       } catch (error) {
         reject(error);
@@ -81,7 +94,7 @@ const signIn = (requestParam) => {
             email: requestParam.email,
             // status:{$ne:"pending"}
           },
-          { _id: 0,  }
+          { _id: 0, }
         );
         if (!exist_user) {
           reject(errors(labels.LBL_INVALID_EMAIL["EN"], responseCodes.Invalid));
@@ -109,24 +122,24 @@ const signIn = (requestParam) => {
           );
           return;
         }
-        exist_user =  JSON.parse(JSON.stringify(exist_user))
+        exist_user = JSON.parse(JSON.stringify(exist_user))
         delete exist_user.password;
         delete exist_user.otp;
         delete exist_user.products;
         delete exist_user.role_id;
-        if(requestParam.user_type === "dealer"){
-        delete exist_user.is_verified;
-        delete exist_user.business_name;
-        delete exist_user.business_address;
-        delete exist_user.state;
-        delete exist_user.city;
-        delete exist_user.pincode;
-        delete exist_user.business_profile_status;
-        delete exist_user.company_pan;
-        delete exist_user.company_registration;
-        delete exist_user.company_payment_details;
-        delete exist_user.dealer_agreement_with_COC;
-        delete exist_user.aadhar_card_of_director;
+        if (requestParam.user_type === "dealer") {
+          delete exist_user.is_verified;
+          delete exist_user.business_name;
+          delete exist_user.business_address;
+          delete exist_user.state;
+          delete exist_user.city;
+          delete exist_user.pincode;
+          delete exist_user.business_profile_status;
+          delete exist_user.company_pan;
+          delete exist_user.company_registration;
+          delete exist_user.company_payment_details;
+          delete exist_user.dealer_agreement_with_COC;
+          delete exist_user.aadhar_card_of_director;
         }
         resolve(exist_user);
         return;
@@ -173,6 +186,25 @@ const sendOTP = (requestParam) => {
           { otp: otp },
           { phone_number: requestParam.phone_number }
         );
+
+        //notification add
+        if (requestParam.from_type === "forgot_password") {
+          const notification_id = await idGeneratorHandler.generateId("COCN");
+          let insertData = {
+            notification_id,
+            title: "Forgot Password",
+            description: "send otp on your register phone no. check your message"
+          }
+          if (requestParam.user_type === "customer") {
+            const customerID = await query.selectWithAndOne(dbConstants.dbSchema.customers, { phone_number: requestParam.phone_number }, { _id: 0, customer_id: 1 });
+            insertData = { ...insertData, customer_id: customerID.customer_id, type:"customer" }
+          } else if (requestParam.user_type === "dealer") {
+            const dealerID = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { phone_number: requestParam.phone_number }, { _id: 0, dealer_id: 1 });
+            insertData = { ...insertData, dealer_id: dealerID.dealer_id, type:"dealer" }
+          }
+          await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        }
+        //
         resolve({ otp });
         return;
       } catch (error) {
@@ -199,20 +231,20 @@ const verifyOTP = (requestParam) => {
           {
             phone_number: requestParam.phone_number,
           },
-          { _id: 0, password:0, products: 0, role_id: 0 }
+          { _id: 0, password: 0, products: 0, role_id: 0 }
         );
         if (!exist_user) {
           reject(errors(labels.LBL_INVALID_MOBILE["EN"], responseCodes.Invalid));
           return;
         }
 
-        if(exist_user.otp == Number(requestParam.otp) || requestParam.otp == Number("0000")){
-          const otp = await idGeneratorHandler.generateString(4,true,false,false);
-          await query.updateSingle(modelName,{ otp: otp, status: "active" },{ phone_number: requestParam.phone_number });
+        if (exist_user.otp == Number(requestParam.otp) || requestParam.otp == Number("0000")) {
+          const otp = await idGeneratorHandler.generateString(4, true, false, false);
+          await query.updateSingle(modelName, { otp: otp, status: "active" }, { phone_number: requestParam.phone_number });
           exist_user.status = "active"
-          exist_user =  JSON.parse(JSON.stringify(exist_user))
+          exist_user = JSON.parse(JSON.stringify(exist_user))
           delete exist_user.otp;
-          if(requestParam.user_type === "dealer"){
+          if (requestParam.user_type === "dealer") {
             delete exist_user.is_verified;
             delete exist_user.business_name;
             delete exist_user.business_address;
@@ -225,10 +257,10 @@ const verifyOTP = (requestParam) => {
             delete exist_user.company_payment_details;
             delete exist_user.dealer_agreement_with_COC;
             delete exist_user.aadhar_card_of_director;
-            }
+          }
           resolve(exist_user);
           return;
-        }else{
+        } else {
           reject(errors(labels.LBL_INVALID_OTP["EN"], responseCodes.InvalidOTP));
           return;
         }
@@ -257,26 +289,26 @@ const updateProfile = (requestParam) => {
         const exist_user = await query.selectWithAndOne(
           modelName,
           compareData,
-          { _id: 0, password:0 }
+          { _id: 0, password: 0 }
         );
         if (!exist_user) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;
         }
         let columnToUpdate = {};
-        if(requestParam.name){
-          columnToUpdate = {...columnToUpdate, name:requestParam.name}
+        if (requestParam.name) {
+          columnToUpdate = { ...columnToUpdate, name: requestParam.name }
         }
-        if(requestParam.password){
+        if (requestParam.password) {
           requestParam.password = await passwordHandler.encrypt(
             requestParam.password
           );
-          columnToUpdate = {...columnToUpdate, password:requestParam.password}
+          columnToUpdate = { ...columnToUpdate, password: requestParam.password }
         }
         await query.updateSingle(modelName, columnToUpdate, compareData);
-        let response = await query.selectWithAndOne(modelName, compareData, {_id:0, password:0, otp:0, products:0, role_id:0})
-        response =  JSON.parse(JSON.stringify(response))
-        if(requestParam.user_type === "dealer"){
+        let response = await query.selectWithAndOne(modelName, compareData, { _id: 0, password: 0, otp: 0, products: 0, role_id: 0 })
+        response = JSON.parse(JSON.stringify(response))
+        if (requestParam.user_type === "dealer") {
           delete response.is_verified;
           delete response.business_name;
           delete response.business_address;
@@ -289,7 +321,7 @@ const updateProfile = (requestParam) => {
           delete response.company_payment_details;
           delete response.dealer_agreement_with_COC;
           delete response.aadhar_card_of_director;
-          }
+        }
         resolve(response);
         return;
       } catch (error) {

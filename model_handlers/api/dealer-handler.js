@@ -706,7 +706,7 @@ const updatedeliveryStatus = (requestParam) => {
           {
             order_id: requestParam.order_id,
           },
-          { _id: 0, order_id: 1, delivery_status: 1 }
+          { _id: 0, order_id: 1, delivery_status: 1, dealer_id:1, customer_id:1 }
         );
 
         if (!resData) {
@@ -743,6 +743,20 @@ const updatedeliveryStatus = (requestParam) => {
               errors(`You can not update this status for this order.Because your order is ${resData.delivery_status}`, 402)
             );
             return;
+          } else {
+            const notification_id = await idGeneratorHandler.generateId("COCN");
+            // const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1 });
+            // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+
+            let insertData = {
+              notification_id,
+              title: "Order Delivered",
+              description: `Your order is delivered`,
+              customer_id: resData.customer_id,
+              dealer_id: resData.dealer_id,
+              type: "customer"
+            }
+            await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
           }
         }
 
@@ -888,7 +902,12 @@ const totalTopSalesProducts = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-
+        if (!(requestParam.type == "total_selling" || requestParam.type == "top_selling")) {
+          reject(
+            errors(labels.LBL_STATUS_INVALID["EN"], responseCodes.Invalid)
+          );
+          return;
+        }
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id
         };

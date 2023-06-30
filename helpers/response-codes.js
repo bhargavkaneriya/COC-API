@@ -4,7 +4,7 @@ module.exports = {
 	OK: 200,
 	EntryCreated: 201,
 	BadRequest: 400,
-	Unauthorized: 401,
+	Unauthorized: 203,
 	Forbidden: 403,
 	ResourceNotFound: 404,
 	MethodNotAllowed: 405,

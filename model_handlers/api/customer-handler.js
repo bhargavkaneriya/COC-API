@@ -86,7 +86,7 @@ const dealerOrProductList = (requestParam) => {
         }
 
         let comparisonColumnsAndValues = {
-          "pincode": { $in: ['360450'] },
+          "pincode": { $in: ['360450', '360005'] },
         };
 
         let model_name = "";
@@ -110,7 +110,9 @@ const dealerOrProductList = (requestParam) => {
         // let dealerList = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealers, comparisonColumnsAndValues, {_id:0, dealer_id:1, name:1}, sizePerPage, page,  {created_at:-1})
         if (requestParam.search_type == "dealer") {
           if (requestParam.search_key) {
-            comparisonColumnsAndValues = { ...comparisonColumnsAndValues, name: requestParam.search_key }
+            const searchTerm = requestParam.search_key;
+            const regex = new RegExp(searchTerm, "i");
+            comparisonColumnsAndValues = { ...comparisonColumnsAndValues, name: { $regex: regex } }
           }
         }
 
@@ -149,7 +151,7 @@ const dealerOrProductList = (requestParam) => {
             $limit: sizePerPage,
           },
         ];
-        
+
         let dealerList = await query.joinWithAnd(
           dbConstants.dbSchema.dealers,
           joinArr
@@ -157,11 +159,14 @@ const dealerOrProductList = (requestParam) => {
 
         dealerList = JSON.parse(JSON.stringify(dealerList));
         if (requestParam.search_type === "product") {
+          const dealerIds = _.pluck(dealerList, 'dealer_id');
           let matchData = { dealer_id: { $in: dealerIds } };
           if (requestParam.search_key) {
-            matchData = { ...matchData, name: requestParam.search_key }
+            const searchTerm = requestParam.search_key;
+            const regex = new RegExp(searchTerm, "i");
+            matchData = { ...matchData, name: { $regex: regex } }
           }
-          const dealerIds = _.pluck(dealerList, 'dealer_id');
+          console.log("matchData",matchData);
           const joinArr = [
             {
               $lookup: {

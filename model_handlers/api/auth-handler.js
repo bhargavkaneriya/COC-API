@@ -47,6 +47,8 @@ const signUp = (requestParam) => {
         if (requestParam.user_type === "customer") {
           user_id = await idGeneratorHandler.generateId("COCB");
           request_param = { ...request_param, customer_id: user_id };
+          const delivery_detail_id = await idGeneratorHandler.generateId("COCDD");
+          await query.insertSingle(dbConstants.dbSchema.delivery_detail, { delivery_detail_id, customer_id: user_id });
         } else if (requestParam.user_type === "dealer") {
           user_id = await idGeneratorHandler.generateId("COCD");
           request_param = { ...request_param, dealer_id: user_id };
@@ -62,9 +64,9 @@ const signUp = (requestParam) => {
           description: "send otp on your register phone no. check your message"
         }
         if (requestParam.user_type === "customer") {
-          insertData = { ...insertData, customer_id: user_id, type:"customer" }
+          insertData = { ...insertData, customer_id: user_id, type: "customer" }
         } else if (requestParam.user_type === "dealer") {
-          insertData = { ...insertData, dealer_id: user_id, type:"dealer" }
+          insertData = { ...insertData, dealer_id: user_id, type: "dealer" }
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         resolve({ otp });
@@ -197,10 +199,10 @@ const sendOTP = (requestParam) => {
           }
           if (requestParam.user_type === "customer") {
             const customerID = await query.selectWithAndOne(dbConstants.dbSchema.customers, { phone_number: requestParam.phone_number }, { _id: 0, customer_id: 1 });
-            insertData = { ...insertData, customer_id: customerID.customer_id, type:"customer" }
+            insertData = { ...insertData, customer_id: customerID.customer_id, type: "customer" }
           } else if (requestParam.user_type === "dealer") {
             const dealerID = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { phone_number: requestParam.phone_number }, { _id: 0, dealer_id: 1 });
-            insertData = { ...insertData, dealer_id: dealerID.dealer_id, type:"dealer" }
+            insertData = { ...insertData, dealer_id: dealerID.dealer_id, type: "dealer" }
           }
           await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         }

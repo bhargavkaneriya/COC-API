@@ -19,22 +19,9 @@ const updateDeliveryDetail = (requestParam) => {
                     );
                     return;
                 }
-                const delivery_detail_id = await idGeneratorHandler.generateId("COCDD");
-                let updateData = {
-                    delivery_detail_id: delivery_detail_id,
-                    customer_id: requestParam.customer_id,
-                    name: requestParam.name,
-                    email: requestParam.email,
-                    phone_number: requestParam.phone_number,
-                    address: requestParam.address,
-                    state: requestParam.state,
-                    city: requestParam.city,
-                    pincode: requestParam.pincode
-                }
-
-                await query.insertSingle(dbConstants.dbSchema.delivery_detail, updateData, { customer_id: requestParam.customer_id });
-                const response = await query.selectWithAndOne(dbConstants.dbSchema.delivery_detail, { delivery_detail_id}, {_id: 0})
-                resolve({ delivery_detail_id, message: "Detail updated successfully" });
+                const resData = await query.selectWithAndOne(dbConstants.dbSchema.delivery_detail, { customer_id: requestParam.customer_id }, { _id: 0, delivery_detail_id: 1 });
+                await query.updateSingle(dbConstants.dbSchema.delivery_detail, requestParam, { customer_id: requestParam.customer_id });
+                resolve({ delivery_detail_id: resData.delivery_detail_id, message: "Delivery detail updated successfully" });
                 return;
             } catch (error) {
                 reject(error);

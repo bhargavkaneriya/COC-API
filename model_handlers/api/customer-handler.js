@@ -17,7 +17,7 @@ const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAnd(dbConstants.dbSchema.products, { is_popular: true }, { _id: 0, product_id: 1, name: 1, code:1, image: 1 }, { created_at: -1 });
+        const response = await query.selectWithAnd(dbConstants.dbSchema.products, { is_popular: true }, { _id: 0, product_id: 1, name: 1, code: 1, image: 1 }, { created_at: -1 });
         resolve(response);
         return;
       } catch (error) {
@@ -100,7 +100,6 @@ const dealerOrProductList = (requestParam) => {
         }
 
         let totalRecords = await query.countRecord(model_name, {});
-        console.log("totalRecords", totalRecords);
 
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
         if (requestParam.page && requestParam.page > total_page) {
@@ -109,6 +108,11 @@ const dealerOrProductList = (requestParam) => {
         }
 
         // let dealerList = await query.selectWithAndSortPaginate(dbConstants.dbSchema.dealers, comparisonColumnsAndValues, {_id:0, dealer_id:1, name:1}, sizePerPage, page,  {created_at:-1})
+        if (requestParam.search_type == "dealer") {
+          if (requestParam.search_key) {
+            comparisonColumnsAndValues = { ...comparisonColumnsAndValues, name: requestParam.search_key }
+          }
+        }
 
         const joinArr = [
           {
@@ -145,6 +149,7 @@ const dealerOrProductList = (requestParam) => {
             $limit: sizePerPage,
           },
         ];
+        
         let dealerList = await query.joinWithAnd(
           dbConstants.dbSchema.dealers,
           joinArr
@@ -152,6 +157,10 @@ const dealerOrProductList = (requestParam) => {
 
         dealerList = JSON.parse(JSON.stringify(dealerList));
         if (requestParam.search_type === "product") {
+          let matchData = { dealer_id: { $in: dealerIds } };
+          if (requestParam.search_key) {
+            matchData = { ...matchData, name: requestParam.search_key }
+          }
           const dealerIds = _.pluck(dealerList, 'dealer_id');
           const joinArr = [
             {
@@ -169,7 +178,7 @@ const dealerOrProductList = (requestParam) => {
               },
             },
             {
-              $match: { dealer_id: { $in: dealerIds } },
+              $match: matchData,
             },
             {
               $project: {

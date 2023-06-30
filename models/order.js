@@ -115,6 +115,10 @@ const orderSchema = new Schema({
     type: String,
     default: "",
   },
+  razorpay_transaction_id: {
+    type: String,
+    default: "",
+  },
   created_at: {
     type: Date,
     default: Date.now,

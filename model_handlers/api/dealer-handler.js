@@ -483,12 +483,12 @@ const getBusinessProfile = (requestParam) => {
             pincode: 1,
             is_verified: 1,
             business_profile_status: 1,
-            company_pan:1,
-            company_registration:1,
-            company_payment_details:1,
-            dealer_agreement_with_COC:1,
-            gst_certificate:1,
-            aadhar_card_of_director:1
+            company_pan: 1,
+            company_registration: 1,
+            company_payment_details: 1,
+            dealer_agreement_with_COC: 1,
+            gst_certificate: 1,
+            aadhar_card_of_director: 1
           }
         );
         resolve(resData);
@@ -827,6 +827,7 @@ const transactionList = (requestParam) => {
               name: "$orderDetail.product_name",
               image: "$orderDetail.product_image",
               qty: "$orderDetail.product_qty",
+              total_price: "$orderDetail.total_price",
               grand_total: "$orderDetail.grand_total",
               transaction_date: "$created_at",
               delivery_status: "$orderDetail.delivery_status",

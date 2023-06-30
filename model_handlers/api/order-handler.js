@@ -99,7 +99,9 @@ const createOrder = (requestParam) => {
         }
 
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
-
+        if (requestParam.payment_method == "offline") {
+          await query.removeMultiple(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id });
+        }
         resolve({ order_id, message: "Order created successfully" });
         return;
       } catch (error) {

@@ -56,8 +56,7 @@ const updateQuotation = (requestParam) => {
           return;
         }
         await query.updateSingle(dbConstants.dbSchema.quotations, { total_price: Number(requestParam.total_price), grand_total: Number(requestParam.grand_total) }, { quotation_id: requestParam.quotation_id });
-        const response = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0 });
-        resolve({ response, message: "Quoatation updated successfully" });
+        resolve({ message: "Quoatation updated successfully" });
         return;
       } catch (error) {
         reject(error);

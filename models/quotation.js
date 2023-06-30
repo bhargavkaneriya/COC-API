@@ -50,6 +50,10 @@ const quotationSchema = new Schema({
         enum: ["active", "inactive"],
         default: "inactive"
     },
+    is_deleted: {
+        type: Boolean,
+        default: false
+    },
     created_at: {
         type: Date,
         default: Date.now

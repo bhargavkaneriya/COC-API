@@ -61,7 +61,7 @@ const createOrder = (requestParam) => {
 
         await query.insertSingle(dbConstants.dbSchema.orders, requestParam);
         const transactionID = await idGeneratorHandler.generateId("COCT");
-        let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method };
+        let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method, dealer_id: cartDetail.dealer_id };
         if (requestParam.payment_method == "online") {
           insertDataTxn = { ...insertDataTxn, razorpay_transaction_id: requestParam.razorpay_transaction_id }
         }
@@ -100,7 +100,7 @@ const createOrder = (requestParam) => {
 
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
         if (requestParam.payment_method == "offline") {
-          await query.removeMultiple(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id });
+          await query.updateSingle(dbConstants.dbSchema.quotations, { is_deleted: true }, { quotation_id: requestParam.quotation_id });
         }
         resolve({ order_id, message: "Order created successfully" });
         return;

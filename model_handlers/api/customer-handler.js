@@ -166,7 +166,7 @@ const dealerOrProductList = (requestParam) => {
             const regex = new RegExp(searchTerm, "i");
             matchData = { ...matchData, name: { $regex: regex } }
           }
-          console.log("matchData",matchData);
+          console.log("matchData", matchData);
           const joinArr = [
             {
               $lookup: {
@@ -358,6 +358,7 @@ const quotationList = (requestParam) => {
       try {
         let comparisonColumnsAndValues = {
           customer_id: requestParam.customer_id,
+          is_deleted: false
         }
         const joinArr = [
           {

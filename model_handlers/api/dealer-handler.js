@@ -1002,6 +1002,88 @@ const sendInvoice = (requestParam) => {
   });
 };
 
+const paymentReceiptList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, dealer_id: 1 })
+        if (!dealerData) {
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
+          return;
+        }
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id, payment_method: "offline" }
+        if (requestParam.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: { $regex: regex } }
+        }
+
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $project: {
+              _id: 0,
+              order_id: "$order_id",
+              customer_id: "$customer_id",
+              customer_name: "$customerDetail.name",
+              offline_payment_doc: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
+            },
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.orders,
+          joinArr
+        );
+        resolve({ response_data: response, total_page });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   productAdd,
   productList,
@@ -1019,5 +1101,6 @@ module.exports = {
   transactionList,
   dashboard,
   totalTopSalesProducts,
-  sendInvoice
+  sendInvoice,
+  paymentReceiptList
 };

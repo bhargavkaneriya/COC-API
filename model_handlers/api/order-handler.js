@@ -78,6 +78,7 @@ const createOrder = (requestParam) => {
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
+
         if (requestParam.payment_method === "offline") {
           const notification_id = await idGeneratorHandler.generateId("COCN");
           // const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1 });
@@ -92,7 +93,9 @@ const createOrder = (requestParam) => {
           }
           await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         }
+      
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
+        
         resolve({ order_id, message: "Order created successfully" });
         return;
       } catch (error) {

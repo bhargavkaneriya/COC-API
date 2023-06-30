@@ -866,8 +866,8 @@ const dashboard = (requestParam) => {
         const requestCustomers = await query.selectWithAnd(dbConstants.dbSchema.requests, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
         const quationCustomers = await query.selectWithAnd(dbConstants.dbSchema.quotations, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
         let total_customer = requestCustomers.concat(quationCustomers);
+        total_customer = _.uniq(_.pluck(total_customer, "customer_id"));
         total_customer = total_customer.length;
-
         const joinArr = [
           { $match: { dealer_id: requestParam.dealer_id } },
           {
@@ -885,7 +885,6 @@ const dashboard = (requestParam) => {
           }
         ];
         const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        console.log("total_sales", total_sales);
         const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
         resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales });
         return;

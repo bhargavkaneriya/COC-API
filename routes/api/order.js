@@ -11,7 +11,7 @@ const errors = errorHandler;
 
 router.post("/create-order", async (req, res) => {
   try {
-    if (!req.body.customer_id || !req.body.delivery_detail_id || !req.body.payment_method || !req.body.total_price || !req.body.grand_total || !req.body.razorpay_transaction_id || !(req.body.cart_id || req.body.quotation_id)) {
+    if (!req.body.customer_id || !req.body.delivery_detail_id || !req.body.payment_method || !req.body.total_price || !req.body.grand_total || !(req.body.cart_id || req.body.quotation_id)) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

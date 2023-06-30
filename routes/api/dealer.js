@@ -191,7 +191,7 @@ router.get("/get-profile", async (req, res) => {
   } catch (error) {
     console.log("error", error);
     try {
-      jsonResponse(res, responseCodes.Conflict, error, null);
+      jsonResponse(res, responseCodes.InternalServer, error, null);
       return;
     } catch (err) {
       jsonResponse(res, responseCodes.InternalServer, err, null);

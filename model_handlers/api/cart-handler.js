@@ -58,7 +58,7 @@ const addToCart = (requestParam) => {
                 }
 
                 if (requestParam.cart_type === "quotation") {
-                    offline_payment = true
+                    const offline_payment = true;
                     insertRecord = { ...insertRecord, offline_payment, quotation_id: requestParam.quotation_id }
                     await query.updateSingle(dbConstants.dbSchema.quotations, { delete_allowed: false }, { quotation_id: requestParam.quotation_id })
                 }

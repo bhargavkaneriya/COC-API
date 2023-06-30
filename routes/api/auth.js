@@ -135,4 +135,29 @@ router.post("/update-profile", async (req, res) => {
   }
 });
 
+router.post("/logout", async (req, res) => {
+  try {
+    if (!req.body.user_id || !req.body.user_type || !(req.body.name || req.body.password)) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await authHandler.updateProfile(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

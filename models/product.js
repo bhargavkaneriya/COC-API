@@ -9,6 +9,10 @@ const productSchema = new Schema({
     type: String,
     default: "",
   },
+  code: {
+    type: String,
+    default: "",
+  },
   image: {
     type: String,
     default: "",

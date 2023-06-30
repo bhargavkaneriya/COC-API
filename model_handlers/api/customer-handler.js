@@ -17,7 +17,7 @@ const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAnd(dbConstants.dbSchema.products, { is_popular: true }, { _id: 0, product_id: 1, name: 1, image: 1 }, { created_at: -1 });
+        const response = await query.selectWithAnd(dbConstants.dbSchema.products, { is_popular: true }, { _id: 0, product_id: 1, name: 1, code:1, image: 1 }, { created_at: -1 });
         resolve(response);
         return;
       } catch (error) {

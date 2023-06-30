@@ -483,6 +483,12 @@ const getBusinessProfile = (requestParam) => {
             pincode: 1,
             is_verified: 1,
             business_profile_status: 1,
+            company_pan:1,
+            company_registration:1,
+            company_payment_details:1,
+            dealer_agreement_with_COC:1,
+            gst_certificate:1,
+            aadhar_card_of_director:1
           }
         );
         resolve(resData);
@@ -529,6 +535,7 @@ const updateBusinessProfile = (requestParam) => {
             company_payment_details: requestParam.company_payment_details,
             dealer_agreement_with_COC: requestParam.dealer_agreement_with_COC,
             aadhar_card_of_director: requestParam.aadhar_card_of_director,
+            gst_certificate: requestParam.gst_certificate,
           },
           { dealer_id: requestParam.dealer_id }
         );
@@ -855,7 +862,6 @@ const dashboard = (requestParam) => {
     async function main() {
       try {
         const total_transaction = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
-
         const requestCustomers = await query.selectWithAnd(dbConstants.dbSchema.requests, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
         const quationCustomers = await query.selectWithAnd(dbConstants.dbSchema.quotations, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
         let total_customer = requestCustomers.concat(quationCustomers);
@@ -878,10 +884,9 @@ const dashboard = (requestParam) => {
           }
         ];
         const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-
+        console.log("total_sales", total_sales);
         const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
-
-        resolve({ total_transaction, total_customer, total_sales: total_sales[0].total, top_sales });
+        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales });
         return;
       } catch (error) {
         reject(error);
@@ -964,7 +969,7 @@ const sendInvoice = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const resData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { invoice_id: requestParam.invoice_id }, { _id: 0, customer_id: 1, dealer_id:1 });
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { invoice_id: requestParam.invoice_id }, { _id: 0, customer_id: 1, dealer_id: 1 });
         if (!resData) {
           reject(errors(labels.LBL_INVALID_INVOICE_ID["EN"], responseCodes.Invalid));
           return;

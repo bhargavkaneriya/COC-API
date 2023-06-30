@@ -25,6 +25,7 @@ const updateDeliveryDetail = (requestParam) => {
                     customer_id: requestParam.customer_id,
                     name: requestParam.name,
                     email: requestParam.email,
+                    phone_number: requestParam.phone_number,
                     address: requestParam.address,
                     state: requestParam.state,
                     city: requestParam.city,

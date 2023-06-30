@@ -44,6 +44,30 @@ const createQuotation = (requestParam) => {
   });
 };
 
+const updateQuotation = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const quaData = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0, quotation_id: 1 });
+        if (!quaData) {
+          reject(
+            errors(labels.LBL_INVALID_QUOTATION_ID["EN"], responseCodes.ResourceNotFound)
+          );
+          return;
+        }
+        await query.updateSingle(dbConstants.dbSchema.quotations, { total_price: Number(requestParam.total_price), grand_total: Number(requestParam.grand_total) }, { quotation_id: requestParam.quotation_id });
+        const response = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0 });
+        resolve({ response, message: "Quoatation updated successfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 const quotationList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
@@ -110,4 +134,5 @@ module.exports = {
   createQuotation,
   quotationList,
   quotationDetails,
+  updateQuotation
 };

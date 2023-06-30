@@ -57,18 +57,19 @@ const signUp = (requestParam) => {
         request_param = { ...request_param, otp }
         await query.insertSingle(modelName, request_param);
         //notification add
-        const notification_id = await idGeneratorHandler.generateId("COCN");
-        let insertData = {
-          notification_id,
-          title: "sign_up",
-          description: "send otp on your register phone no. check your message"
-        }
-        if (requestParam.user_type === "customer") {
-          insertData = { ...insertData, customer_id: user_id, type: "customer" }
-        } else if (requestParam.user_type === "dealer") {
-          insertData = { ...insertData, dealer_id: user_id, type: "dealer" }
-        }
-        await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        // const notification_id = await idGeneratorHandler.generateId("COCN");
+        // let insertData = {
+        //   notification_id,
+        //   title: "sign_up",
+        //   description: "send otp on your register phone no. check your message"
+        // }
+        // if (requestParam.user_type === "customer") {
+        //   insertData = { ...insertData, customer_id: user_id, type: "customer" }
+        // } else if (requestParam.user_type === "dealer") {
+        //   insertData = { ...insertData, dealer_id: user_id, type: "dealer" }
+        // }
+        // await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        //
         resolve({ otp });
         return;
       } catch (error) {
@@ -190,22 +191,22 @@ const sendOTP = (requestParam) => {
         );
 
         //notification add
-        if (requestParam.from_type === "forgot_password") {
-          const notification_id = await idGeneratorHandler.generateId("COCN");
-          let insertData = {
-            notification_id,
-            title: "Forgot Password",
-            description: "send otp on your register phone no. check your message"
-          }
-          if (requestParam.user_type === "customer") {
-            const customerID = await query.selectWithAndOne(dbConstants.dbSchema.customers, { phone_number: requestParam.phone_number }, { _id: 0, customer_id: 1 });
-            insertData = { ...insertData, customer_id: customerID.customer_id, type: "customer" }
-          } else if (requestParam.user_type === "dealer") {
-            const dealerID = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { phone_number: requestParam.phone_number }, { _id: 0, dealer_id: 1 });
-            insertData = { ...insertData, dealer_id: dealerID.dealer_id, type: "dealer" }
-          }
-          await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
-        }
+        // if (requestParam.from_type === "forgot_password") {
+        //   const notification_id = await idGeneratorHandler.generateId("COCN");
+        //   let insertData = {
+        //     notification_id,
+        //     title: "Forgot Password",
+        //     description: "send otp on your register phone no. check your message"
+        //   }
+        //   if (requestParam.user_type === "customer") {
+        //     const customerID = await query.selectWithAndOne(dbConstants.dbSchema.customers, { phone_number: requestParam.phone_number }, { _id: 0, customer_id: 1 });
+        //     insertData = { ...insertData, customer_id: customerID.customer_id, type: "customer" }
+        //   } else if (requestParam.user_type === "dealer") {
+        //     const dealerID = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { phone_number: requestParam.phone_number }, { _id: 0, dealer_id: 1 });
+        //     insertData = { ...insertData, dealer_id: dealerID.dealer_id, type: "dealer" }
+        //   }
+        //   await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+        // }
         //
         resolve({ otp });
         return;

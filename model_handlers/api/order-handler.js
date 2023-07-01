@@ -58,14 +58,16 @@ const createOrder = (requestParam) => {
         if (requestParam.payment_method == "offline") {
           requestParam = { ...requestParam, offline_payment_doc: requestParam.offline_payment_doc, quotation_id: cartDetail.quotation_id }
         }
-
         await query.insertSingle(dbConstants.dbSchema.orders, requestParam);
+
+        //
         const transactionID = await idGeneratorHandler.generateId("COCT");
         let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method, dealer_id: cartDetail.dealer_id };
         if (requestParam.payment_method == "online") {
           insertDataTxn = { ...insertDataTxn, razorpay_transaction_id: requestParam.razorpay_transaction_id }
         }
         await query.insertSingle(dbConstants.dbSchema.transactions, insertDataTxn);
+        //
 
         //notification add
         const notification_id = await idGeneratorHandler.generateId("COCN");
@@ -83,9 +85,9 @@ const createOrder = (requestParam) => {
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
 
+        //
         if (requestParam.payment_method === "offline") {
           const notification_id = await idGeneratorHandler.generateId("COCN");
-          // const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1 });
           const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
           let insertData = {
             notification_id,
@@ -97,11 +99,19 @@ const createOrder = (requestParam) => {
           }
           await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         }
+        //
 
+        //
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
         if (requestParam.payment_method == "offline") {
           await query.updateSingle(dbConstants.dbSchema.quotations, { is_deleted: true }, { quotation_id: requestParam.quotation_id });
         }
+        //
+
+        //start add invoice
+        const invoice_id = await idGeneratorHandler.generateId("COCI");
+        await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: requestParam.customer_id, dealer_id: cartDetail.dealer_id, order_id, invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing" });
+        //end invoice
         resolve({ order_id, message: "Order created successfully" });
         return;
       } catch (error) {

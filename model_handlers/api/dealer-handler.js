@@ -821,16 +821,16 @@ const transactionList = (requestParam) => {
               _id: 0,
               transaction_id: "$transaction_id",
               order_id: "$order_id",
-              cart_id: "$orderDetail.cart_id",
-              quotation_id: "$orderDetail.quotation_id",
-              customer_name: "$orderDetail.customer_name",
-              name: "$orderDetail.product_name",
-              image: "$orderDetail.product_image",
-              qty: "$orderDetail.product_qty",
-              total_price: "$orderDetail.total_price",
-              grand_total: "$orderDetail.grand_total",
+              cart_id: { $arrayElemAt: ["$orderDetail.cart_id", 0] },
+              quotation_id: { $arrayElemAt: ["$orderDetail.quotation_id", 0] },
+              customer_name: { $arrayElemAt: ["$orderDetail.customer_name", 0] },
+              name: { $arrayElemAt: ["$orderDetail.product_name", 0] },
+              image: { $arrayElemAt: ["$orderDetail.product_image", 0] },
+              qty: { $arrayElemAt: ["$orderDetail.product_qty", 0] },
+              total_price: { $arrayElemAt: ["$orderDetail.total_price", 0] },
+              grand_total: { $arrayElemAt: ["$orderDetail.grand_total", 0] },
+              delivery_status: { $arrayElemAt: ["$orderDetail.delivery_status", 0] },
               transaction_date: "$created_at",
-              delivery_status: "$orderDetail.delivery_status",
             },
           },
           {
@@ -850,6 +850,7 @@ const transactionList = (requestParam) => {
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

@@ -981,6 +981,7 @@ const sendInvoice = (requestParam) => {
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1 });
         //send invoice from here via email or whatsup
 
+        //
         const notification_id = await idGeneratorHandler.generateId("COCN");
         const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1 });
         // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
@@ -993,7 +994,8 @@ const sendInvoice = (requestParam) => {
           type: "customer"
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
-
+        //
+        
         resolve({ message: "Invoice send successfully" });
         return;
       } catch (error) {

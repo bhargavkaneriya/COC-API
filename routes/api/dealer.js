@@ -402,7 +402,7 @@ router.get("/total-top-sales-products", async (req, res) => {
 
 router.post("/send-invoice", async (req, res) => {
   try {
-    if (!req.body.invoice_id || !req.body.send_type || !(req.body.is_email || req.body.is_whatsapp)) {
+    if (!req.body.invoice_id || !(req.body.is_email || req.body.is_whatsapp)) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

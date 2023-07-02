@@ -640,7 +640,9 @@ const invoiceList = (requestParam) => {
 
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id }
         if (requestParam.search_key) {
-          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: requestParam.order_id }
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: { $regex: regex } }
         }
 
         const totalRecords = await query.countRecord(dbConstants.dbSchema.invoices, comparisonColumnsAndValues);
@@ -949,7 +951,7 @@ const totalTopSalesProducts = (requestParam) => {
               "grand_total": "$grand_total",
             },
           },
-           {
+          {
             $limit: totalRecords
           }
         ];

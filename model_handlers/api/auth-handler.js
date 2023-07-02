@@ -136,7 +136,7 @@ const signIn = (requestParam) => {
           dataToken = { ...dataToken, id: exist_user.dealer_id, user_type: "dealer" }
         }
         const access_token = generateToken(dataToken);
-        await query.updateSingle(modelName, { access_token }, { email: requestParam.email});
+        await query.updateSingle(modelName, { access_token }, { email: requestParam.email });
 
         exist_user = JSON.parse(JSON.stringify(exist_user))
         exist_user.access_token = access_token;
@@ -375,10 +375,47 @@ const updateProfile = (requestParam, req2) => {
   });
 };
 
+const logout = (requestParam, req2) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        let modelName = "";
+        let compareData = {};
+        if (requestParam.user_type === "customer") {
+          modelName = dbConstants.dbSchema.customers;
+          compareData = { customer_id: requestParam.user_id };
+        } else if (requestParam.user_type === "dealer") {
+          modelName = dbConstants.dbSchema.dealers;
+          compareData = { dealer_id: requestParam.user_id };
+        }
+        const exist_user = await query.selectWithAndOne(
+          modelName,
+          compareData,
+          { _id: 0, password: 0 }
+        );
+        //   return;
+        // }
+        if (!exist_user) {
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
+          return;
+        }
+        await query.updateSingle(modelName, { access_token: "" }, compareData);
+        resolve({ message: "Logout sucessfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   signUp,
   sendOTP,
   verifyOTP,
   signIn,
-  updateProfile
+  updateProfile,
+  logout
 };

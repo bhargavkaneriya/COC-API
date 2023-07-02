@@ -57,6 +57,8 @@ const createOrder = (requestParam) => {
         }
         if (requestParam.payment_method == "offline") {
           requestParam = { ...requestParam, offline_payment_doc: requestParam.offline_payment_doc, quotation_id: cartDetail.quotation_id }
+        } else {
+          requestParam = { ...requestParam, quotation_id: requestParam.quotation_id }
         }
         await query.insertSingle(dbConstants.dbSchema.orders, requestParam);
 

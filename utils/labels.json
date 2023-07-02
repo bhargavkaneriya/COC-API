@@ -128,6 +128,9 @@
   "LBL_INVALID_QUOTATION_ID": {
     "EN": "This quotation id does not exist"
   },
+  "LBL_EXIST_QUOTATION_ID": {
+    "EN": "You already order placed using this quoation. So, you can not update this."
+  },
   "LBL_INVALID_CART_ID": {
     "EN": "This cart id does not exist"
   },

@@ -55,6 +55,13 @@ const updateQuotation = (requestParam) => {
           );
           return;
         }
+        const existQID = await query.selectWithAndOne(dbConstants.dbSchema.orders, { quotation_id: requestParam.quotation_id }, { _id: 0, order_id: 1, quotation_id: 1 });
+        if (existQID) {
+          reject(
+            errors(labels.LBL_EXIST_QUOTATION_ID["EN"], responseCodes.Invalid)
+          );
+          return;
+        }
         await query.updateSingle(dbConstants.dbSchema.quotations, { total_price: Number(requestParam.total_price), grand_total: Number(requestParam.grand_total), product_price: Number(requestParam.product_price) }, { quotation_id: requestParam.quotation_id });
         // send invoice
         resolve({ message: "Quoatation updated successfully" });

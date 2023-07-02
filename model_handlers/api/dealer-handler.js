@@ -995,7 +995,7 @@ const sendInvoice = (requestParam) => {
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
-        
+
         resolve({ message: "Invoice send successfully" });
         return;
       } catch (error) {

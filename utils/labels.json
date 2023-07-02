@@ -53,6 +53,9 @@
   "LBL_JWT_TOKEN_EXPIRED": {
     "EN": "Auth token has been expired"
   },
+  "LBL_JWT_TOKEN_INVALID": {
+    "EN": "Auth token is invalid"
+  },
   "LBL_TEMPLATE_ALREADY_EXIST": {
     "EN": "This template already exist"
   },

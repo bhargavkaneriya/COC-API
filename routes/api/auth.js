@@ -9,6 +9,7 @@ const authHandler = require("../../model_handlers/api/auth-handler");
 const labels = require("./../../utils/labels.json");
 const { errorHandler, aes256Handler } = require("xlcoreservice");
 const errors = errorHandler;
+const { verifyToken } = require('../../utils/common');
 
 router.post("/sign-up", async (req, res) => {
   try {
@@ -110,7 +111,7 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-router.post("/update-profile", async (req, res) => {
+router.post("/update-profile", verifyToken, async (req, res) => {
   try {
     if (!req.body.user_id || !req.body.user_type || !(req.body.name || req.body.password)) {
       jsonResponse(
@@ -121,7 +122,7 @@ router.post("/update-profile", async (req, res) => {
       );
       return;
     }
-    const response = await authHandler.updateProfile(req.body);
+    const response = await authHandler.updateProfile(req.body, req.headers['authorization']);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

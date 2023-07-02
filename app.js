@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const coreServices = require("xlcoreservice");
 const logger = coreServices.loggerHandler;
 global.basedir = __dirname;
+const { verifyToken } = require('./utils/common');
 
 const mongoose = require("mongoose");
 mongoose
@@ -64,13 +65,13 @@ app.use("/backend/common", commonBackend);
 
 //api
 app.use("/api/auth", auth);
-app.use("/api/dealer", dealer);
-app.use("/api/quotation", quotation);
-app.use("/api/request", request);
-app.use("/api/customer", customer);
-app.use("/api/cart", cart);
-app.use("/api/order", order);
-app.use("/api/delivery-detail", deliveryDetail);
+app.use("/api/dealer", verifyToken, dealer);
+app.use("/api/quotation", verifyToken, quotation);
+app.use("/api/request", verifyToken, request);
+app.use("/api/customer", verifyToken, customer);
+app.use("/api/cart", verifyToken, cart);
+app.use("/api/order", verifyToken, order);
+app.use("/api/delivery-detail", verifyToken, deliveryDetail);
 
 app.use(upload());
 

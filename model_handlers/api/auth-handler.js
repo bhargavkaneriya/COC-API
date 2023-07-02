@@ -14,6 +14,8 @@ const {
   idGeneratorHandler,
 } = require("xlcoreservice");
 const errors = errorHandler;
+const { generateToken } = require('../../utils/common');
+const secretKey = process.env.JWT_SECRET_KEY;
 
 const signUp = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -125,7 +127,20 @@ const signIn = (requestParam) => {
           );
           return;
         }
+
+        //
+        let dataToken = {};
+        if (requestParam.user_type === "customer") {
+          dataToken = { ...dataToken, id: exist_user.customer_id, user_type: "customer" }
+        } else if (requestParam.user_type === "dealer") {
+          dataToken = { ...dataToken, id: exist_user.dealer_id, user_type: "dealer" }
+        }
+        const access_token = generateToken(dataToken);
+        await query.updateSingle(modelName, { access_token }, { email: requestParam.email});
+
         exist_user = JSON.parse(JSON.stringify(exist_user))
+        exist_user.access_token = access_token;
+
         delete exist_user.password;
         delete exist_user.otp;
         delete exist_user.products;
@@ -245,7 +260,25 @@ const verifyOTP = (requestParam) => {
           const otp = await idGeneratorHandler.generateString(4, true, false, false);
           await query.updateSingle(modelName, { otp: otp, status: "active" }, { phone_number: requestParam.phone_number });
           exist_user.status = "active"
+
+          if (!requestParam.from_type) {
+            let dataToken = {};
+            if (requestParam.user_type === "customer") {
+              modelName = dbConstants.dbSchema.customers;
+              dataToken = { ...dataToken, id: exist_user.customer_id, user_type: "customer" }
+            } else if (requestParam.user_type === "dealer") {
+              modelName = dbConstants.dbSchema.dealers;
+              dataToken = { ...dataToken, id: exist_user.dealer_id, user_type: "dealer" }
+            }
+            const access_token = generateToken(dataToken);
+            await query.updateSingle(modelName, { access_token }, { phone_number: requestParam.phone_number });
+            exist_user.access_token = access_token
+          }
+
           exist_user = JSON.parse(JSON.stringify(exist_user))
+          if (requestParam.from_type == "forgot_password") {
+            delete exist_user.access_token;
+          }
           delete exist_user.otp;
           if (requestParam.user_type === "dealer") {
             delete exist_user.is_verified;
@@ -276,7 +309,7 @@ const verifyOTP = (requestParam) => {
   });
 };
 
-const updateProfile = (requestParam) => {
+const updateProfile = (requestParam, req2) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -294,6 +327,11 @@ const updateProfile = (requestParam) => {
           compareData,
           { _id: 0, password: 0 }
         );
+        // const accessToken = req2.split(' ')[1];
+        // if (accessToken !== exist_user.access_token) {
+        //   reject(errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
+        //   return;
+        // }
         if (!exist_user) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;
@@ -311,6 +349,7 @@ const updateProfile = (requestParam) => {
         await query.updateSingle(modelName, columnToUpdate, compareData);
         let response = await query.selectWithAndOne(modelName, compareData, { _id: 0, password: 0, otp: 0, products: 0, role_id: 0 })
         response = JSON.parse(JSON.stringify(response))
+        delete response.access_token
         if (requestParam.user_type === "dealer") {
           delete response.is_verified;
           delete response.business_name;

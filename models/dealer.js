@@ -114,7 +114,11 @@ const dealerSchema = new Schema({
   aadhar_card_of_director: {
     type: String,
     default: "",
-  }
+  },
+  access_token: {
+    type: String,
+    default: "",
+  },
 });
 
 const Dealer = model("Dealer", dealerSchema);

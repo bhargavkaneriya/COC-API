@@ -79,6 +79,10 @@ const customerSchema = new Schema({
     type: String,
     default: "",
   },
+  access_token: {
+    type: String,
+    default: "",
+  },
 });
 
 const Customer = model("Customer", customerSchema);

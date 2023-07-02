@@ -90,7 +90,7 @@ const requestDetails = (requestParam) => {
         reqDetails.dealer_product_id = dealerProduct.dealer_product_id;
         reqDetails.discount_percentage = dealerProduct.discount_percentage;
         reqDetails.discount_amount = dealerProduct.discount_amount;
-        reqDetails.price = dealerProduct.price;
+        reqDetails.product_price = dealerProduct.price;
         reqDetails.product_name = productDetails.name;
         reqDetails.product_image = productDetails.image;
         reqDetails.customer_name = customerDetails.name;

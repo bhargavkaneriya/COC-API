@@ -203,6 +203,9 @@ const customerList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               customer_id: 1,
@@ -214,9 +217,6 @@ const customerList = (requestParam) => {
               gst_no: 1,
               pan_no: 1
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -293,6 +293,9 @@ const requestList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               request_id: "$request_id",
@@ -300,9 +303,6 @@ const requestList = (requestParam) => {
               request_date: "$created_at",
               customer_name: "$customerDetail.name",
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -377,6 +377,9 @@ const quotationList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               quotation_id: "$quotation_id",
@@ -384,9 +387,6 @@ const quotationList = (requestParam) => {
               quotation_date: "$created_at",
               customer_name: "$customerDetail.name",
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -590,6 +590,9 @@ const notificationList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               notification_id: "$notification_id",
@@ -602,9 +605,6 @@ const notificationList = (requestParam) => {
               notification_date: "$created_at",
               customer_name: "$customerDetail.name"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -670,6 +670,9 @@ const invoiceList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               invoice_id: "$invoice_id",
@@ -678,9 +681,6 @@ const invoiceList = (requestParam) => {
               customer_name: "$customerDetail.name",
               invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -817,6 +817,9 @@ const transactionList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               transaction_id: "$transaction_id",
@@ -832,9 +835,6 @@ const transactionList = (requestParam) => {
               delivery_status: { $arrayElemAt: ["$orderDetail.delivery_status", 0] },
               transaction_date: "$created_at",
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -937,6 +937,9 @@ const totalTopSalesProducts = (requestParam) => {
             },
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               "product_id": "$product_id",
@@ -946,9 +949,7 @@ const totalTopSalesProducts = (requestParam) => {
               "grand_total": "$grand_total",
             },
           },
-          {
-            $sort: { created_at: -1 },
-          }, {
+           {
             $limit: totalRecords
           }
         ];
@@ -1051,6 +1052,9 @@ const paymentReceiptList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               order_id: "$order_id",
@@ -1058,9 +1062,6 @@ const paymentReceiptList = (requestParam) => {
               customer_name: "$customerDetail.name",
               offline_payment_doc: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,

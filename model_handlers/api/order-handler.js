@@ -176,6 +176,9 @@ const orderList = (requestParam) => {
             $match: { customer_id: requestParam.customer_id, payment_method: requestParam.order_type },
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               order_id: "$order_id",
@@ -195,9 +198,6 @@ const orderList = (requestParam) => {
               delivery_status: "$delivery_status",
               order_created: "$created_at",
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,

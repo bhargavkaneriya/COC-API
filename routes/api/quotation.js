@@ -36,7 +36,7 @@ router.post("/create", async (req, res) => {
 
 router.post("/update", async (req, res) => {
   try {
-    if (!req.body.quotation_id || !req.body.total_price || !req.body.grand_total || !req.body.product_price) {
+    if (!req.body.quotation_id || !req.body.total_price || !req.body.grand_total || !req.body.product_price || !(req.body.is_email || req.body.is_whatsapp)) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

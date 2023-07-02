@@ -135,14 +135,14 @@ const dealerOrProductList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               dealer_id: "$dealer_id",
               dealer_name: "$name"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -186,6 +186,9 @@ const dealerOrProductList = (requestParam) => {
               $match: matchData,
             },
             {
+              $sort: { created_at: -1 },
+            },
+            {
               $project: {
                 _id: 0,
                 dealer_product_id: "$dealer_product_id",
@@ -199,9 +202,6 @@ const dealerOrProductList = (requestParam) => {
                 price: "$price",
                 dealer_name: "$dealerDetail.name"
               },
-            },
-            {
-              $sort: { created_at: -1 },
             },
             {
               $skip: page * sizePerPage,
@@ -269,6 +269,9 @@ const dealerProductList = (requestParam) => {
             $match: { dealer_id: requestParam.dealer_id },
           },
           {
+            $sort: sortName,
+          },
+          {
             $project: {
               _id: 0,
               dealer_product_id: 1,
@@ -284,9 +287,6 @@ const dealerProductList = (requestParam) => {
               dealer_name: "$dealerDetail.name"
             },
           },
-          {
-            $sort: sortName,
-          }
         ];
         const response = await query.joinWithAnd(
           dbConstants.dbSchema.dealer_product,
@@ -393,6 +393,9 @@ const quotationList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               quotation_id: "$quotation_id",
@@ -412,9 +415,6 @@ const quotationList = (requestParam) => {
               delete_allowed: "$delete_allowed"
             },
           },
-          {
-            $sort: { created_at: -1 },
-          }
         ];
         let response = await query.joinWithAnd(
           dbConstants.dbSchema.quotations,
@@ -574,6 +574,9 @@ const notificationList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               notification_id: "$notification_id",
@@ -586,9 +589,6 @@ const notificationList = (requestParam) => {
               notification_date: "$created_at",
               dealer_name: "$dealerDetail.name"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,
@@ -654,6 +654,9 @@ const invoiceList = (requestParam) => {
             $match: comparisonColumnsAndValues,
           },
           {
+            $sort: { created_at: -1 },
+          },
+          {
             $project: {
               _id: 0,
               invoice_id: "$invoice_id",
@@ -662,9 +665,6 @@ const invoiceList = (requestParam) => {
               dealer_name: "$dealerDetail.name",
               invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
             },
-          },
-          {
-            $sort: { created_at: -1 },
           },
           {
             $skip: page * sizePerPage,

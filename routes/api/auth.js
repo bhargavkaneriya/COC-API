@@ -137,7 +137,7 @@ router.post("/update-profile", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/logout", async (req, res) => {
+router.post("/logout", verifyToken, async (req, res) => {
   try {
     if (!req.body.user_id || !req.body.user_type) {
       jsonResponse(

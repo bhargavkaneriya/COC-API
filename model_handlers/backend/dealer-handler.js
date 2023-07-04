@@ -47,7 +47,11 @@ const list = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAnd(dbConstants.dbSchema.dealers, {}, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
+        let compareData = {};
+        if (requestParam.status) {
+          compareData = { ...compareData, status: requestParam.status }
+        }
+        const response = await query.selectWithAnd(dbConstants.dbSchema.dealers, compareData, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
         resolve(response);
         return;
       } catch (error) {

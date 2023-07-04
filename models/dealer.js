@@ -31,7 +31,7 @@ const dealerSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ["active", "inactive", "pending"],
+    enum: ["active", "inactive", "pending", "approved", "rejected"],
     default: "inactive",
   },
   device_id: {
@@ -63,7 +63,7 @@ const dealerSchema = new Schema({
     type: Array,
     default: [],
   },
-  is_verified:{
+  is_verified: {
     type: Boolean,
     default: false
   },
@@ -87,7 +87,7 @@ const dealerSchema = new Schema({
     type: String,
     default: "",
   },
-  business_profile_status:{
+  business_profile_status: {
     type: String,
     default: "not_added",
   },
@@ -119,6 +119,10 @@ const dealerSchema = new Schema({
     type: String,
     default: "",
   },
+  rejected_reason: {
+    type: String,
+    default: "",
+  }
 });
 
 const Dealer = model("Dealer", dealerSchema);

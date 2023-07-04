@@ -119,6 +119,10 @@ const orderSchema = new Schema({
     type: String,
     default: "",
   },
+  rejected_reason: {
+    type: String,
+    default: "",
+  },
   created_at: {
     type: Date,
     default: Date.now,

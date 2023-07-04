@@ -64,7 +64,7 @@ const createOrder = (requestParam) => {
 
         //
         const transactionID = await idGeneratorHandler.generateId("COCT");
-        let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method, dealer_id: cartDetail.dealer_id };
+        let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method, dealer_id: cartDetail.dealer_id, customer_id: cartDetail.customer_id };
         if (requestParam.payment_method == "online") {
           insertDataTxn = { ...insertDataTxn, razorpay_transaction_id: requestParam.razorpay_transaction_id }
         }

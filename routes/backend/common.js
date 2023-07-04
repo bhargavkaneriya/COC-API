@@ -34,4 +34,20 @@ router.post("/verify-payment-document", async (req, res) => {
   }
 });
 
+router.get("/order-list", async (req, res) => {
+  try {
+    const response = await commonHandler.orderList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

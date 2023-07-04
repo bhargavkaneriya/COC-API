@@ -30,6 +30,8 @@ mongoose
 //backend
 const productBackend = require("./routes/backend/product");
 const commonBackend = require("./routes/backend/common");
+const dealerBackend = require("./routes/backend/dealer");
+const customerBackend = require("./routes/backend/customer");
 
 //api
 const auth = require("./routes/api/auth");
@@ -61,6 +63,8 @@ app.use("/", routes);
 //backend
 app.use("/backend/product", productBackend);
 app.use("/backend/common", commonBackend);
+app.use("/backend/dealer", dealerBackend);
+app.use("/backend/customer", customerBackend);
 
 
 //api
@@ -72,6 +76,7 @@ app.use("/api/customer", verifyToken, customer);
 app.use("/api/cart", verifyToken, cart);
 app.use("/api/order", verifyToken, order);
 app.use("/api/delivery-detail", verifyToken, deliveryDetail);
+
 
 app.use(upload());
 

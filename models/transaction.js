@@ -9,6 +9,10 @@ const transactionSchema = new Schema({
     type: String,
     default: "",
   },
+  customer_id: {
+    type: String,
+    default: "",
+  },
   order_id: {
     type: String,
     default: "",

@@ -192,10 +192,9 @@ const customerList = (requestParam) => {
         }
 
         if (requestParam.search_key) {
-          comparisonColumnsAndValues = {
-            ...comparisonColumnsAndValues,
-            name: requestParam.search_key,
-          };
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, name: { $regex: regex } };
         }
 
         const joinArr = [

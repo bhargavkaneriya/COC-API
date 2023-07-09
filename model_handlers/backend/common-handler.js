@@ -140,7 +140,6 @@ const orderList = (requestParam) => {
   });
 };
 
-
 const verificationRequestList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
@@ -304,6 +303,224 @@ const verifyDealerDetail = (requestParam) => {
   });
 };
 
+const abandonedCartList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.carts, {});
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "dealer_product",
+              localField: "dealer_product_id",
+              foreignField: "dealer_product_id",
+              as: "dealerProductDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerProductDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {},
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $project: {
+              _id: 0,
+              cart_id: "$cart_id",
+              customer_id: "$customer_id",
+              customer_name: "$customerDetail.name",
+              dealer_id: "$dealer_id",
+              dealer_name: "$dealerDetail.name",
+              qty: "$qty",
+              name: "$dealerProductDetail.name",
+              discount_percentage: "$dealerProductDetail.discount_percentage",
+              discount_amount: "$dealerProductDetail.discount_amount",
+              price: "$dealerProductDetail.price"
+            },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.carts,
+          joinArr
+        );
+        resolve({ response_data: response, total_page });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const quotationWaitingList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const requestList = await query.selectWithAnd(dbConstants.dbSchema.requests, {}, { _id: 0, request_id: 1 });
+        const quotationList = await query.selectWithAnd(dbConstants.dbSchema.quotations, {}, { _id: 0, quotation_id: 1, request_id: 1 });
+        let reqArr = [];
+        requestList.filter((element) => {
+          const even = _.find(quotationList, function (num) { return num.request_id !== element.request_id; });
+          if (even) {
+            reqArr.push(element.request_id)
+          }
+        });
+
+
+
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.requests, { request_id: { $in: reqArr } });
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        const joinArr = [
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "products",
+              localField: "product_id",
+              foreignField: "product_id",
+              as: "productDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$productDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: { request_id: { $in: reqArr } },
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $project: {
+              _id: 0,
+              request_id: "$request_id",
+              customer_id: "$customer_id",
+              customer_name: "$customerDetail.name",
+              dealer_id: "$dealer_id",
+              dealer_name: "$dealerDetail.name",
+              qty: "$qty",
+              product_name: "$productDetail.name",
+              request_date: "$created_at"
+            },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.requests,
+          joinArr
+        );
+        resolve({ response_data: response, total_page });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
 
 module.exports = {
   verifyPaymentDocument,
@@ -311,5 +528,7 @@ module.exports = {
   verificationRequestList,
   verificationRequestDetail,
   dealerDetail,
-  verifyDealerDetail
+  verifyDealerDetail,
+  abandonedCartList,
+  quotationWaitingList
 };

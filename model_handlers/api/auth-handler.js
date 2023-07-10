@@ -15,17 +15,17 @@ const {
   idGeneratorHandler,
 } = require("xlcoreservice");
 const errors = errorHandler;
-const { generateToken, sendAndroidPush } = require('../../utils/common');
+const { generateToken } = require('../../utils/common');
 const secretKey = process.env.JWT_SECRET_KEY;
-const twilio = require("twilio");
-const client = new twilio(config.twilio.accountSid, config.twilio.authToken);
-const nodemailer = require('nodemailer');
-const fs = require('fs');
-const PDFDocument = require('pdfkit');
+// const twilio = require("twilio");
+// const client = new twilio(config.twilio.accountSid, config.twilio.authToken);
+// const nodemailer = require('nodemailer');
+// const fs = require('fs');
+// const PDFDocument = require('pdfkit');
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+// const accountSid = process.env.TWILIO_ACCOUNT_SID;
+// const authToken = process.env.TWILIO_AUTH_TOKEN;
+// const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
 const signUp = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -71,16 +71,16 @@ const signUp = (requestParam) => {
 
 
         //twilio send otp start
-        client.messages
-          .create({
-            body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
-            to: `+91${requestParam.phone_number}`, // Text this number
-            from: config.twilio.mobileNo // From a valid Twilio number
-          })
-          .then(message => console.log(message.sid))
-          .catch(error => {
-            console.log(error);
-          });
+        // client.messages
+        //   .create({
+        //     body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
+        //     to: `+91${requestParam.phone_number}`, // Text this number
+        //     from: config.twilio.mobileNo // From a valid Twilio number
+        //   })
+        //   .then(message => console.log(message.sid))
+        //   .catch(error => {
+        //     console.log(error);
+        //   });
         //twilio send otp end
 
         //notification add
@@ -350,16 +350,16 @@ const sendOTP = (requestParam) => {
         //
 
         //twilio send otp start
-        client.messages
-          .create({
-            body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
-            to: `+91${requestParam.phone_number}`, // Text this number
-            from: config.twilio.mobileNo // From a valid Twilio number
-          })
-          .then(message => console.log(message.sid))
-          .catch(error => {
-            console.log(error);
-          });
+        // client.messages
+        //   .create({
+        //     body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
+        //     to: `+91${requestParam.phone_number}`, // Text this number
+        //     from: config.twilio.mobileNo // From a valid Twilio number
+        //   })
+        //   .then(message => console.log(message.sid))
+        //   .catch(error => {
+        //     console.log(error);
+        //   });
         //twilio send otp end
 
         resolve({ otp });

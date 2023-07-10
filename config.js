@@ -10,9 +10,9 @@ const requiredParams = [
   "PORT_PROJECT_NAME",
   //   "AWS_MONGO_DUMP_URL",
   //   "AWS_MONGO_RESTORE_URL",
-  "TWILIO_ACCOUNT_SID",
-  "TWILIO_AUTH_TOKEN",
-  "TWILIO_MOBILE_NO",
+  // "TWILIO_ACCOUNT_SID",
+  // "TWILIO_AUTH_TOKEN",
+  // "TWILIO_MOBILE_NO",
 ];
 
 for (let i = 0; i < requiredParams.length; i++) {
@@ -31,10 +31,10 @@ module.exports = {
   //     mongoDumpUrl: process.env.AWS_MONGO_DUMP_URL,
   //     mongoRestoreUrl: process.env.AWS_MONGO_RESTORE_URL,
   //   },
-  twilio: {
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    authToken: process.env.TWILIO_AUTH_TOKEN,
-    mobileNo: process.env.TWILIO_MOBILE_NO
-  },
-  fcm_push_server_key: process.env.FCM_PUSH_SERVER_KEY
+  // twilio: {
+  //   accountSid: process.env.TWILIO_ACCOUNT_SID,
+  //   authToken: process.env.TWILIO_AUTH_TOKEN,
+  //   mobileNo: process.env.TWILIO_MOBILE_NO
+  // },
+  // fcm_push_server_key: process.env.FCM_PUSH_SERVER_KEY
 };

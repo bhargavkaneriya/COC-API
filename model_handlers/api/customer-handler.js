@@ -12,7 +12,7 @@ const errors = errorHandler;
 const request = require('request');
 const apiKey = process.env.GOOGLE_API_KEY;
 const { forEach } = require("p-iteration");
-const axios = require('axios');
+// const axios = require('axios');
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -30,38 +30,38 @@ const popularProductList = (requestParam) => {
   });
 };
 
-const getLatLngFromPincode = async (pincode) => {
-  try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
-    const response = await axios.get(url);
-    if (response.status === 200) {
-      const data = response.data;
-      console.log("response.data", response.data);
-      const lat = data.results[0].geometry.location.lat;
-      const lng = data.results[0].geometry.location.lng;
-      console.log("Latitude:", lat);
-      console.log("Longitude:", lng);
-      return { lat, lng };
-    } else {
-      throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
-    }
-  } catch (error) {
-    console.log("Error:", error.message);
-  }
-};
+// const getLatLngFromPincode = async (pincode) => {
+//   try {
+//     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
+//     const response = await axios.get(url);
+//     if (response.status === 200) {
+//       const data = response.data;
+//       console.log("response.data", response.data);
+//       const lat = data.results[0].geometry.location.lat;
+//       const lng = data.results[0].geometry.location.lng;
+//       console.log("Latitude:", lat);
+//       console.log("Longitude:", lng);
+//       return { lat, lng };
+//     } else {
+//       throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
+//     }
+//   } catch (error) {
+//     console.log("Error:", error.message);
+//   }
+// };
 
-const getPincodesAroundLatLng = async (lat, lng, radius) => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
-  const response = await axios.get(url);
-  if (response.statusCode === 200) {
-    const data = await response.json();
-    const pincodes = data.results.map(result => result.formatted_address);
-    console.log("pincodes 34", pincodes);
-    return pincodes;
-  } else {
-    throw new Error(`Error getting pincodes around lat ${lat} and lng ${lng}`);
-  }
-};
+// const getPincodesAroundLatLng = async (lat, lng, radius) => {
+//   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
+//   const response = await axios.get(url);
+//   if (response.statusCode === 200) {
+//     const data = await response.json();
+//     const pincodes = data.results.map(result => result.formatted_address);
+//     console.log("pincodes 34", pincodes);
+//     return pincodes;
+//   } else {
+//     throw new Error(`Error getting pincodes around lat ${lat} and lng ${lng}`);
+//   }
+// };
 
 const dealerOrProductList = (requestParam) => {
   return new Promise((resolve, reject) => {

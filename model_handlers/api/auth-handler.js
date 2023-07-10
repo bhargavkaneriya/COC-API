@@ -171,7 +171,7 @@ const signIn = (requestParam) => {
         delete exist_user.products;
         delete exist_user.role_id;
         if (requestParam.user_type === "dealer") {
-          delete exist_user.is_verified;
+          // delete exist_user.is_verified;
           delete exist_user.business_name;
           delete exist_user.business_address;
           delete exist_user.state;
@@ -420,7 +420,7 @@ const verifyOTP = (requestParam) => {
           }
           delete exist_user.otp;
           if (requestParam.user_type === "dealer") {
-            delete exist_user.is_verified;
+            // delete exist_user.is_verified;
             delete exist_user.business_name;
             delete exist_user.business_address;
             delete exist_user.state;
@@ -488,9 +488,9 @@ const updateProfile = (requestParam, req2) => {
         await query.updateSingle(modelName, columnToUpdate, compareData);
         let response = await query.selectWithAndOne(modelName, compareData, { _id: 0, password: 0, otp: 0, products: 0, role_id: 0 })
         response = JSON.parse(JSON.stringify(response))
-        delete response.access_token
+        // delete response.access_token
         if (requestParam.user_type === "dealer") {
-          delete response.is_verified;
+          // delete response.is_verified;
           delete response.business_name;
           delete response.business_address;
           delete response.state;

@@ -59,7 +59,7 @@ router.get("/product-list", async (req, res) => {
   }
 });
 
-router.delete("/product-delete", async (req, res) => {
+router.post("/product-delete", async (req, res) => {
   try {
     if (!req.body.dealer_product_id) {
       jsonResponse(

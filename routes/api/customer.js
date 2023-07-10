@@ -200,7 +200,7 @@ router.post("/update-pincode", async (req, res) => {
   }
 });
 
-router.delete("/delete-quotation", async (req, res) => {
+router.post("/delete-quotation", async (req, res) => {
   try {
     if (!req.body.quotation_id) {
       jsonResponse(

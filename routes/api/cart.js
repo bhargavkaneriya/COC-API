@@ -59,7 +59,7 @@ router.get("/cart-list", async (req, res) => {
   }
 });
 
-router.delete("/delete-cart", async (req, res) => {
+router.post("/delete-cart", async (req, res) => {
   try {
     if (!req.body.cart_id) {
       jsonResponse(

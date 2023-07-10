@@ -73,7 +73,10 @@ const transactionList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id, type: requestParam.type }
+        let comparisonColumnsAndValues = { type: requestParam.type };
+        if (requestParam.dealer_id) {
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, dealer_id: requestParam.dealer_id }
+        }
         const totalRecords = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
 

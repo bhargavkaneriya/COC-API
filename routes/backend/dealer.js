@@ -43,7 +43,7 @@ router.get("/list", async (req, res) => {
 
 router.get("/transaction-list", async (req, res) => {
   try {
-    if (!req.query.dealer_id || !req.query.type) {
+    if (!req.query.type) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

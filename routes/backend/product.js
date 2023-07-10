@@ -48,6 +48,7 @@ router.get("/list", async (req, res) => {
     const response = await productHandler.list(req.body);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
+    console.log("error", error);
     try {
       jsonResponse(res, responseCodes.Conflict, error, null);
       return;

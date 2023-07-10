@@ -40,7 +40,7 @@ const list = (requestParam) => {
     async function main() {
       try {
         const resData = await query.selectWithAnd(
-          dbSchema.dbConstants.product,
+          dbConstants.dbSchema.products,
           {
             status: "active",
           }
@@ -48,6 +48,7 @@ const list = (requestParam) => {
         resolve(resData);
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

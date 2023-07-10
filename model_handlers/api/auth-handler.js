@@ -7,6 +7,7 @@ const labels = require("./../../utils/labels.json");
 require("./../../models/user");
 require("./../../models/customer");
 require("./../../models/dealer");
+require("./../../models/setting");
 const _ = require("underscore");
 const {
   errorHandler,
@@ -14,8 +15,17 @@ const {
   idGeneratorHandler,
 } = require("xlcoreservice");
 const errors = errorHandler;
-const { generateToken } = require('../../utils/common');
+const { generateToken, sendAndroidPush } = require('../../utils/common');
 const secretKey = process.env.JWT_SECRET_KEY;
+const twilio = require("twilio");
+const client = new twilio(config.twilio.accountSid, config.twilio.authToken);
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
 const signUp = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -58,6 +68,21 @@ const signUp = (requestParam) => {
         const otp = await idGeneratorHandler.generateString(4, true, false, false);
         request_param = { ...request_param, otp }
         await query.insertSingle(modelName, request_param);
+
+
+        //twilio send otp start
+        client.messages
+          .create({
+            body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
+            to: `+91${requestParam.phone_number}`, // Text this number
+            from: config.twilio.mobileNo // From a valid Twilio number
+          })
+          .then(message => console.log(message.sid))
+          .catch(error => {
+            console.log(error);
+          });
+        //twilio send otp end
+
         //notification add
         // const notification_id = await idGeneratorHandler.generateId("COCN");
         // let insertData = {
@@ -159,9 +184,109 @@ const signIn = (requestParam) => {
           delete exist_user.dealer_agreement_with_COC;
           delete exist_user.aadhar_card_of_director;
         }
+
+        //send email with pdf start
+        // function generatePDF() {
+        //   const doc = new PDFDocument();
+        //   doc.pipe(fs.createWriteStream('sample.pdf'));
+        //   doc.fontSize(18).text('Hello, this is a sample PDF!', 100, 100);
+        //   doc.end();
+        // }
+
+        // generatePDF();
+        // const transporter = await nodemailer.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     user: 'kevalpatelce@gmail.com',
+        //     pass: 'vfgyqkdscltfsxqz'
+        //   }
+        // });
+        // const message = {
+        //   from: 'kevalpatelce@gmail.com',
+        //   to: 'jayendra99790@gmail.com',
+        //   subject: 'Sending a PDF via email',
+        //   text: 'Please find attached PDF file.',
+        //   attachments: [
+        //     {
+        //       filename: 'sample.pdf',
+        //       path: 'sample.pdf',
+        //       contentType: 'application/pdf'
+        //     }
+        //   ]
+        // };
+        // transporter.sendMail(message, (error, info) => {
+        //   if (error) {
+        //     console.log('Error occurred while sending email:', error.message);
+        //   } else {
+        //     console.log('Email sent successfully!', info.response);
+        //   }
+        // });
+        //send email with pdf end
+
+        //start send PDF via WhatsApp
+        // const pdfFile = 'sample.pdf';
+        // const toPhoneNumber = 'RECIPIENT_PHONE_NUMBER'; // Replace with recipient's phone number
+        // const client = twilio(accountSid, authToken);
+        // const pdfData = fs.readFileSync(pdfFile, { encoding: 'base64' });
+        // client.messages
+        //   .create({
+        //     from: `whatsapp:${fromPhoneNumber}`,
+        //     body: 'PDF file',
+        //     mediaUrl: `data:application/pdf;base64,${pdfData}`,
+        //     to: `whatsapp:${toPhoneNumber}`
+        //   })
+        //   .then((message) => {
+        //     console.log('PDF sent successfully! Message SID:', message.sid);
+        //   })
+        //   .catch((error) => {
+        //     console.error('Error:', error.message);
+        //   });
+        //end send pdf via whatsApp
+
+
+        //start notification
+        // const res123 = await sendAndroidPush();
+        //end notification
+
+        //start upload
+        // const AWS = require('aws-sdk');
+
+        // AWS.config.update({
+        //   accessKeyId: 'YOUR_ACCESS_KEY_ID',
+        //   secretAccessKey: 'YOUR_SECRET_ACCESS_KEY'
+        // });
+
+        // const s3 = new AWS.S3();
+
+        // function uploadImageToS3(bucketName, fileName, imagePath) {
+        //   const fileContent = fs.readFileSync(imagePath);
+
+        //   const params = {
+        //     Bucket: bucketName,
+        //     Key: fileName,
+        //     Body: fileContent
+        //   };
+
+        //   s3.upload(params, function (err, data) {
+        //     if (err) {
+        //       console.error('Error uploading image:', err);
+        //     } else {
+        //       console.log('Image uploaded successfully. Location:', data.Location);
+        //     }
+        //   });
+        // }
+
+        // const bucketName = 'YOUR_BUCKET_NAME';
+        // const fileName = 'example.jpg';
+        // const imagePath = 'path/to/image.jpg';
+
+        // uploadImageToS3(bucketName, fileName, imagePath);
+        //end upload aws
+
         resolve(exist_user);
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }
@@ -223,6 +348,20 @@ const sendOTP = (requestParam) => {
         //   await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         // }
         //
+
+        //twilio send otp start
+        client.messages
+          .create({
+            body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
+            to: `+91${requestParam.phone_number}`, // Text this number
+            from: config.twilio.mobileNo // From a valid Twilio number
+          })
+          .then(message => console.log(message.sid))
+          .catch(error => {
+            console.log(error);
+          });
+        //twilio send otp end
+
         resolve({ otp });
         return;
       } catch (error) {
@@ -411,11 +550,39 @@ const logout = (requestParam, req2) => {
   });
 };
 
+const updateAppVesrion = (requestParam, req2) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const settingData = await query.selectWithAndOne(dbConstants.dbSchema.settings, {}, { _id: 0 });
+        if (settingData.password !== requestParam.password) {
+          reject(errors(labels.LBL_INVALID_PASSWORD["EN"], responseCodes.Invalid));
+          return;
+        }
+        let updateData;
+        if (requestParam.type === "android") {
+          updateData = { android_app_version: requestParam.version }
+        } else if (requestParam.type === "ios") {
+          updateData = { ios_app_version: requestParam.version }
+        }
+        await query.updateSingle(dbConstants.dbSchema.settings, updateData, {});
+        resolve({ message: "update version sucessfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   signUp,
   sendOTP,
   verifyOTP,
   signIn,
   updateProfile,
-  logout
+  logout,
+  updateAppVesrion
 };

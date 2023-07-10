@@ -35,7 +35,7 @@ const create = (requestParam) => {
   });
 };
 
-const list = (requestParam) => {
+const list = () => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -57,7 +57,75 @@ const list = (requestParam) => {
   });
 };
 
+const details = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0 });
+        if (!resData) {
+          reject(errors(labels.LBL_INALID_PRODUCT["EN"], responseCodes.Invalid));
+          return;
+        }
+        resolve(resData);
+        return;
+      } catch (error) {
+        console.log("error", error);
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const update = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0 });
+        if (!resData) {
+          reject(errors(labels.LBL_INVALID_PRODUCT["EN"], responseCodes.Invalid));
+          return;
+        }
+        await query.updateSingle(dbConstants.dbSchema.products, requestParam, { product_id: requestParam.product_id })
+        resolve({ message: "record updated successfully" });
+        return;
+      } catch (error) {
+        console.log("error", error);
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const deleteProduct = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0 });
+        if (!resData) {
+          reject(errors(labels.LBL_INALID_PRODUCT["EN"], responseCodes.Invalid));
+          return;
+        }
+        await query.removeMultiple(dbConstants.dbSchema.products, { product_id: requestParam.product_id })
+        resolve({ message: "record deleted successfully" });
+        return;
+      } catch (error) {
+        console.log("error", error);
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   create,
   list,
+  details,
+  update,
+  deleteProduct
 };

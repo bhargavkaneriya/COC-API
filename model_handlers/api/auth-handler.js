@@ -198,7 +198,7 @@ const signIn = (requestParam) => {
         //   service: "gmail",
         //   auth: {
         //     user: 'kevalpatelce@gmail.com',
-        //     pass: 'vfgyqkdscltfsxqz'
+        //     pass: process.env.EMAIL_APP_PASSWORD
         //   }
         // });
         // const message = {

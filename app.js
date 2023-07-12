@@ -32,6 +32,7 @@ const productBackend = require("./routes/backend/product");
 const commonBackend = require("./routes/backend/common");
 const dealerBackend = require("./routes/backend/dealer");
 const customerBackend = require("./routes/backend/customer");
+const userBackend = require("./routes/backend/user");
 
 //api
 const auth = require("./routes/api/auth");
@@ -65,6 +66,7 @@ app.use("/backend/product", productBackend);
 app.use("/backend/common", commonBackend);
 app.use("/backend/dealer", dealerBackend);
 app.use("/backend/customer", customerBackend);
+app.use("/backend/user", userBackend);
 
 
 //api

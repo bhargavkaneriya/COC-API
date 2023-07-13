@@ -1,5 +1,4 @@
 "use strict";
-const config = require("./../../config");
 const dbConstants = require("./../../constants/db-constants");
 const responseCodes = require("./../../helpers/response-codes");
 const query = require("./../../utils/query-creator");
@@ -15,17 +14,7 @@ const {
   idGeneratorHandler,
 } = require("xlcoreservice");
 const errors = errorHandler;
-const { generateToken } = require('../../utils/common');
-const secretKey = process.env.JWT_SECRET_KEY;
-// const twilio = require("twilio");
-// const client = new twilio(config.twilio.accountSid, config.twilio.authToken);
-// const nodemailer = require('nodemailer');
-// const fs = require('fs');
-// const PDFDocument = require('pdfkit');
-
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const { generateToken, sendSMS } = require('../../utils/common');
 
 const signUp = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -69,34 +58,8 @@ const signUp = (requestParam) => {
         request_param = { ...request_param, otp }
         await query.insertSingle(modelName, request_param);
 
+        await sendSMS(`${otp} is your OTP to login to Cement on a call account. - OTP will expire in 60 seconds. - When user successfully sign up on a coc app/web.`, requestParam.phone_number);
 
-        //twilio send otp start
-        // client.messages
-        //   .create({
-        //     body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
-        //     to: `+91${requestParam.phone_number}`, // Text this number
-        //     from: config.twilio.mobileNo // From a valid Twilio number
-        //   })
-        //   .then(message => console.log(message.sid))
-        //   .catch(error => {
-        //     console.log(error);
-        //   });
-        //twilio send otp end
-
-        //notification add
-        // const notification_id = await idGeneratorHandler.generateId("COCN");
-        // let insertData = {
-        //   notification_id,
-        //   title: "sign_up",
-        //   description: "send otp on your register phone no. check your message"
-        // }
-        // if (requestParam.user_type === "customer") {
-        //   insertData = { ...insertData, customer_id: user_id, type: "customer" }
-        // } else if (requestParam.user_type === "dealer") {
-        //   insertData = { ...insertData, dealer_id: user_id, type: "dealer" }
-        // }
-        // await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
-        //
         resolve({ otp });
         return;
       } catch (error) {
@@ -185,104 +148,6 @@ const signIn = (requestParam) => {
           delete exist_user.aadhar_card_of_director;
         }
 
-        //send email with pdf start
-        // function generatePDF() {
-        //   const doc = new PDFDocument();
-        //   doc.pipe(fs.createWriteStream('sample.pdf'));
-        //   doc.fontSize(18).text('Hello, this is a sample PDF!', 100, 100);
-        //   doc.end();
-        // }
-
-        // generatePDF();
-        // const transporter = await nodemailer.createTransport({
-        //   service: "gmail",
-        //   auth: {
-        //     user: 'kevalpatelce@gmail.com',
-        //     pass: process.env.EMAIL_APP_PASSWORD
-        //   }
-        // });
-        // const message = {
-        //   from: 'kevalpatelce@gmail.com',
-        //   to: 'jayendra99790@gmail.com',
-        //   subject: 'Sending a PDF via email',
-        //   text: 'Please find attached PDF file.',
-        //   attachments: [
-        //     {
-        //       filename: 'sample.pdf',
-        //       path: 'sample.pdf',
-        //       contentType: 'application/pdf'
-        //     }
-        //   ]
-        // };
-        // transporter.sendMail(message, (error, info) => {
-        //   if (error) {
-        //     console.log('Error occurred while sending email:', error.message);
-        //   } else {
-        //     console.log('Email sent successfully!', info.response);
-        //   }
-        // });
-        //send email with pdf end
-
-        //start send PDF via WhatsApp
-        // const pdfFile = 'sample.pdf';
-        // const toPhoneNumber = 'RECIPIENT_PHONE_NUMBER'; // Replace with recipient's phone number
-        // const client = twilio(accountSid, authToken);
-        // const pdfData = fs.readFileSync(pdfFile, { encoding: 'base64' });
-        // client.messages
-        //   .create({
-        //     from: `whatsapp:${fromPhoneNumber}`,
-        //     body: 'PDF file',
-        //     mediaUrl: `data:application/pdf;base64,${pdfData}`,
-        //     to: `whatsapp:${toPhoneNumber}`
-        //   })
-        //   .then((message) => {
-        //     console.log('PDF sent successfully! Message SID:', message.sid);
-        //   })
-        //   .catch((error) => {
-        //     console.error('Error:', error.message);
-        //   });
-        //end send pdf via whatsApp
-
-
-        //start notification
-        // const res123 = await sendAndroidPush();
-        //end notification
-
-        //start upload
-        // const AWS = require('aws-sdk');
-
-        // AWS.config.update({
-        //   accessKeyId: 'YOUR_ACCESS_KEY_ID',
-        //   secretAccessKey: 'YOUR_SECRET_ACCESS_KEY'
-        // });
-
-        // const s3 = new AWS.S3();
-
-        // function uploadImageToS3(bucketName, fileName, imagePath) {
-        //   const fileContent = fs.readFileSync(imagePath);
-
-        //   const params = {
-        //     Bucket: bucketName,
-        //     Key: fileName,
-        //     Body: fileContent
-        //   };
-
-        //   s3.upload(params, function (err, data) {
-        //     if (err) {
-        //       console.error('Error uploading image:', err);
-        //     } else {
-        //       console.log('Image uploaded successfully. Location:', data.Location);
-        //     }
-        //   });
-        // }
-
-        // const bucketName = 'YOUR_BUCKET_NAME';
-        // const fileName = 'example.jpg';
-        // const imagePath = 'path/to/image.jpg';
-
-        // uploadImageToS3(bucketName, fileName, imagePath);
-        //end upload aws
-
         resolve(exist_user);
         return;
       } catch (error) {
@@ -329,38 +194,6 @@ const sendOTP = (requestParam) => {
           { otp: otp },
           { phone_number: requestParam.phone_number }
         );
-
-        //notification add
-        // if (requestParam.from_type === "forgot_password") {
-        //   const notification_id = await idGeneratorHandler.generateId("COCN");
-        //   let insertData = {
-        //     notification_id,
-        //     title: "Forgot Password",
-        //     description: "send otp on your register phone no. check your message"
-        //   }
-        //   if (requestParam.user_type === "customer") {
-        //     const customerID = await query.selectWithAndOne(dbConstants.dbSchema.customers, { phone_number: requestParam.phone_number }, { _id: 0, customer_id: 1 });
-        //     insertData = { ...insertData, customer_id: customerID.customer_id, type: "customer" }
-        //   } else if (requestParam.user_type === "dealer") {
-        //     const dealerID = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { phone_number: requestParam.phone_number }, { _id: 0, dealer_id: 1 });
-        //     insertData = { ...insertData, dealer_id: dealerID.dealer_id, type: "dealer" }
-        //   }
-        //   await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
-        // }
-        //
-
-        //twilio send otp start
-        // client.messages
-        //   .create({
-        //     body: `Hi, your one time passcode is:  ${otp}. Regards, Cement on call.`,
-        //     to: `+91${requestParam.phone_number}`, // Text this number
-        //     from: config.twilio.mobileNo // From a valid Twilio number
-        //   })
-        //   .then(message => console.log(message.sid))
-        //   .catch(error => {
-        //     console.log(error);
-        //   });
-        //twilio send otp end
 
         resolve({ otp });
         return;
@@ -416,6 +249,7 @@ const verifyOTP = (requestParam) => {
 
           exist_user = JSON.parse(JSON.stringify(exist_user))
           if (requestParam.from_type == "forgot_password") {
+            await sendSMS(`${otp} is Your OTP to forget your cement on call password. OTP will expire in 60 seconds. - When a user forgot the password from the login screen on the coc app/web.`, requestParam.phone_number);
             delete exist_user.access_token;
           }
           delete exist_user.otp;

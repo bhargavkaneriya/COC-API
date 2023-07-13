@@ -1,4 +1,5 @@
 "use strict";
+const config = require("../../config");
 const dbConstants = require("./../../constants/db-constants");
 const responseCodes = require("./../../helpers/response-codes");
 const query = require("./../../utils/query-creator");
@@ -10,7 +11,7 @@ const _ = require("underscore");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
 const request = require('request');
-const apiKey = process.env.GOOGLE_API_KEY;
+const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");
 // const axios = require('axios');
 

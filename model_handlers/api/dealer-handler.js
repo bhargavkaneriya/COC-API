@@ -11,6 +11,7 @@ require("./../../models/notification");
 require("./../../models/transaction");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
+const { sendSMS } = require("../../utils/common");
 const errors = errorHandler;
 
 const productAdd = (requestParam) => {
@@ -714,7 +715,7 @@ const updatedeliveryStatus = (requestParam) => {
           {
             order_id: requestParam.order_id,
           },
-          { _id: 0, order_id: 1, delivery_status: 1, dealer_id: 1, customer_id: 1 }
+          { _id: 0, order_id: 1, delivery_status: 1, dealer_id: 1, customer_id: 1, phone_number: 1 }
         );
 
         if (!resData) {
@@ -752,6 +753,8 @@ const updatedeliveryStatus = (requestParam) => {
             );
             return;
           } else {
+            await sendSMS(`Dear Customer, Your order has been successfully delivered. Order id : ${requestParam.order_id}`, resData.phone_number);
+
             const notification_id = await idGeneratorHandler.generateId("COCN");
             // const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1 });
             // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });

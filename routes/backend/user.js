@@ -8,6 +8,7 @@ const userHandler = require("../../model_handlers/backend/user-handler");
 const labels = require("./../../utils/labels.json");
 const { errorHandler } = require("xlcoreservice");
 const errors = errorHandler;
+const { verifyToken } = require('../../utils/common');
 
 router.post("/sign-in", async (req, res) => {
   try {
@@ -34,7 +35,7 @@ router.post("/sign-in", async (req, res) => {
   }
 });
 
-router.get("/details", async (req, res) => {
+router.get("/details", verifyToken, async (req, res) => {
   try {
     if (!req.query.user_id) {
       jsonResponse(
@@ -59,7 +60,7 @@ router.get("/details", async (req, res) => {
   }
 });
 
-router.post("/update", async (req, res) => {
+router.post("/update", verifyToken, async (req, res) => {
   try {
     if (!req.body.user_id) {
       jsonResponse(
@@ -84,7 +85,7 @@ router.post("/update", async (req, res) => {
   }
 });
 
-router.post("/logout", async (req, res) => {
+router.post("/logout", verifyToken, async (req, res) => {
   try {
     if (!req.body.user_id) {
       jsonResponse(

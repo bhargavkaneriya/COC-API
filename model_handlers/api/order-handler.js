@@ -7,12 +7,13 @@ require("./../../models/order");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
+const { sendSMS } = require('../../utils/common');
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+        const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1 });
         if (!customer) {
           reject(
             errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound)
@@ -87,6 +88,7 @@ const createOrder = (requestParam) => {
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
 
+        let message = `Dear Customer, Your order has been placed. Order id:${order_id}`;
         //
         if (requestParam.payment_method === "offline") {
           const notification_id = await idGeneratorHandler.generateId("COCN");
@@ -100,8 +102,11 @@ const createOrder = (requestParam) => {
             type: "dealer"
           }
           await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+          message = `Dear Customer, Your order has been placed. Order id:${order_id} and Quote id : ${requestParam.quotation_id}`;
         }
         //
+
+        await sendSMS(message, customer.phone_number);
 
         //
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
@@ -114,6 +119,7 @@ const createOrder = (requestParam) => {
         const invoice_id = await idGeneratorHandler.generateId("COCI");
         await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: requestParam.customer_id, dealer_id: cartDetail.dealer_id, order_id, invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing" });
         //end invoice
+
         resolve({ order_id, message: "Order created successfully" });
         return;
       } catch (error) {

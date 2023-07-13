@@ -10,13 +10,14 @@ const {
   errorHandler,
   idGeneratorHandler,
 } = require("xlcoreservice");
+const { sendSms } = require("xlcoreservice/handlers/twilio-handler");
 const errors = errorHandler;
 
 const verifyPaymentDocument = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const orderData = await query.selectWithAndOne(dbConstants.dbSchema.orders, { order_id: requestParam.order_id }, { _id: 0, order_id: 1 });
+        const orderData = await query.selectWithAndOne(dbConstants.dbSchema.orders, { order_id: requestParam.order_id }, { _id: 0, order_id: 1, quotation_id: 1, phone_number: 1 });
         if (!orderData) {
           reject(
             errors(labels.LBL_INVALID_ORDER_ID["EN"], responseCodes.Invalid)
@@ -28,6 +29,20 @@ const verifyPaymentDocument = (requestParam) => {
           updatedata = { ...updatedata, rejected_reason: requestParam.rejected_reason }
         }
         await query.updateSingle(dbConstants.dbSchema.orders, updatedata, { order_id: requestParam.order_id });
+
+        if (requestParam.verify_document_status === "approved") {
+          let message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id}`;
+          if (orderData.quotation_id) {
+            message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id} and Quote id : ${orderData?.quotation_id}`;
+          }
+          await sendSms(message, orderData.phone_number);
+        } else {
+          let message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
+          if (orderData.quotation_id) {
+            message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id} and Quote id : ${orderData?.quotation_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
+          }
+          await sendSms(message, orderData.phone_number);
+        }
         resolve({ message: "Document status updated successfully" });
         return;
       } catch (error) {

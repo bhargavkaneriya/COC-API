@@ -2,14 +2,26 @@
 const { errorHandler } = require("xlcoreservice");
 const jwt = require('jsonwebtoken');
 const query = require("./../utils/query-creator");
-const secretKey = process.env.JWT_SECRET_KEY;
 const dbConstants = require("./../constants/db-constants");
 const errors = errorHandler;
 const labels = require("./../utils/labels.json");
 const responseCodes = require("./../helpers/response-codes");
 const config = require("../config");
-// const FCM = require('fcm-node');
-// const fcm = new FCM(config.fcm_push_server_key);
+const secretKey = config.jwt_secret_key;
+const twilio = require("twilio");
+const client = new twilio(config.twilio.accountSid, config.twilio.authToken);
+const FCM = require('fcm-node');
+const fcm = new FCM(config.fcm_push_server_key);
+const PDFDocument = require('pdfkit');
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: config.aws.accessKeyId,
+  secretAccessKey: config.aws.secretAccessKey
+});
+const s3 = new AWS.S3();
+
 
 // Function to generate a JWT token
 function generateToken(payload) {
@@ -47,49 +59,64 @@ async function verifyToken(req, res, next) {
   });
 }
 
+async function sendSMS(message, toNumber) {
+  try {
+    client.messages
+      .create({
+        body: message,
+        to: `+91${toNumber}`,
+        from: config.twilio.mobileNo
+      })
+      .then(message => console.log(message.sid))
+      .catch(error => {
+        console.log(error);
+      });
+  } catch (error) {
+    console.log("error", error)
+    return
+  }
+}
 
-// const sendAndroidPush = async (requestParam) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const message = {
-//         registration_ids: [requestParam.device_token],
-//         collapse_key: 'green',
-//         data: {
-//           data: {
-//             'messageFrom': 'COC',
-//             message: requestParam.title,
-//             body: requestParam.description,
-//             push_type: 'normal'
-//           },
-//         },
-//       };
+async function sendAndroidPush(requestParam) {
+  try {
+    const message = {
+      registration_ids: [requestParam.device_token],
+      collapse_key: 'green',
+      data: {
+        data: {
+          'messageFrom': 'COC',
+          message: requestParam.title,
+          body: requestParam.description,
+          push_type: 'normal'
+        },
+      },
+    };
 
-//       fcm.send(message, function (error, result) {
-//         let pushResult
-//         if (error) {
-//           pushResult = 'failed'
-//           console.error("error=>", error)
-//           // reject(errors.internalServer(true))
-//           // return
-//         } else {
-//           result = JSON.parse(result)
-//           if (result.success == 1) {
-//             pushResult = 'success'
-//           } else {
-//             pushResult = 'failed'
-//           }
-//         }
-//         let notificationLog = {}
-//         resolve(notificationLog)
-//         return;
-//       });
-//     } catch (error) {
-//       console.log(error)
-//       reject(errors.internalServer(true))
-//       return
-//     }
-//   })
-// }
+    fcm.send(message, function (error, result) {
+      let pushResult
+      if (error) {
+        pushResult = 'failed'
+        console.error("error=>", error)
+        // reject(errors.internalServer(true))
+        // return
+      } else {
+        result = JSON.parse(result)
+        if (result.success == 1) {
+          pushResult = 'success'
+        } else {
+          pushResult = 'failed'
+        }
+      }
+      let notificationLog = {}
+      resolve(notificationLog)
+      return;
+    });
+  } catch (error) {
+    console.log(error)
+    reject(errors.internalServer(true))
+    return
+  }
+}
 
 // const sendIOSPush = async (requestParam) => {
 //   return new Promise(async (resolve, reject) => {
@@ -136,10 +163,128 @@ async function verifyToken(req, res, next) {
 //   })
 // }
 
+async function generatePDF() {
+  try {
+    const doc = new PDFDocument();
+    doc.pipe(fs.createWriteStream('sample.pdf'));
+    doc.fontSize(18).text('Hello, this is a sample PDF!', 100, 100);
+    doc.end();
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+async function sendEmail(toEmail, subject, text, file) {
+  try {
+    const transporter = await nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: config.nodeMailer.toEmail,
+        pass: config.nodeMailer.emailAppPassword
+      }
+    });
+    const message = {
+      from: config.nodeMailer.toEmail,
+      to: toEmail,
+      subject: subject,
+      text: text,
+      attachments: [
+        {
+          filename: 'sample.pdf',
+          path: 'sample.pdf',
+          contentType: 'application/pdf'
+        }
+      ]
+    };
+    transporter.sendMail(message, (error, info) => {
+      if (error) {
+        console.log('Error occurred while sending email:', error.message);
+      } else {
+        console.log('Email sent successfully!', info.response);
+      }
+    });
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+async function uploadImageToS3(bucketName, fileName, imagePath) {
+  try {
+    const fileContent = fs.readFileSync(imagePath);
+    const params = {
+      Bucket: bucketName,
+      Key: fileName,
+      Body: fileContent
+    };
+    s3.upload(params, function (err, data) {
+      if (err) {
+        console.error('Error uploading image:', err);
+      } else {
+        console.log('Image uploaded successfully. Location:', data.Location);
+      }
+    });
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+async function getImageToS3(bucketName, fileName, imagePath) {
+  try {
+    const params = {
+      Bucket: bucketName,
+      Key: fileName,
+      Expires: expiresInMinutes * 60 // URL expiration time in seconds
+    };
+    const url = s3.getSignedUrl('getObject', params);
+    return url;
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+async function sendInWhatsUp() {
+  try {
+    const pdfFile = 'sample.pdf';
+    // const toPhoneNumber = 'RECIPIENT_PHONE_NUMBER'; // Replace with recipient's phone number
+    // const client = twilio(accountSid, authToken);
+    // const pdfData = fs.readFileSync(pdfFile, { encoding: 'base64' });
+    // client.messages
+    //   .create({
+    //     from: `whatsapp:${fromPhoneNumber}`,
+    //     body: 'PDF file',
+    //     mediaUrl: `data:application/pdf;base64,${pdfData}`,
+    //     to: `whatsapp:${toPhoneNumber}`
+    //   })
+    //   .then((message) => {
+    //     console.log('PDF sent successfully! Message SID:', message.sid);
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error:', error.message);
+    //   });
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
 
 module.exports = {
   generateToken,
   verifyToken,
-  // sendAndroidPush,
+  sendSMS,
+  sendAndroidPush,
   // sendIOSPush
+  generatePDF,
+  sendEmail,
+  uploadImageToS3,
+  getImageToS3,
+  sendInWhatsUp
 };

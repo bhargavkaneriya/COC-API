@@ -9,6 +9,7 @@ require("./../../models/product");
 require("./../../models/dealer_product");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
+const { sendSMS } = require("../../utils/common");
 const errors = errorHandler;
 
 const createRequest = (requestParam) => {
@@ -21,7 +22,7 @@ const createRequest = (requestParam) => {
 
         //notification add
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1, phone_number: 1 });
         const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
 
         let insertData = {
@@ -30,10 +31,11 @@ const createRequest = (requestParam) => {
           description: `${customerName.name} send request to ${dealerName.name}`,
           customer_id: requestParam.customer_id,
           dealer_id: requestParam.dealer_id,
-          type:"dealer"
+          type: "dealer"
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
+        await sendSMS(`Dear dealer, you received a quotation.`, dealerName.phone_number)
         resolve({ message: "Requirement send successfully" });
         return;
       } catch (error) {

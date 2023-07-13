@@ -27,14 +27,20 @@ module.exports = {
   appName: process.env.APP_NAME_PROJECT_NAME,
   apiURL: process.env.API_BASE_URL,
   port: process.env.PORT_PROJECT_NAME,
-  //   aws: {
-  //     mongoDumpUrl: process.env.AWS_MONGO_DUMP_URL,
-  //     mongoRestoreUrl: process.env.AWS_MONGO_RESTORE_URL,
-  //   },
-  // twilio: {
-  //   accountSid: process.env.TWILIO_ACCOUNT_SID,
-  //   authToken: process.env.TWILIO_AUTH_TOKEN,
-  //   mobileNo: process.env.TWILIO_MOBILE_NO
-  // },
-  // fcm_push_server_key: process.env.FCM_PUSH_SERVER_KEY
+  aws: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+  twilio: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+    mobileNo: process.env.TWILIO_MOBILE_NO
+  },
+  nodeMailer: {
+    toEmail: process.env.TO_EMAIL,
+    emailAppPassword: process.env.EMAIL_APP_PASSWORD,
+  },
+  fcm_push_server_key: process.env.FCM_PUSH_SERVER_KEY,
+  jwt_secret_key: process.env.JWT_SECRET_KEY,
+  google_api_key: process.env.GOOGLE_API_KEY
 };

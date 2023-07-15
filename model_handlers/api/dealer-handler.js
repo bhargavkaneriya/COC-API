@@ -11,7 +11,7 @@ require("./../../models/notification");
 require("./../../models/transaction");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const { sendSMS } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
 const errors = errorHandler;
 
 const productAdd = (requestParam) => {
@@ -772,6 +772,10 @@ const updatedeliveryStatus = (requestParam) => {
         }
 
         await query.updateSingle(dbConstants.dbSchema.orders, { delivery_status: requestParam.delivery_status }, { order_id: requestParam.order_id });
+
+        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, device_token: 1 });
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Order", description: `Dear Customer, Your order has been successfully ${requestParam.delivery_status}.` });
+
         resolve({ message: "Delivery status updated successfully" });
         return;
       } catch (error) {
@@ -980,7 +984,7 @@ const sendInvoice = (requestParam) => {
           reject(errors(labels.LBL_INVALID_INVOICE_ID["EN"], responseCodes.Invalid));
           return;
         }
-        const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1 });
+        const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1, device_token: 1 });
         //send invoice from here via email or whatsup
 
         //
@@ -998,6 +1002,9 @@ const sendInvoice = (requestParam) => {
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
 
+        await sendPushNotification({ tokens: [customerData.device_token], title: "Invoice", description: `${dealerName.name} sent a invoice.` })
+        await sendEmail({ toEmail: customerData.email, subject: "Invoice", text: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        await sendInWhatsUp({ toNumber: customerData.phone_number, message: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Invoice send successfully" });
         return;
       } catch (error) {

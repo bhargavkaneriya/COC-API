@@ -7,7 +7,7 @@ require("./../../models/order");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
-const { sendSMS } = require('../../utils/common');
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require('../../utils/common');
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -74,8 +74,8 @@ const createOrder = (requestParam) => {
 
         //notification add
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1 });
-        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1, device_token: 1 });
+        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, email: 1, phone_number: 1 });
 
         let insertData = {
           notification_id,
@@ -89,10 +89,14 @@ const createOrder = (requestParam) => {
         //
 
         let message = `Dear Customer, Your order has been placed. Order id:${order_id}`;
+        let message2 = `${customerName.name} has placed an online Order. Order id:${order_id}`;
+        let emailMessage = `Dear Customer, Your order has been successfully placed. Your Order id: ${order_id}`;
+        let wpMessage = `Dear Customer, Your order has been successfully placed. Your Order id: ${order_id}`;
+
         //
         if (requestParam.payment_method === "offline") {
           const notification_id = await idGeneratorHandler.generateId("COCN");
-          const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
+          const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, device_token: 1 });
           let insertData = {
             notification_id,
             title: "Order Placed",
@@ -102,12 +106,21 @@ const createOrder = (requestParam) => {
             type: "dealer"
           }
           await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
+
           message = `Dear Customer, Your order has been placed. Order id:${order_id} and Quote id : ${requestParam.quotation_id}`;
+          message2 = `${customerName.name} has placed an offline Order. Order id:${order_id} and Quote id :${requestParam.quotation_id}`;
+          await sendPushNotification({ tokens: [dealerName.device_token], title: "Offline Payment", description: `${customerName.name} requests for a offline/bank payment verification.` });
+          emailMessage = `Dear Customer, Your order has been successfully placed. Your Order id: ${order_id} and Quote id : ${requestParam.quotation_id}`;
+          wpMessage = `Dear Customer, Your order has been successfully placed. Your Order id: ${order_id} and Quote id : ${requestParam.quotation_id}`;
         }
         //
 
         await sendSMS(message, customer.phone_number);
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Order Placed", description: message });
+        await sendPushNotification({ tokens: [dealerName.device_token], title: "Order Placed", description: message2 });
 
+        await sendEmail({ toEmail: customerName.email, subject: "Order Placed", text: emailMessage });
+        await sendInWhatsUp({ toNumber: customerName.phone_number, message: wpMessage });
         //
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
         if (requestParam.payment_method == "offline") {

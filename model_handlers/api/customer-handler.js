@@ -448,7 +448,6 @@ const getProfile = (requestParam) => {
             customer_id: requestParam.customer_id
           }, { _id: 0, customer_id: 1, name: 1, phone_number: 1, email: 1, is_company: 1, pan_no: 1, gst_no: 1 }
         );
-        console.log("response", response);
         if (!response) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;

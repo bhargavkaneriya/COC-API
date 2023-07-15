@@ -6,7 +6,7 @@ const labels = require("./../../utils/labels.json");
 require("./../../models/quotation");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const { sendSMS } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
 const errors = errorHandler;
 
 const createQuotation = (requestParam) => {
@@ -23,7 +23,7 @@ const createQuotation = (requestParam) => {
 
         const notification_id = await idGeneratorHandler.generateId("COCN");
         const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1 });
-        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1 });
+        const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1, device_token: 1, email: 1 });
 
         let insertData = {
           notification_id,
@@ -37,6 +37,12 @@ const createQuotation = (requestParam) => {
         //
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
+
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
+
+        await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+
+        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         
         resolve({ message: "Quotation sent successfully" });
         return;

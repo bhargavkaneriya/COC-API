@@ -338,10 +338,29 @@ const invoiceList = (requestParam) => {
   });
 };
 
+const totalUsers = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const orderData = await query.selectWithAnd(dbConstants.dbSchema.orders, {}, { _id: 0, customer_id: 1 });
+        const userIds = _.pluck(orderData, 'customer_id');
+        const response = await query.selectWithAnd(dbConstants.dbSchema.customers, { customer_id: { $in: userIds } }, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   dashboard,
   list,
   transactionList,
   quotationList,
-  invoiceList
+  invoiceList,
+  totalUsers
 };

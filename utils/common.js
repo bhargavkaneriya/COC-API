@@ -1,5 +1,5 @@
 "use strict";
-const { errorHandler } = require("xlcoreservice");
+const { errorHandler, awsHandler, idGeneratorHandler } = require("xlcoreservice");
 const jwt = require('jsonwebtoken');
 const query = require("./../utils/query-creator");
 const dbConstants = require("./../constants/db-constants");
@@ -15,13 +15,12 @@ const fcm = new FCM(config.fcm_push_server_key);
 const PDFDocument = require('pdfkit');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
-const AWS = require('aws-sdk');
-AWS.config.update({
-  accessKeyId: config.aws.accessKeyId,
-  secretAccessKey: config.aws.secretAccessKey
+const AWSHandler = new awsHandler();
+AWSHandler.config({
+  keyId: config.aws.accessKeyId,
+  key: config.aws.secretAccessKey,
+  region: config.aws.region,
 });
-const s3 = new AWS.S3();
-
 
 // Function to generate a JWT token
 function generateToken(payload) {
@@ -59,6 +58,72 @@ async function verifyToken(req, res, next) {
   });
 }
 
+async function generatePDF() {
+  try {
+    const doc = new PDFDocument();
+    doc.pipe(fs.createWriteStream('sample.pdf'));
+    doc.fontSize(18).text('Hello, this is a sample PDF!', 100, 100);
+    doc.end();
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+const uploadImage = (requestParam, req, done) => {
+  async function main() {
+    try {
+      let bucket = config.aws.s3.cocBucket;
+      const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
+      const file = req.files.image;
+      const fileType = file.name.split(".").pop();
+      file.file_name = `${randomStr}.${fileType}`;
+      file.bucket = bucket;
+      file.contentType = fileType;
+      const imgData = await AWSHandler.imageUpload(file);
+      done(null, { url: imgData.Location, file: file.file_name });
+      return;
+    } catch (error) {
+      console.log("error", error);
+      done(
+        errorHandler(labels.LBL_INTERNAL_SERVER['EN'], responseCodes.InternalServer)
+      );
+      return;
+    }
+  }
+  main();
+};
+
+const getImage = (requestParam) => {
+  // return new Promise((resolve, reject) => {
+  async function main() {
+    try {
+      let bucket = config.aws.s3.userBucket;
+      if (requestParam.bucket === "userService") {
+        bucket = config.aws.s3.userServiceBucket;
+      } else if (requestParam.bucket === "service") {
+        bucket = config.aws.s3.serviceBucket;
+      } else if (requestParam.bucket === "qrCode") {
+        bucket = config.aws.s3.qrCodeBucket;
+      }
+      let folder = bucket.split("/");
+      folder.shift();
+      folder = folder.join("/")
+      const image = await AWSHandler.imageGet({ bucket: config.aws.bucketName, key: `${folder}/gmdN3L7NgmHFTq.png` });
+      // resolve(image.body);
+      return;
+    } catch (error) {
+      console.log("error", error);
+      return;
+    }
+  }
+  // })
+  main();
+};
+
+
+
 async function sendSMS(message, toNumber) {
   try {
     client.messages
@@ -77,16 +142,44 @@ async function sendSMS(message, toNumber) {
   }
 }
 
-async function sendAndroidPush(requestParam) {
+async function sendInWhatsUp(requestParam) {
+  try {
+    let sendParams = {
+      body: requestParam?.message,
+      from: `whatsapp:${config.twilio.mobileNo}`,
+      to: `whatsapp:${requestParam?.toNumber}`
+    };
+
+    if (requestParam.filePath) {
+      sendParams = {
+        body: requestParam?.message,
+        from: `whatsapp:${config.twilio.mobileNo}`,
+        // mediaUrl: ['https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80'],
+        mediaUrl: requestParam?.filePath,
+        to: `whatsapp:${requestParam?.toNumber}`
+      }
+    }
+    client.messages
+      .create(sendParams)
+      .then(message => console.log(`Message SID: ${message.sid}`))
+      .catch(error => console.error(error));
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
+async function sendPushNotification(requestParam) {
   try {
     const message = {
-      registration_ids: [requestParam.device_token],
+      registration_ids: requestParam?.tokens,
       collapse_key: 'green',
       data: {
         data: {
           'messageFrom': 'COC',
-          message: requestParam.title,
-          body: requestParam.description,
+          message: requestParam?.title,
+          body: requestParam?.description,
           push_type: 'normal'
         },
       },
@@ -107,8 +200,6 @@ async function sendAndroidPush(requestParam) {
           pushResult = 'failed'
         }
       }
-      let notificationLog = {}
-      resolve(notificationLog)
       return;
     });
   } catch (error) {
@@ -163,41 +254,36 @@ async function sendAndroidPush(requestParam) {
 //   })
 // }
 
-async function generatePDF() {
-  try {
-    const doc = new PDFDocument();
-    doc.pipe(fs.createWriteStream('sample.pdf'));
-    doc.fontSize(18).text('Hello, this is a sample PDF!', 100, 100);
-    doc.end();
-  } catch (error) {
-    console.log("error", error);
-    reject(errors.internalServer(true))
-    return
-  }
-}
-
-async function sendEmail(toEmail, subject, text, file) {
+async function sendEmail(requestParam) {
   try {
     const transporter = await nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: config.nodeMailer.toEmail,
+        user: config.nodeMailer.fromEmail,
         pass: config.nodeMailer.emailAppPassword
       }
     });
-    const message = {
-      from: config.nodeMailer.toEmail,
-      to: toEmail,
-      subject: subject,
-      text: text,
-      attachments: [
-        {
-          filename: 'sample.pdf',
-          path: 'sample.pdf',
-          contentType: 'application/pdf'
-        }
-      ]
+    let message = {
+      from: config.nodeMailer.fromEmail,
+      to: requestParam?.toEmail,
+      subject: requestParam?.subject,
+      text: requestParam?.text
     };
+    if (requestParam.filePath) {
+      message = {
+        from: config.nodeMailer.fromEmail,
+        to: requestParam?.toEmail,
+        subject: requestParam?.subject,
+        text: requestParam?.text,
+        attachments: [
+          {
+            filename: 'sample.pdf',
+            path: requestParam?.filePath,
+            contentType: 'application/pdf'
+          }
+        ]
+      };
+    }
     transporter.sendMail(message, (error, info) => {
       if (error) {
         console.log('Error occurred while sending email:', error.message);
@@ -212,79 +298,15 @@ async function sendEmail(toEmail, subject, text, file) {
   }
 }
 
-async function uploadImageToS3(bucketName, fileName, imagePath) {
-  try {
-    const fileContent = fs.readFileSync(imagePath);
-    const params = {
-      Bucket: bucketName,
-      Key: fileName,
-      Body: fileContent
-    };
-    s3.upload(params, function (err, data) {
-      if (err) {
-        console.error('Error uploading image:', err);
-      } else {
-        console.log('Image uploaded successfully. Location:', data.Location);
-      }
-    });
-  } catch (error) {
-    console.log("error", error);
-    reject(errors.internalServer(true))
-    return
-  }
-}
-
-async function getImageToS3(bucketName, fileName, imagePath) {
-  try {
-    const params = {
-      Bucket: bucketName,
-      Key: fileName,
-      Expires: expiresInMinutes * 60 // URL expiration time in seconds
-    };
-    const url = s3.getSignedUrl('getObject', params);
-    return url;
-  } catch (error) {
-    console.log("error", error);
-    reject(errors.internalServer(true))
-    return
-  }
-}
-
-async function sendInWhatsUp() {
-  try {
-    const pdfFile = 'sample.pdf';
-    // const toPhoneNumber = 'RECIPIENT_PHONE_NUMBER'; // Replace with recipient's phone number
-    // const client = twilio(accountSid, authToken);
-    // const pdfData = fs.readFileSync(pdfFile, { encoding: 'base64' });
-    // client.messages
-    //   .create({
-    //     from: `whatsapp:${fromPhoneNumber}`,
-    //     body: 'PDF file',
-    //     mediaUrl: `data:application/pdf;base64,${pdfData}`,
-    //     to: `whatsapp:${toPhoneNumber}`
-    //   })
-    //   .then((message) => {
-    //     console.log('PDF sent successfully! Message SID:', message.sid);
-    //   })
-    //   .catch((error) => {
-    //     console.error('Error:', error.message);
-    //   });
-  } catch (error) {
-    console.log("error", error);
-    reject(errors.internalServer(true))
-    return
-  }
-}
 
 module.exports = {
   generateToken,
   verifyToken,
-  sendSMS,
-  sendAndroidPush,
-  // sendIOSPush
   generatePDF,
-  sendEmail,
-  uploadImageToS3,
-  getImageToS3,
-  sendInWhatsUp
+  uploadImage,
+  getImage,
+  sendSMS,
+  sendInWhatsUp,
+  sendPushNotification,
+  sendEmail
 };

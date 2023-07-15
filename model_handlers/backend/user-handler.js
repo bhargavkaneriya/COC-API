@@ -32,7 +32,7 @@ const signIn = (requestParam) => {
         dataToken = { ...dataToken, id: userData.user_id, user_type: "user" }
         const access_token = generateToken(dataToken);
         await query.updateSingle(dbConstants.dbSchema.users, { access_token }, { email: requestParam.email });
-        userData.access_token = access_token
+        userData.access_token = access_token;
         resolve(userData);
         return;
       } catch (error) {

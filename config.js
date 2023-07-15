@@ -30,6 +30,10 @@ module.exports = {
   aws: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region:process.env.AWS_REGION,
+    s3: {
+      cocBucket: process.env.AWS_S3_COC_BUCKET,
+  },
   },
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -37,7 +41,7 @@ module.exports = {
     mobileNo: process.env.TWILIO_MOBILE_NO
   },
   nodeMailer: {
-    toEmail: process.env.TO_EMAIL,
+    fromEmail: process.env.FROM_EMAIL,
     emailAppPassword: process.env.EMAIL_APP_PASSWORD,
   },
   fcm_push_server_key: process.env.FCM_PUSH_SERVER_KEY,

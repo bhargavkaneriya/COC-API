@@ -10,7 +10,7 @@ const {
   errorHandler,
   idGeneratorHandler,
 } = require("xlcoreservice");
-const { sendSms } = require("xlcoreservice/handlers/twilio-handler");
+const { sendSMS, sendPushNotification, sendEmail } = require("../../utils/common");
 const errors = errorHandler;
 
 const verifyPaymentDocument = (requestParam) => {
@@ -30,18 +30,24 @@ const verifyPaymentDocument = (requestParam) => {
         }
         await query.updateSingle(dbConstants.dbSchema.orders, updatedata, { order_id: requestParam.order_id });
 
+        const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: orderData.customer_id }, { _id: 0, customer_id: 1, name: 1, device_token: 1, email: 1 });
+
         if (requestParam.verify_document_status === "approved") {
           let message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id}`;
+
           if (orderData.quotation_id) {
             message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id} and Quote id : ${orderData?.quotation_id}`;
+            await sendEmail({ toEmail: customerData.email, subject: "Verification", text: `Dear Customer, Your offline order has been successfully placed. Your payment verification is pending.  Our team will verify your offline payment and get back to you. Order id : ${orderData.order_id} and Quote id : ${orderData?.quotation_id}` });
           }
-          await sendSms(message, orderData.phone_number);
+          await sendSMS(message, orderData.phone_number);
+          await sendPushNotification({ tokens: [customerData.device_token], title: "Payment Verification", description: "Dear Customer, Your offline/bank payment verification has been successfully verified." });
         } else {
           let message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
           if (orderData.quotation_id) {
             message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id} and Quote id : ${orderData?.quotation_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
           }
-          await sendSms(message, orderData.phone_number);
+          await sendSMS(message, orderData.phone_number);
+          await sendPushNotification({ tokens: [customerData.device_token], title: "Payment Verification", description: "Dear Customer, Your offline/bank payment verification has been rejected." });
         }
         resolve({ message: "Document status updated successfully" });
         return;
@@ -295,7 +301,7 @@ const verifyDealerDetail = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, dealer_id: 1 });
+        const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, dealer_id: 1, device_token: 1, email: 1 });
         if (!dealerData) {
           reject(
             errors(labels.LBL_INVALID_ORDER_ID["EN"], responseCodes.Invalid)
@@ -303,10 +309,20 @@ const verifyDealerDetail = (requestParam) => {
           return;
         }
         let updatedata = { status: requestParam.status };
+        let message = `Dear valuable Dealer, Your request for listing your business on cement on call has been approved. Now you’re able to access your dealer dashboard`;
+        let emailMessage = `Dear valuable Dealer, Your request for listing your business on cement on call has been approved. Now you’re able to access your dealer dashboard. Login your account : www.cementoncall.com/login`;
+
         if (requestParam.status == "rejected") {
           updatedata = { ...updatedata, rejected_reason: requestParam.rejected_reason }
+          message = `Dear Dealer, Your request for listing your business on cement on call has been rejected.${requestParam.rejected_reason}`;
+          emailMessage = `Dear Dealer, Your request for listing your business on cement on call has been rejected.${requestParam.rejected_reason}`;
         }
         await query.updateSingle(dbConstants.dbSchema.dealers, updatedata, { dealer_id: requestParam.dealer_id });
+
+        await sendPushNotification({ tokens: [dealerData.device_token], title: "Verification", description: message });
+
+        await sendEmail({ toEmail: dealerData.email, subject: "Verification", text: emailMessage });
+
         resolve({ message: "Document updated successfully" });
         return;
       } catch (error) {
@@ -537,6 +553,37 @@ const quotationWaitingList = (requestParam) => {
   });
 };
 
+const sendNotification = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        requestParam.ids = JSON.parse(requestParam.ids);
+
+        let modelName = dbConstants.dbSchema.customers;
+        let compareData = {
+          customer_id: { $in: requestParam.ids }
+        }
+
+        if (requestParam.type == "dealers") {
+          modelName = dbConstants.dbSchema.dealers,
+            compareData = {
+              dealer_id: { $in: requestParam.ids }
+            }
+        }
+        const response = await query.selectWithAnd(modelName, compareData, { _id: 0, device_token: 1 }, { created_at: -1 });
+        const deviceTokens = _.pluck(response, 'device_token');
+        await sendPushNotification({ tokens: deviceTokens, title: "Notification", description: requestParam.message });
+        resolve({ message: "Send notification successfully" });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   verifyPaymentDocument,
   orderList,
@@ -545,5 +592,6 @@ module.exports = {
   dealerDetail,
   verifyDealerDetail,
   abandonedCartList,
-  quotationWaitingList
+  quotationWaitingList,
+  sendNotification
 };

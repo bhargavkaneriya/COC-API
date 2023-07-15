@@ -113,7 +113,6 @@ router.post("/verify-otp", async (req, res) => {
 
 router.post("/update-profile", verifyToken, async (req, res) => {
   try {
-    console.log("req.headers",);
     if (!req.body.user_id || !req.body.user_type || !(req.body.name || req.body.password)) {
       jsonResponse(
         res,

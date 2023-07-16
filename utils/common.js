@@ -71,7 +71,7 @@ async function generatePDF() {
   }
 }
 
-const uploadImage = (requestParam, req, done) => {
+const uploadImage = (req, done) => {
   async function main() {
     try {
       let bucket = config.aws.s3.cocBucket;
@@ -83,6 +83,24 @@ const uploadImage = (requestParam, req, done) => {
       file.contentType = fileType;
       const imgData = await AWSHandler.imageUpload(file);
       done(null, { url: imgData.Location, file: file.file_name });
+      return;
+    } catch (error) {
+      console.log("error", error);
+      done(
+        errorHandler(labels.LBL_INTERNAL_SERVER['EN'], responseCodes.InternalServer)
+      );
+      return;
+    }
+  }
+  main();
+};
+
+const deleteImage = (req, done) => {
+  async function main() {
+    try {
+      const imgData = await AWSHandler.imageDelete(req);
+      console.log("imgData", imgData);
+      done(null, { message: "image deleted" });
       return;
     } catch (error) {
       console.log("error", error);
@@ -305,6 +323,7 @@ module.exports = {
   generatePDF,
   uploadImage,
   getImage,
+  deleteImage,
   sendSMS,
   sendInWhatsUp,
   sendPushNotification,

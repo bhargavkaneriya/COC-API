@@ -20,7 +20,7 @@ router.post("/create", async (req, res) => {
       );
       return;
     }
-    const response = await productHandler.create(req.body);
+    const response = await productHandler.create(req.body, req);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);
@@ -95,7 +95,7 @@ router.post("/update", async (req, res) => {
       );
       return;
     }
-    const response = await productHandler.update(req.body);
+    const response = await productHandler.update(req.body, req);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

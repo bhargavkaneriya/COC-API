@@ -8,12 +8,12 @@ require("./../../models/product");
 const _ = require("underscore");
 const {
   errorHandler,
-  passwordHandler,
   idGeneratorHandler,
 } = require("xlcoreservice");
 const errors = errorHandler;
+const { uploadImage, deleteImage } = require('../../utils/common');
 
-const create = (requestParam) => {
+const create = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -23,6 +23,13 @@ const create = (requestParam) => {
           ...request_param,
           product_id: await idGeneratorHandler.generateId("COCP"),
         };
+        const imageName = await new Promise((resolve, reject) => {
+          uploadImage(req, (error, result) => {
+            console.log("error", error);
+            resolve(result.file);
+          });
+        });
+        request_param = { ...request_param, image: imageName };
         await query.insertSingle(dbConstants.dbSchema.products, request_param);
         resolve({});
         return;
@@ -39,12 +46,16 @@ const list = () => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const resData = await query.selectWithAnd(
+        let resData = await query.selectWithAnd(
           dbConstants.dbSchema.products,
           {
             status: "active",
           }
         );
+        resData = JSON.parse(JSON.stringify(resData))
+        resData.map((element) => {
+          element.image = config.aws.base_url + element.image
+        });
         resolve(resData);
         return;
       } catch (error) {
@@ -66,6 +77,7 @@ const details = (requestParam) => {
           reject(errors(labels.LBL_INALID_PRODUCT["EN"], responseCodes.Invalid));
           return;
         }
+        resData.image = config.aws.base_url + resData.image
         resolve(resData);
         return;
       } catch (error) {
@@ -78,7 +90,7 @@ const details = (requestParam) => {
   });
 };
 
-const update = (requestParam) => {
+const update = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -87,6 +99,14 @@ const update = (requestParam) => {
           reject(errors(labels.LBL_INVALID_PRODUCT["EN"], responseCodes.Invalid));
           return;
         }
+        await deleteImage({ bucket: config.aws.s3.cocBucket, imageKey: resData.image });
+        const imageName = await new Promise((resolve, reject) => {
+          uploadImage(req, (error, result) => {
+            console.log("error", error);
+            resolve(result.file);
+          });
+        });
+        requestParam = { ...requestParam, image: imageName };
         await query.updateSingle(dbConstants.dbSchema.products, requestParam, { product_id: requestParam.product_id })
         resolve({ message: "record updated successfully" });
         return;

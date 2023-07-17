@@ -11,6 +11,7 @@ const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification } = require("../../utils/common");
 const errors = errorHandler;
+const config = require('../../config');
 
 const createRequest = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -97,7 +98,7 @@ const requestDetails = (requestParam) => {
         reqDetails.discount_amount = dealerProduct.discount_amount;
         reqDetails.product_price = dealerProduct.price;
         reqDetails.product_name = productDetails.name;
-        reqDetails.product_image = productDetails.image;
+        reqDetails.product_image = config.aws.base_url + productDetails.image;
         reqDetails.customer_name = customerDetails.name;
         reqDetails.request_date = reqDetails.created_at;
         resolve(reqDetails);

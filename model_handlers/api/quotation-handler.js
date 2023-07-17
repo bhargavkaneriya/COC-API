@@ -8,6 +8,7 @@ const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
 const errors = errorHandler;
+const config = require('../../config');
 
 const createQuotation = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -43,7 +44,7 @@ const createQuotation = (requestParam) => {
         await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
 
         await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
-        
+
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
@@ -133,7 +134,7 @@ const quotationDetails = (requestParam) => {
         quotationDetails.discount_amount = dealerProduct.discount_amount;
         quotationDetails.price = dealerProduct.price;
         quotationDetails.product_name = productDetails.name;
-        quotationDetails.product_image = productDetails.image;
+        quotationDetails.product_image = config.aws.base_url + productDetails.image;
         quotationDetails.customer_name = customerDetails.name;
         quotationDetails.quotation_date = quotationDetails.created_at
         resolve(quotationDetails);

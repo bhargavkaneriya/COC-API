@@ -7,7 +7,8 @@ require("./../../models/order");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
-const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require('../../utils/common');
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage } = require('../../utils/common');
+const config = require('../../config');
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -57,7 +58,13 @@ const createOrder = (requestParam) => {
           payment_method: requestParam.payment_method,
         }
         if (requestParam.payment_method == "offline") {
-          requestParam = { ...requestParam, offline_payment_doc: requestParam.offline_payment_doc, quotation_id: cartDetail.quotation_id }
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam = { ...requestParam, offline_payment_doc: imageName, quotation_id: cartDetail.quotation_id }
         } else {
           requestParam = { ...requestParam, quotation_id: requestParam.quotation_id }
         }
@@ -231,6 +238,9 @@ const orderList = (requestParam) => {
           dbConstants.dbSchema.orders,
           joinArr
         );
+        response.map((element) => {
+          element.image = config.aws.base_url + element.image
+        })
         resolve({
           response_data: response,
           total_page,

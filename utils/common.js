@@ -74,9 +74,27 @@ async function generatePDF() {
 const uploadImage = (req, done) => {
   async function main() {
     try {
+      let fileNamediff;
+      if (req.files.image) {
+        fileNamediff = req.files.image
+      } else if (req.files.gst_certificate) {
+        fileNamediff = req.files.gst_certificate
+      } else if (req.files.company_pan) {
+        fileNamediff = req.files.company_pan
+      } else if (req.files.company_registration) {
+        fileNamediff = req.files.company_registration
+      } else if (req.files.company_payment_details) {
+        fileNamediff = req.files.company_payment_details
+      } else if (req.files.dealer_agreement_with_COC) {
+        fileNamediff = req.files.dealer_agreement_with_COC
+      } else if (req.files.aadhar_card_of_director) {
+        fileNamediff = req.files.aadhar_card_of_director
+      } else if (req.files.offline_payment_doc) {
+        fileNamediff = req.files.offline_payment_doc
+      }
       let bucket = config.aws.s3.cocBucket;
       const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
-      const file = req.files.image;
+      const file = fileNamediff;
       const fileType = file.name.split(".").pop();
       file.file_name = `${randomStr}.${fileType}`;
       file.bucket = bucket;

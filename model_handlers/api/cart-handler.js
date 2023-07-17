@@ -11,6 +11,7 @@ const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
 const { forEach } = require("p-iteration");
+const config = require('../../config');
 
 const addToCart = (requestParam) => {
     return new Promise((resolve, reject) => {
@@ -93,7 +94,7 @@ const cartList = (requestParam) => {
                     cartDetails.dealer_name = dealerDetail.name;
                     let dealerProductDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetails.dealer_id, product_id: cartDetails.product_id }, { _id: 0, name: 1, image: 1, price: 1 });
                     cartDetails.name = dealerProductDetail.name;
-                    cartDetails.image = dealerProductDetail.image;
+                    cartDetails.image = config.aws.base_url + dealerProductDetail.image;
                     cartDetails.price = dealerProductDetail.price;
                     const totalPrice = Number(cartDetails.qty * dealerProductDetail.price);
                     cartDetails['total_price'] = totalPrice

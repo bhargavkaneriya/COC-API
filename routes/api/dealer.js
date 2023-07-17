@@ -236,7 +236,7 @@ router.post("/update-business-profile", async (req, res) => {
       );
       return;
     }
-    const response = await dealerHandler.updateBusinessProfile(req.body);
+    const response = await dealerHandler.updateBusinessProfile(req.body, req);
     jsonResponse(res, responseCodes.OK, null, response);
   } catch (error) {
     console.log("error", error);

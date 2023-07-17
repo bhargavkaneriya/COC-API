@@ -11,7 +11,7 @@ require("./../../models/notification");
 require("./../../models/transaction");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage } = require("../../utils/common");
 const errors = errorHandler;
 const config = require("../../config");
 
@@ -502,6 +502,13 @@ const getBusinessProfile = (requestParam) => {
             aadhar_card_of_director: 1
           }
         );
+        resData.company_pan = config.aws.base_url + resData.company_pan
+        resData.company_registration = config.aws.base_url + resData.company_registration
+        resData.company_payment_details = config.aws.base_url + resData.company_payment_details
+        resData.dealer_agreement_with_COC = config.aws.base_url + resData.dealer_agreement_with_COC
+        resData.gst_certificate = config.aws.base_url + resData.gst_certificate
+        resData.aadhar_card_of_director = config.aws.base_url + resData.aadhar_card_of_director
+
         resolve(resData);
         return;
       } catch (error) {
@@ -513,7 +520,7 @@ const getBusinessProfile = (requestParam) => {
   });
 };
 
-const updateBusinessProfile = (requestParam) => {
+const updateBusinessProfile = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -530,6 +537,67 @@ const updateBusinessProfile = (requestParam) => {
             errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid)
           );
           return;
+        }
+        if (req.files.company_pan) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.company_pan = imageName
+
+        }
+        if (req.files.company_registration) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.company_registration = imageName
+          console.log("imageName 2", imageName);
+
+        }
+        if (req.files.company_payment_details) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.company_payment_details = imageName
+          console.log("imageName 3", imageName);
+        }
+        if (req.files.dealer_agreement_with_COC) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.dealer_agreement_with_COC = imageName
+          console.log("imageName 4", imageName);
+        }
+        if (req.files.aadhar_card_of_director) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.aadhar_card_of_director = imageName
+          console.log("imageName 5", imageName);
+        }
+        if (req.files.gst_certificate) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
+          });
+          requestParam.gst_certificate = imageName
+          console.log("imageName 6", imageName);
         }
 
         await query.updateSingle(

@@ -99,6 +99,9 @@ const uploadImage = (req, done) => {
       file.file_name = `${randomStr}.${fileType}`;
       file.bucket = bucket;
       file.contentType = fileType;
+      if (fileType == "pdf") {
+        file.contentType = "application/pdf";
+      }
       const imgData = await AWSHandler.imageUpload(file);
       done(null, { url: imgData.Location, file: file.file_name });
       return;
@@ -314,8 +317,10 @@ async function sendEmail(requestParam) {
         attachments: [
           {
             filename: 'sample.pdf',
-            path: requestParam?.filePath,
+            href: "https://cement-on-call.s3.amazonaws.com/InvoicePDF.pdf", // URL of document save in the cloud.
             contentType: 'application/pdf'
+            // path: requestParam?.filePath,
+            // contentType: 'application/pdf'
           }
         ]
       };

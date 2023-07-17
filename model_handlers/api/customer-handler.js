@@ -224,6 +224,9 @@ const dealerOrProductList = (requestParam) => {
             dbConstants.dbSchema.dealer_product,
             joinArr
           );
+          productList.map((element) => {
+            element.image = config.aws.base_url + element.image
+          })
           resolve({ response_data: productList, total_page })
         } else {
           // dealerList.map(async(singleDealer)=>{
@@ -302,6 +305,9 @@ const dealerProductList = (requestParam) => {
           dbConstants.dbSchema.dealer_product,
           joinArr
         );
+        response.map((element) => {
+          element.image = config.aws.base_url + element.image
+        })
         resolve(response);
         return;
       } catch (error) {
@@ -323,7 +329,7 @@ const productDetail = (requestParam) => {
           const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: response.dealer_id }, { _id: 0, name: 1 })
           response.dealer_name = dealerDetail.name
         }
-
+        response.image = config.aws.base_url + response.image
         resolve(response);
         return;
       } catch (error) {
@@ -430,6 +436,9 @@ const quotationList = (requestParam) => {
           dbConstants.dbSchema.quotations,
           joinArr
         );
+        response.map((element) => {
+          element.product_image = config.aws.url + element.product_image
+        })
         resolve(response);
         return;
       } catch (error) {

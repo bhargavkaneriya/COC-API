@@ -20,6 +20,9 @@ const popularProductList = (requestParam) => {
     async function main() {
       try {
         const response = await query.selectWithAnd(dbConstants.dbSchema.products, { is_popular: true }, { _id: 0, product_id: 1, name: 1, code: 1, image: 1 }, { created_at: -1 });
+        response.map((element) => {
+          element.image = config.aws.base_url + element.image
+        })
         resolve(response);
         return;
       } catch (error) {

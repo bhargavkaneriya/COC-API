@@ -13,6 +13,7 @@ const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
 const errors = errorHandler;
+const config = require("../../config");
 
 const productAdd = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -50,12 +51,13 @@ const productAdd = (requestParam) => {
           const dealer_product_id = await idGeneratorHandler.generateId(
             "COCDP"
           );
+          const productData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0, image: 1 });
           await query.insertSingle(dbConstants.dbSchema.dealer_product, {
             dealer_product_id: dealer_product_id,
             dealer_id: requestParam.dealer_id,
             product_id: requestParam.product_id,
             name: requestParam.name,
-            image: "tempString",
+            image: productData.image,
             code: requestParam.code,
             discount_percentage: requestParam.discount_percentage,
             discount_amount: requestParam.discount_amount,
@@ -64,6 +66,8 @@ const productAdd = (requestParam) => {
           resolve({ message: "Product added successfully" });
           return;
         } else {
+          const productData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0, image: 1 });
+          requestParam = { ...requestParam, image: productData.image };
           await query.updateSingle(
             dbConstants.dbSchema.dealer_product,
             requestParam,
@@ -101,6 +105,10 @@ const productList = (requestParam) => {
           page,
           { created_at: -1 }
         );
+
+        dealer.map((element) => {
+          element.image = config.aws.base_url + element.image
+        })
 
         resolve({
           response_data: dealer,
@@ -431,6 +439,9 @@ const commonProductList = (requestParam) => {
           { _id: 0 },
           { created_at: -1 }
         );
+        resData.map((element) => {
+          element.image = config.aws.base_url + element.image
+        })
         resolve(resData);
         return;
       } catch (error) {
@@ -855,6 +866,10 @@ const transactionList = (requestParam) => {
           dbConstants.dbSchema.transactions,
           joinArr
         );
+        response.map((element) => {
+          element.image = config.aws.base_url + element.image
+        });
+
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {
@@ -963,6 +978,10 @@ const totalTopSalesProducts = (requestParam) => {
         ];
 
         const product_list = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
+
+        product_list.map((element) => {
+          element.image = config.aws.base_url + element.image
+        });
 
         resolve(product_list);
         return;

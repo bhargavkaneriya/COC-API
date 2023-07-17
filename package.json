@@ -20,6 +20,7 @@
     "express-fileupload": "^1.2.0",
     "express-session": "^1.15.4",
     "fcm-node": "^1.6.1",
+    "html-pdf": "^3.0.1",
     "https": "^1.0.0",
     "mongoose": "^5.10.18",
     "nodemailer": "^6.9.3",

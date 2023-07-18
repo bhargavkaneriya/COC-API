@@ -9,6 +9,7 @@ const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
 const errors = errorHandler;
 const config = require('../../config');
+const puppeteer = require('puppeteer');
 
 const createQuotation = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -36,6 +37,108 @@ const createQuotation = (requestParam) => {
         }
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
+
+
+        //start html-to-pdf
+        try {
+          async function convertHtmlToPdf(htmlContent, outputPath) {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+            await page.pdf({ path: outputPath });
+
+            await browser.close();
+          }
+
+          // Example usage
+          const htmlContent = `<!DOCTYPE html>
+          <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+          <head>
+          <title></title>
+          
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+           <br/>
+          <style type="text/css">
+          <!--
+            p {margin: 0; padding: 0;}	.ft10{font-size:34px;font-family:Times;color:#000000;}
+            .ft11{font-size:19px;font-family:Times;color:#000000;}
+            .ft12{font-size:16px;font-family:Times;color:#000000;}
+            .ft13{font-size:20px;font-family:Times;color:#000000;}
+            .ft14{font-size:13px;font-family:Times;color:#000000;}
+            .ft15{font-size:22px;font-family:Times;color:#000000;}
+            .ft16{font-size:14px;font-family:Times;color:#000000;}
+            .ft17{font-size:16px;line-height:27px;font-family:Times;color:#000000;}
+            .ft18{font-size:16px;line-height:28px;font-family:Times;color:#000000;}
+            .ft19{font-size:16px;line-height:25px;font-family:Times;color:#000000;}
+            .ft110{font-size:16px;line-height:31px;font-family:Times;color:#000000;}
+            .ft111{font-size:14px;line-height:28px;font-family:Times;color:#000000;}
+            .ft112{font-size:13px;line-height:24px;font-family:Times;color:#000000;}
+          -->
+          </style>
+          </head>
+          <body vlink="blue" link="blue">
+          <div id="page1-div" style="position:relative;width:892px;height:1263px;">
+          <img width="165" height="125" src="./Asset 1.png" alt="background image" style="margin-top: 95px; margin-left: 60px;"/>
+          <p style="position:absolute;top:32px;left:381px;white-space:nowrap" class="ft10">Quotation</p>
+          <p style="position:absolute;top:228px;left:68px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
+          
+          <p style="position:absolute;top:314px;left:72px;white-space:nowrap" class="ft12">To,</p>
+          <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">Tejas&#160;Trading</p>
+          <p style="position:absolute;top:354px;left:72px;white-space:nowrap" class="ft19"><br/>tejas@gmail.com<br/>+91&#160;9898989999</p>
+          <p style="position:absolute;top:314px;left:695px;white-space:nowrap" class="ft12">Quotation&#160;No.</p>
+          <p style="position:absolute;top:340px;left:695px;white-space:nowrap" class="ft12">${quotation_id}</p>
+          <p style="position:absolute;top:365px;left:759px;white-space:nowrap" class="ft12">Date</p>
+          <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">20/12/2023</p>
+          
+          <p style="position:absolute;top:590px;left:74px;white-space:nowrap" class="ft12">Description</p>
+          <p style="position:absolute;top:590px;left:504px;white-space:nowrap" class="ft12">Unit&#160;Cost</p>
+          <p style="position:absolute;top:590px;left:660px;white-space:nowrap" class="ft12">Qty</p>
+          <p style="position:absolute;top:590px;left:740px;white-space:nowrap" class="ft12">Amount</p>
+          
+          <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">Ultratech&#160;Cement</p>
+          <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">(COCP1234)</p>
+          <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">₹8000</p>
+          <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">6</p>
+          <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">₹48000</p>
+          
+          <p style="position:absolute;top:1189px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>
+          <p style="position:absolute;top:1189px;left:351px;white-space:nowrap" class="ft12">+91&#160;9898989898</p>
+          <p style="position:absolute;top:1189px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
+          <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹48000.00<br/>GST&#160;18%</p>
+          <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹8640.00</p>
+          <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;%</p>
+          
+          <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹0.00</p>
+          <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹56640.00</p>
+          <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
+          
+          <p style="position:absolute;top:170px;left:611px;white-space:nowrap" class="ft12">25th&#160;main&#160;Rd,&#160;Marenahalli&#160;</p>
+          <p style="position:absolute;top:196px;left:654px;white-space:nowrap" class="ft12">1st&#160;Phase,&#160;J.P&#160;Nagar</p>
+          <p style="position:absolute;top:221px;left:656px;white-space:nowrap" class="ft12">Bangalore&#160;-&#160;525252</p>
+          <p style="position:absolute;top:245px;left:673px;white-space:nowrap" class="ft12">Karnataka - India</p>
+          <p style="position:absolute;top:140px;left:745px;white-space:nowrap" class="ft12">From</p>
+          
+          <p style="position:absolute;top:1045px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
+          <p style="position:absolute;top:1082px;left:75px;white-space:nowrap" class="ft112">Tejas&#160;Enterprise<br/>tejasenterprise@gmail.com<br/>+91&#160;9898989898</p>
+          </div>
+          </body>
+          </html>
+          `;
+
+          const outputPath = './output.pdf';
+
+          convertHtmlToPdf(htmlContent, outputPath)
+            .then(() => {
+              console.log(`PDF successfully generated at ${outputPath}`);
+            })
+            .catch((error) => {
+              console.error('Error generating PDF:', error);
+            });
+        } catch (error) {
+          console.log("error", error);
+        }
+        //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
 

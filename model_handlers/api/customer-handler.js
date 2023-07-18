@@ -681,7 +681,7 @@ const invoiceList = (requestParam) => {
               customer_id: "$customer_id",
               dealer_id: "$dealer_id",
               dealer_name: "$dealerDetail.name",
-              invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
+              invoice_document: "$invoice_document"
             },
           },
           {
@@ -695,6 +695,9 @@ const invoiceList = (requestParam) => {
           dbConstants.dbSchema.invoices,
           joinArr
         );
+        response.map((element) => {
+          element.invoice_document = config.aws.base_url + element.invoice_document
+        })
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {

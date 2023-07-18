@@ -760,7 +760,7 @@ const invoiceList = (requestParam) => {
               customer_id: "$customer_id",
               dealer_id: "$dealer_id",
               customer_name: "$customerDetail.name",
-              invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
+              invoice_document: "$invoice_document"
             },
           },
           {
@@ -774,6 +774,9 @@ const invoiceList = (requestParam) => {
           dbConstants.dbSchema.invoices,
           joinArr
         );
+        response.map((element) => {
+          element.invoice_document = element.invoice_document
+        })
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {
@@ -1066,15 +1069,13 @@ const sendInvoice = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const resData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { invoice_id: requestParam.invoice_id }, { _id: 0, customer_id: 1, dealer_id: 1 });
+        const resData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { invoice_id: requestParam.invoice_id }, { _id: 0, customer_id: 1, dealer_id: 1, invoice_document: 1 });
         if (!resData) {
           reject(errors(labels.LBL_INVALID_INVOICE_ID["EN"], responseCodes.Invalid));
           return;
         }
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1, device_token: 1 });
-        //send invoice from here via email or whatsup
 
-        //
         const notification_id = await idGeneratorHandler.generateId("COCN");
         const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1 });
         // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
@@ -1090,8 +1091,12 @@ const sendInvoice = (requestParam) => {
         //
 
         await sendPushNotification({ tokens: [customerData.device_token], title: "Invoice", description: `${dealerName.name} sent a invoice.` })
-        await sendEmail({ toEmail: customerData.email, subject: "Invoice", text: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
-        await sendInWhatsUp({ toNumber: customerData.phone_number, message: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        if (requestParam?.is_email) {
+          await sendEmail({ toEmail: customerData.email, subject: "Invoice", text: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
+        }
+        if (requestParam?.is_whatsapp) {
+          await sendInWhatsUp({ toNumber: customerData.phone_number, message: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
+        }
         resolve({ message: "Invoice send successfully" });
         return;
       } catch (error) {

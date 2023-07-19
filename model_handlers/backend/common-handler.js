@@ -10,14 +10,16 @@ const {
   errorHandler,
   idGeneratorHandler,
 } = require("xlcoreservice");
-const { sendSMS, sendPushNotification, sendEmail } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, uploadPDF } = require("../../utils/common");
 const errors = errorHandler;
+const puppeteer = require('puppeteer');
+const moment = require('moment');
 
 const verifyPaymentDocument = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const orderData = await query.selectWithAndOne(dbConstants.dbSchema.orders, { order_id: requestParam.order_id }, { _id: 0, order_id: 1, quotation_id: 1, phone_number: 1 });
+        const orderData = await query.selectWithAndOne(dbConstants.dbSchema.orders, { order_id: requestParam.order_id }, { _id: 0 });
         if (!orderData) {
           reject(
             errors(labels.LBL_INVALID_ORDER_ID["EN"], responseCodes.Invalid)
@@ -33,6 +35,110 @@ const verifyPaymentDocument = (requestParam) => {
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: orderData.customer_id }, { _id: 0, customer_id: 1, name: 1, device_token: 1, email: 1 });
 
         if (requestParam.verify_document_status === "approved") {
+
+
+          //start pdf
+          const invoiceData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { order_id: requestParam.order_id }, { _id: 0, invoice_id: 1 });
+          const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: orderData.dealer_id }, { _id: 0, dealer_id: 1, name: 1, device_token: 1, email: 1, phone_number: 1 });
+
+          //start html-to-pdf
+          async function convertHtmlToPdf(htmlContent, outputPath) {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+            await page.pdf({ path: outputPath });
+
+            await browser.close();
+          }
+
+          const htmlContent = `<!DOCTYPE html>
+              <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+              <head>
+              <title></title>
+              
+              <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+              <br/>
+              <style type="text/css">
+              <!--
+                p {margin: 0; padding: 0;}	.ft10{font-size:34px;font-family:Times;color:#000000;}
+                .ft11{font-size:19px;font-family:Times;color:#000000;}
+                .ft12{font-size:16px;font-family:Times;color:#000000;}
+                .ft13{font-size:20px;font-family:Times;color:#000000;}
+                .ft14{font-size:13px;font-family:Times;color:#000000;}
+                .ft15{font-size:22px;font-family:Times;color:#000000;}
+                .ft16{font-size:14px;font-family:Times;color:#000000;}
+                .ft17{font-size:16px;line-height:27px;font-family:Times;color:#000000;}
+                .ft18{font-size:16px;line-height:28px;font-family:Times;color:#000000;}
+                .ft19{font-size:16px;line-height:25px;font-family:Times;color:#000000;}
+                .ft110{font-size:16px;line-height:31px;font-family:Times;color:#000000;}
+                .ft111{font-size:14px;line-height:28px;font-family:Times;color:#000000;}
+                .ft112{font-size:13px;line-height:24px;font-family:Times;color:#000000;}
+              -->
+              </style>
+              </head>
+              <body vlink="blue" link="blue">
+              <div id="page1-div" style="position:relative;width:892px;height:1263px;">
+              <img width="165" height="125" src="https://cement-on-call.s3.amazonaws.com/FQDHjdnDfNBTNn.png" alt="background image" style="margin-top: 95px; margin-left: 60px;"/>
+              <p style="position:absolute;top:32px;left:381px;white-space:nowrap" class="ft10">Invoice</p>
+              <p style="position:absolute;top:228px;left:68px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
+              
+              <p style="position:absolute;top:314px;left:72px;white-space:nowrap" class="ft12">Billed&#160;to</p>
+              <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">${orderData?.customer_name}</p>
+              <p style="position:absolute;top:389px;left:72px;white-space:nowrap" class="ft19">${orderData?.shipping_address}<br/>${orderData?.city} ${orderData?.state}<br/>${orderData?.pincode}<br/>${orderData?.email}<br/>+91&#160;${orderData?.phone_number}</p>
+              <p style="position:absolute;top:314px;left:712px;white-space:nowrap" class="ft12">Invoice&#160;No.</p>
+              <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${invoiceData?.invoice_id}</p>
+              <p style="position:absolute;top:365px;left:759px;white-space:nowrap" class="ft12">Date</p>
+              <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">${moment().format('DD/MM/YYYY')}</p>
+              
+              <p style="position:absolute;top:590px;left:74px;white-space:nowrap" class="ft12">Description</p>
+              <p style="position:absolute;top:590px;left:504px;white-space:nowrap" class="ft12">Unit&#160;Cost</p>
+              <p style="position:absolute;top:590px;left:660px;white-space:nowrap" class="ft12">Qty</p>
+              <p style="position:absolute;top:590px;left:740px;white-space:nowrap" class="ft12">Amount</p>
+              
+              <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${orderData.product_name}</p>
+              <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">${orderData.product_id}</p>
+              <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${orderData.product_price}</p>
+              <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${orderData.product_qty}</p>
+              <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">${orderData?.total_price}</p>
+              
+              <p style="position:absolute;top:1110px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>
+              <p style="position:absolute;top:1110px;left:351px;white-space:nowrap" class="ft12">+91&#160;9898989898</p>
+              <p style="position:absolute;top:1110px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
+              <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${orderData?.total_price}<br/>GST&#160;18%</p>
+              <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹${Number((orderData?.total_price * 100) / 18).toFixed(2)}</p>
+              <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;${orderData.product_discount_percentage}</p>
+              
+              <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹${orderData.product_discount_amount}</p>
+              <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹${(orderData.grand_total)}</p>
+              <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
+              
+              <p style="position:absolute;top:170px;left:611px;white-space:nowrap" class="ft12">25th&#160;main&#160;Rd,&#160;Marenahalli&#160;</p>
+              <p style="position:absolute;top:196px;left:654px;white-space:nowrap" class="ft12">1st&#160;Phase,&#160;J.P&#160;Nagar</p>
+              <p style="position:absolute;top:221px;left:656px;white-space:nowrap" class="ft12">Bangalore&#160;-&#160;525252</p>
+              <p style="position:absolute;top:245px;left:673px;white-space:nowrap" class="ft12">Karnataka&#160;-&#160;India</p>
+              <p style="position:absolute;top:140px;left:668px;white-space:nowrap" class="ft12">28COCAC5252Q</p>
+              
+              <p style="position:absolute;top:950px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
+              <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerData.name}<br/>${dealerData.email}<br/>+91&#160;${dealerData.phone_number}</p>
+              </div>
+              </body>
+              </html>
+              `;
+          const outputPath = './invoice.pdf';
+          await convertHtmlToPdf(htmlContent, outputPath);
+          const imageName = await new Promise((resolve, reject) => {
+            uploadPDF(outputPath, (error, result) => {
+              resolve(result.file);
+            });
+          });
+          //end html-to-pdf
+          await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: imageName }, { invoice_id: invoiceData.invoice_id });
+
+          //end pdf
+
+
+
           let message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id}`;
 
           if (orderData.quotation_id) {

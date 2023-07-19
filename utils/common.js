@@ -116,6 +116,46 @@ const uploadImage = (req, done) => {
   main();
 };
 
+async function uploadPDF(requestParam, done) {
+  async function main() {
+    try {
+      const AWS = require('aws-sdk');
+      const s3 = new AWS.S3({
+        accessKeyId: config.aws.accessKeyId,
+        secretAccessKey: config.aws.secretAccessKey,
+        region: config.aws.region,
+
+      });
+      const fs = require('fs');
+      const bucketName = config.aws.s3.cocBucket;
+      const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
+      const file_name = `${randomStr}.pdf`;
+      const fileContent = requestParam;
+      const params = {
+        Bucket: bucketName,
+        Key: file_name,
+        Body: fs.readFileSync(fileContent),
+        ContentType: 'application/pdf',
+        ACL: 'public-read'
+      };
+      s3.putObject(params, function (err, data) {
+        if (err) {
+          console.error('Error uploading PDF file:', err);
+        } else {
+          done(null, { file: file_name });
+        }
+      });
+    } catch (error) {
+      console.log("error", error);
+      done(
+        errorHandler(labels.LBL_INTERNAL_SERVER['EN'], responseCodes.InternalServer)
+      );
+      return;
+    }
+  }
+  main();
+}
+
 const deleteImage = (req, done) => {
   async function main() {
     try {
@@ -160,8 +200,6 @@ const getImage = (requestParam) => {
   // })
   main();
 };
-
-
 
 async function sendSMS(message, toNumber) {
   try {
@@ -317,7 +355,8 @@ async function sendEmail(requestParam) {
         attachments: [
           {
             filename: 'sample.pdf',
-            href: "https://cement-on-call.s3.amazonaws.com/InvoicePDF.pdf", // URL of document save in the cloud.
+            // href: "https://cement-on-call.s3.amazonaws.com/InvoicePDF.pdf", // URL of document save in the cloud.
+            href: `${config.aws.base_url}${requestParam.filePath}`, // URL of document save in the cloud.
             contentType: 'application/pdf'
             // path: requestParam?.filePath,
             // contentType: 'application/pdf'
@@ -350,5 +389,6 @@ module.exports = {
   sendSMS,
   sendInWhatsUp,
   sendPushNotification,
-  sendEmail
+  sendEmail,
+  uploadPDF
 };

@@ -61,6 +61,10 @@ const quotationSchema = new Schema({
     updated_at: {
         type: Date,
         default: Date.now
+    },
+    quo_doc: {
+        type: String,
+        default: ''
     }
 });
 

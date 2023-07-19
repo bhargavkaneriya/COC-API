@@ -6,10 +6,11 @@ const labels = require("./../../utils/labels.json");
 require("./../../models/quotation");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, uploadPDF } = require("../../utils/common");
 const errors = errorHandler;
 const config = require('../../config');
 const puppeteer = require('puppeteer');
+const moment = require('moment');
 
 const createQuotation = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -17,16 +18,14 @@ const createQuotation = (requestParam) => {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
         requestParam = { ...requestParam, quotation_id };
-        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1 });
+        const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1, name: 1 });
         requestParam = { ...requestParam, dealer_product_id: dealerProduct.dealer_product_id };
         await query.insertSingle(dbConstants.dbSchema.quotations, requestParam);
         await query.updateSingle(dbConstants.dbSchema.requests, { is_quotation_created: true }, { request_id: requestParam.request_id });
         //notification add
-
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1, email: 1, phone_number: 1 });
         const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1, device_token: 1, email: 1 });
-
         let insertData = {
           notification_id,
           title: "Quotation send to customer",
@@ -38,21 +37,18 @@ const createQuotation = (requestParam) => {
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
 
-
         //start html-to-pdf
-        try {
-          async function convertHtmlToPdf(htmlContent, outputPath) {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
+        async function convertHtmlToPdf(htmlContent, outputPath) {
+          const browser = await puppeteer.launch();
+          const page = await browser.newPage();
 
-            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-            await page.pdf({ path: outputPath });
+          await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+          await page.pdf({ path: outputPath });
 
-            await browser.close();
-          }
+          await browser.close();
+        }
 
-          // Example usage
-          const htmlContent = `<!DOCTYPE html>
+        const htmlContent = `<!DOCTYPE html>
           <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
           <head>
           <title></title>
@@ -79,38 +75,38 @@ const createQuotation = (requestParam) => {
           </head>
           <body vlink="blue" link="blue">
           <div id="page1-div" style="position:relative;width:892px;height:1263px;">
-          <img width="165" height="125" src="./Asset 1.png" alt="background image" style="margin-top: 95px; margin-left: 60px;"/>
+          <img width="165" height="125" src="https://cement-on-call.s3.amazonaws.com/FQDHjdnDfNBTNn.png" alt="background image" style="margin-top: 95px; margin-left: 60px;"/>
           <p style="position:absolute;top:32px;left:381px;white-space:nowrap" class="ft10">Quotation</p>
           <p style="position:absolute;top:228px;left:68px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
           
           <p style="position:absolute;top:314px;left:72px;white-space:nowrap" class="ft12">To,</p>
-          <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">Tejas&#160;Trading</p>
-          <p style="position:absolute;top:354px;left:72px;white-space:nowrap" class="ft19"><br/>tejas@gmail.com<br/>+91&#160;9898989999</p>
+          <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">${customerName?.name}</p>
+          <p style="position:absolute;top:354px;left:72px;white-space:nowrap" class="ft19"><br/>${customerName?.email}<br/>+91&#160;${customerName?.phone_number}</p>
           <p style="position:absolute;top:314px;left:695px;white-space:nowrap" class="ft12">Quotation&#160;No.</p>
-          <p style="position:absolute;top:340px;left:695px;white-space:nowrap" class="ft12">${quotation_id}</p>
+          <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${quotation_id}</p>
           <p style="position:absolute;top:365px;left:759px;white-space:nowrap" class="ft12">Date</p>
-          <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">20/12/2023</p>
+          <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">${moment().format('DD/MM/YYYY')}</p>
           
           <p style="position:absolute;top:590px;left:74px;white-space:nowrap" class="ft12">Description</p>
           <p style="position:absolute;top:590px;left:504px;white-space:nowrap" class="ft12">Unit&#160;Cost</p>
           <p style="position:absolute;top:590px;left:660px;white-space:nowrap" class="ft12">Qty</p>
           <p style="position:absolute;top:590px;left:740px;white-space:nowrap" class="ft12">Amount</p>
           
-          <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">Ultratech&#160;Cement</p>
-          <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">(COCP1234)</p>
-          <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">₹8000</p>
-          <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">6</p>
-          <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">₹48000</p>
+          <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${dealerProduct?.name}</p>
+          <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">#${requestParam.product_id}</p>
+          <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">₹${requestParam?.product_price}</p>
+          <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${requestParam?.qty}</p>
+          <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">₹${requestParam?.total_price}</p>
           
-          <p style="position:absolute;top:1189px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>
-          <p style="position:absolute;top:1189px;left:351px;white-space:nowrap" class="ft12">+91&#160;9898989898</p>
-          <p style="position:absolute;top:1189px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
-          <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹48000.00<br/>GST&#160;18%</p>
-          <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹8640.00</p>
+          <p style="position:absolute;top:1100px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>
+          <p style="position:absolute;top:1100px;left:351px;white-space:nowrap" class="ft12">+91&#160;9898989898</p>
+          <p style="position:absolute;top:1100px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
+          <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${requestParam?.total_price}<br/>GST&#160;18%</p>
+          <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">${Number((requestParam?.total_price * 100) / 18).toFixed(2)}</p>
           <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;%</p>
           
           <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹0.00</p>
-          <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹56640.00</p>
+          <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹${requestParam?.grand_total}</p>
           <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
           
           <p style="position:absolute;top:170px;left:611px;white-space:nowrap" class="ft12">25th&#160;main&#160;Rd,&#160;Marenahalli&#160;</p>
@@ -119,35 +115,26 @@ const createQuotation = (requestParam) => {
           <p style="position:absolute;top:245px;left:673px;white-space:nowrap" class="ft12">Karnataka - India</p>
           <p style="position:absolute;top:140px;left:745px;white-space:nowrap" class="ft12">From</p>
           
-          <p style="position:absolute;top:1045px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
-          <p style="position:absolute;top:1082px;left:75px;white-space:nowrap" class="ft112">Tejas&#160;Enterprise<br/>tejasenterprise@gmail.com<br/>+91&#160;9898989898</p>
+          <p style="position:absolute;top:950px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
+          <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerName?.name}<br/>${dealerName?.email}<br/>+91&#160;${dealerName?.phone_number}</p>
           </div>
           </body>
           </html>
           `;
-
-          const outputPath = './output.pdf';
-
-          convertHtmlToPdf(htmlContent, outputPath)
-            .then(() => {
-              console.log(`PDF successfully generated at ${outputPath}`);
-            })
-            .catch((error) => {
-              console.error('Error generating PDF:', error);
-            });
-        } catch (error) {
-          console.log("error", error);
-        }
+        const outputPath = './quotation.pdf';
+        await convertHtmlToPdf(htmlContent, outputPath);
+        const imageName = await new Promise((resolve, reject) => {
+          uploadPDF(outputPath, (error, result) => {
+            resolve(result.file);
+          });
+        });
+        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: imageName }, { quotation_id: quotation_id })
         //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
-
         await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-
-        await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
-
+        await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
         await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
-
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {

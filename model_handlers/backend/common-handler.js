@@ -308,6 +308,20 @@ const verificationRequestList = (requestParam) => {
             },
           },
           {
+            $lookup: {
+              from: "quotations",
+              localField: "quotation_id",
+              foreignField: "quotation_id",
+              as: "quotationsDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$quotationsDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
             $match: comparisonColumnsAndValues
           },
           {
@@ -324,14 +338,9 @@ const verificationRequestList = (requestParam) => {
               payment_method: "$payment_method",
               dealer_name: "$dealerDetail.name",
               customer_name: "$customer_name",
-              // name: "$product_name",
-              // qty: "$product_qty",
-              // image: "$product_image",
-              // price: "$product_price",
-              // total_price: "$total_price",
-              // grand_total: "$grand_total",
+              quo_doc: "$quotationsDetail.quo_doc",
+              offline_payment_doc: "$offline_payment_doc",
               verify_document_status: "$verify_document_status",
-              // delivery_status: "$delivery_status",
               order_created: "$created_at",
             },
           },
@@ -346,6 +355,10 @@ const verificationRequestList = (requestParam) => {
           dbConstants.dbSchema.orders,
           joinArr
         );
+        response.map((element) => {
+          element.quo_doc = config.aws.base_url + element.quo_doc
+          element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
+        })
         resolve({
           response_data: response,
           total_page,

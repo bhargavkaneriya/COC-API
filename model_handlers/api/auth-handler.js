@@ -58,7 +58,7 @@ const signUp = (requestParam) => {
         request_param = { ...request_param, otp }
         await query.insertSingle(modelName, request_param);
 
-        await sendSMS(`${otp} is your OTP to login to Cement on a call account. - OTP will expire in 60 seconds. - When user successfully sign up on a coc app/web.`, requestParam.phone_number);
+        await sendSMS(`${otp} is your OTP to login to Cement on a call account. - OTP will expire in 60 seconds.`, requestParam.phone_number);
 
         resolve({ otp });
         return;
@@ -249,7 +249,7 @@ const verifyOTP = (requestParam) => {
 
           exist_user = JSON.parse(JSON.stringify(exist_user))
           if (requestParam.from_type == "forgot_password") {
-            await sendSMS(`${otp} is Your OTP to forget your cement on call password. OTP will expire in 60 seconds. - When a user forgot the password from the login screen on the coc app/web.`, requestParam.phone_number);
+            await sendSMS(`${otp} is Your OTP to forget your cement on call password. OTP will expire in 60 seconds.`, requestParam.phone_number);
             delete exist_user.access_token;
           }
           delete exist_user.otp;

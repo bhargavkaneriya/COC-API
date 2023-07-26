@@ -77,7 +77,9 @@ const details = (requestParam) => {
           reject(errors(labels.LBL_INALID_PRODUCT["EN"], responseCodes.Invalid));
           return;
         }
-        resData.image = config.aws.base_url + resData.image
+        if (resData.image) {
+          resData.image = config.aws.base_url + resData.image
+        }
         resolve(resData);
         return;
       } catch (error) {
@@ -99,14 +101,19 @@ const update = (requestParam, req) => {
           reject(errors(labels.LBL_INVALID_PRODUCT["EN"], responseCodes.Invalid));
           return;
         }
-        await deleteImage({ bucket: config.aws.s3.cocBucket, imageKey: resData.image });
-        const imageName = await new Promise((resolve, reject) => {
-          uploadImage(req, (error, result) => {
-            console.log("error", error);
-            resolve(result.file);
+        // await deleteImage({ bucket: config.aws.s3.cocBucket, imageKey: resData.image });
+
+        if (req.files.image) {
+          const imageName = await new Promise((resolve, reject) => {
+            uploadImage(req, (error, result) => {
+              console.log("error", error);
+              resolve(result.file);
+            });
           });
-        });
-        requestParam = { ...requestParam, image: imageName };
+          requestParam.image = imageName
+        }
+
+        requestParam = requestParam;
         await query.updateSingle(dbConstants.dbSchema.products, requestParam, { product_id: requestParam.product_id })
         resolve({ message: "record updated successfully" });
         return;

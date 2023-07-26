@@ -707,6 +707,64 @@ const sendNotification = (requestParam) => {
   });
 };
 
+const notificationList = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+
+        const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
+        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        if (page >= 1) {
+          page = parseInt(page) - 1;
+        }
+
+        const comparisonColumnsAndValues = {};
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.notifications, comparisonColumnsAndValues);
+        const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
+
+        if (requestParam.page && requestParam.page > total_page) {
+          reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        const joinArr = [
+          {
+            $match: comparisonColumnsAndValues,
+          },
+          {
+            $sort: { created_at: -1 },
+          },
+          {
+            $project: {
+              _id: 0,
+              notification_id: "$notification_id",
+              title: "$title",
+              description: "$description",
+              notification_date: "$created_at",
+            },
+          },
+          {
+            $skip: page * sizePerPage,
+          },
+          {
+            $limit: sizePerPage,
+          }
+        ];
+        const response = await query.joinWithAnd(
+          dbConstants.dbSchema.notifications,
+          joinArr
+        );
+        resolve({ response_data: response, total_page });
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   verifyPaymentDocument,
   orderList,
@@ -716,5 +774,6 @@ module.exports = {
   verifyDealerDetail,
   abandonedCartList,
   quotationWaitingList,
-  sendNotification
+  sendNotification,
+  notificationList
 };

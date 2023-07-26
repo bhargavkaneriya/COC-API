@@ -228,4 +228,20 @@ router.post("/send-notification", async (req, res) => {
   }
 });
 
+router.get("/list-notification", async (req, res) => {
+  try {
+    const response = await commonHandler.notificationList(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

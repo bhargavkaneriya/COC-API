@@ -431,6 +431,10 @@ const verifyDealerDetail = (requestParam) => {
         let message = `Dear valuable Dealer, Your request for listing your business on cement on call has been approved. Now you’re able to access your dealer dashboard`;
         let emailMessage = `Dear valuable Dealer, Your request for listing your business on cement on call has been approved. Now you’re able to access your dealer dashboard. Login your account : www.cementoncall.com/login`;
 
+        if (requestParam.status == "approved") {
+          updatedata = { ...updatedata, is_verified: true }
+        }
+
         if (requestParam.status == "rejected") {
           updatedata = { ...updatedata, rejected_reason: requestParam.rejected_reason }
           message = `Dear Dealer, Your request for listing your business on cement on call has been rejected.${requestParam.rejected_reason}`;

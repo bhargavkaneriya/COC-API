@@ -502,13 +502,24 @@ const getBusinessProfile = (requestParam) => {
             aadhar_card_of_director: 1
           }
         );
-        resData.company_pan = config.aws.base_url + resData.company_pan
-        resData.company_registration = config.aws.base_url + resData.company_registration
-        resData.company_payment_details = config.aws.base_url + resData.company_payment_details
-        resData.dealer_agreement_with_COC = config.aws.base_url + resData.dealer_agreement_with_COC
-        resData.gst_certificate = config.aws.base_url + resData.gst_certificate
-        resData.aadhar_card_of_director = config.aws.base_url + resData.aadhar_card_of_director
-
+        if (resData.company_pan) {
+          resData.company_pan = config.aws.base_url + resData.company_pan
+        }
+        if (resData.company_registration) {
+          resData.company_registration = config.aws.base_url + resData.company_registration
+        }
+        if (resData.company_payment_details) {
+          resData.company_payment_details = config.aws.base_url + resData.company_payment_details
+        }
+        if (resData.dealer_agreement_with_COC) {
+          resData.dealer_agreement_with_COC = config.aws.base_url + resData.dealer_agreement_with_COC
+        }
+        if (resData.gst_certificate) {
+          resData.gst_certificate = config.aws.base_url + resData.gst_certificate
+        }
+        if (resData.aadhar_card_of_director) {
+          resData.aadhar_card_of_director = config.aws.base_url + resData.aadhar_card_of_director
+        }
         resolve(resData);
         return;
       } catch (error) {

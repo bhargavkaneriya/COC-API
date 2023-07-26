@@ -93,7 +93,6 @@ router.get("/quotation-list", async (req, res) => {
 
 router.get("/invoice-list", async (req, res) => {
     try {
-        console.log("req.query", req.query);
         if (!req.query.customer_id) {
             jsonResponse(
                 res,

@@ -319,6 +319,12 @@ const updateProfile = (requestParam, req2) => {
           );
           columnToUpdate = { ...columnToUpdate, password: requestParam.password }
         }
+        if (requestParam.gst_no) {
+          columnToUpdate = { ...columnToUpdate, gst_no: requestParam.gst_no }
+        }
+        if (requestParam.pan_no) {
+          columnToUpdate = { ...columnToUpdate, pan_no: requestParam.pan_no }
+        }
         await query.updateSingle(modelName, columnToUpdate, compareData);
         let response = await query.selectWithAndOne(modelName, compareData, { _id: 0, password: 0, otp: 0, products: 0, role_id: 0 })
         response = JSON.parse(JSON.stringify(response))

@@ -43,7 +43,6 @@ async function verifyToken(req, res, next) {
     }
   } else if (decodedToken.user_type == "dealer") {
     const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: decodedToken.id }, { _id: 0, access_token: 1 })
-    console.log("dealerData.access_token", dealerData.access_token);
     if (dealerData.access_token !== tokenBearer) {
       return (errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
     }
@@ -160,7 +159,6 @@ const deleteImage = (req, done) => {
   async function main() {
     try {
       const imgData = await AWSHandler.imageDelete(req);
-      console.log("imgData", imgData);
       done(null, { message: "image deleted" });
       return;
     } catch (error) {

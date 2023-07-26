@@ -176,7 +176,6 @@ const dealerOrProductList = (requestParam) => {
             const regex = new RegExp(searchTerm, "i");
             matchData = { ...matchData, name: { $regex: regex } }
           }
-          console.log("matchData", matchData);
           const joinArr = [
             {
               $lookup: {

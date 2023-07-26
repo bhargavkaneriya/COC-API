@@ -567,7 +567,6 @@ const updateBusinessProfile = (requestParam, req) => {
             });
           });
           requestParam.company_registration = imageName
-          console.log("imageName 2", imageName);
 
         }
         if (req.files.company_payment_details) {
@@ -578,7 +577,6 @@ const updateBusinessProfile = (requestParam, req) => {
             });
           });
           requestParam.company_payment_details = imageName
-          console.log("imageName 3", imageName);
         }
         if (req.files.dealer_agreement_with_COC) {
           const imageName = await new Promise((resolve, reject) => {
@@ -588,7 +586,6 @@ const updateBusinessProfile = (requestParam, req) => {
             });
           });
           requestParam.dealer_agreement_with_COC = imageName
-          console.log("imageName 4", imageName);
         }
         if (req.files.aadhar_card_of_director) {
           const imageName = await new Promise((resolve, reject) => {
@@ -598,7 +595,6 @@ const updateBusinessProfile = (requestParam, req) => {
             });
           });
           requestParam.aadhar_card_of_director = imageName
-          console.log("imageName 5", imageName);
         }
         if (req.files.gst_certificate) {
           const imageName = await new Promise((resolve, reject) => {
@@ -608,7 +604,6 @@ const updateBusinessProfile = (requestParam, req) => {
             });
           });
           requestParam.gst_certificate = imageName
-          console.log("imageName 6", imageName);
         }
 
         await query.updateSingle(
@@ -786,7 +781,7 @@ const invoiceList = (requestParam) => {
           joinArr
         );
         response.map((element) => {
-          element.invoice_document = element.invoice_document
+          element.invoice_document = config.aws.base_url + element.invoice_document
         })
         resolve({ response_data: response, total_page });
         return;

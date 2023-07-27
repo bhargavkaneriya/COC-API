@@ -11,6 +11,12 @@ const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, up
 const config = require('../../config');
 const puppeteer = require('puppeteer');
 const moment = require('moment');
+const Razorpay = require("razorpay");
+const shortid = require("shortid");
+var razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -354,7 +360,45 @@ const orderList = (requestParam) => {
   });
 };
 
+
+const razorpayMethod = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const payment_capture = 1;
+        const amount = 500;
+        const currency = "INR";
+
+        const options = {
+          amount,
+          currency,
+          receipt: shortid.generate(),
+          payment_capture,
+        };
+
+        try {
+          const response = await razorpay.orders.create(options);
+          resolve({
+            id: response.id,
+            currency: response.currency,
+            amount: response.amount,
+          });
+          return;
+        } catch (err) {
+          console.log(err);
+        }
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+
 module.exports = {
   createOrder,
-  orderList
+  orderList,
+  razorpayMethod
 };

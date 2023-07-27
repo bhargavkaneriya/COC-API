@@ -59,4 +59,29 @@ router.get("/order-list", async (req, res) => {
   }
 });
 
+router.post("/razorpay", async (req, res) => {
+  try {
+    // if (!req.body.customer_id || !req.body.delivery_detail_id || !req.body.payment_method || !req.body.total_price || !req.body.grand_total || !(req.body.cart_id || req.body.quotation_id)) {
+    //   jsonResponse(
+    //     res,
+    //     responseCodes.BadRequest,
+    //     errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+    //     null
+    //   );
+    //   return;
+    // }
+    const response = await orderHandler.razorpayMethod(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

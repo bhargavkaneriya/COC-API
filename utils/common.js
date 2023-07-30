@@ -269,7 +269,7 @@ async function sendPushNotification(requestParam) {
         // reject(errors.internalServer(true))
         // return
       } else {
-        console.log("272");
+        console.log("272",result);
         result = JSON.parse(result)
         if (result.success == 1) {
           console.log("275");

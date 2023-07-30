@@ -550,7 +550,9 @@ const updateBusinessProfile = (requestParam, req) => {
           );
           return;
         }
+        console.log("req.files",req.files);
         if (req.files.company_pan) {
+          console.log("req.files.company_pan",req.files.company_pan);
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -560,7 +562,10 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.company_pan = imageName
 
         }
+        console.log("565 req.files",req.files)
         if (req.files.company_registration) {
+          console.log("req.files.company_registration",req.files.company_registration);
+
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);

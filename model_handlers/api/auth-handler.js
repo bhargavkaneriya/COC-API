@@ -378,7 +378,7 @@ const logout = (requestParam, req2) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.Invalid));
           return;
         }
-        await query.updateSingle(modelName, { access_token: "" }, compareData);
+        await query.updateSingle(modelName, { access_token: "", device_token: "" }, compareData);
         resolve({ message: "Logout sucessfully" });
         return;
       } catch (error) {

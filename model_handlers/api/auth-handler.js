@@ -124,7 +124,7 @@ const signIn = (requestParam) => {
           dataToken = { ...dataToken, id: exist_user.dealer_id, user_type: "dealer" }
         }
         const access_token = generateToken(dataToken);
-        await query.updateSingle(modelName, { access_token }, { email: requestParam.email });
+        await query.updateSingle(modelName, { access_token, device_token: requestParam?.device_token }, { email: requestParam.email });
 
         exist_user = JSON.parse(JSON.stringify(exist_user))
         exist_user.access_token = access_token;
@@ -243,7 +243,7 @@ const verifyOTP = (requestParam) => {
               dataToken = { ...dataToken, id: exist_user.dealer_id, user_type: "dealer" }
             }
             const access_token = generateToken(dataToken);
-            await query.updateSingle(modelName, { access_token }, { phone_number: requestParam.phone_number });
+            await query.updateSingle(modelName, { access_token, device_token: requestParam?.device_token }, { phone_number: requestParam.phone_number });
             exist_user.access_token = access_token
           }
 
@@ -324,6 +324,9 @@ const updateProfile = (requestParam, req2) => {
         }
         if (requestParam.pan_no) {
           columnToUpdate = { ...columnToUpdate, pan_no: requestParam.pan_no }
+        }
+        if (requestParam.device_token) {
+          columnToUpdate = { ...columnToUpdate, device_token: requestParam.device_token }
         }
         await query.updateSingle(modelName, columnToUpdate, compareData);
         let response = await query.selectWithAndOne(modelName, compareData, { _id: 0, password: 0, otp: 0, products: 0, role_id: 0 })

@@ -247,6 +247,7 @@ async function sendInWhatsUp(requestParam) {
 
 async function sendPushNotification(requestParam) {
   try {
+    console.log("requestParam", requestParam);
     const message = {
       registration_ids: requestParam?.tokens,
       collapse_key: 'green',
@@ -278,7 +279,7 @@ async function sendPushNotification(requestParam) {
       return;
     });
   } catch (error) {
-    console.log(error)
+    console.log("error 282", error)
     reject(errors.internalServer(true))
     return
   }

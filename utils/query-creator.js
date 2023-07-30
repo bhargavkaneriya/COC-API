@@ -55,7 +55,7 @@ module.exports = {
     countRecord: (collectionName, comparisonColumnsAndValues) => {
         return new Promise((resolve, reject) => {
             const dbCollection = mongoose.model(collectionName);
-            dbCollection.count(comparisonColumnsAndValues, (error, rows) => {
+            dbCollection.estimatedDocumentCount(comparisonColumnsAndValues, (error, rows) => {
                 if (error) {
                     reject(error);
                     return;

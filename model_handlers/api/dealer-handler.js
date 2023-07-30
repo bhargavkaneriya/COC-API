@@ -462,7 +462,7 @@ const getProfile = (requestParam) => {
           {
             dealer_id: requestParam.dealer_id,
           },
-          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1 }
+          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1, is_verified:1 }
         );
         resolve(resData);
         return;

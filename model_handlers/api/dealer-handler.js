@@ -503,6 +503,7 @@ const getBusinessProfile = (requestParam) => {
           }
         );
         if (resData.company_pan) {
+          console.log("506");
           resData.company_pan = config.aws.base_url + resData.company_pan
         }
         if (resData.company_registration) {

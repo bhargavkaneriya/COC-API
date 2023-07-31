@@ -462,7 +462,7 @@ const getProfile = (requestParam) => {
           {
             dealer_id: requestParam.dealer_id,
           },
-          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1, is_verified:1 }
+          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1, is_verified: 1 }
         );
         resolve(resData);
         return;
@@ -550,9 +550,9 @@ const updateBusinessProfile = (requestParam, req) => {
           );
           return;
         }
-        console.log("req.files",req.files);
+        console.log("req.files", req.files);
         if (req.files.company_pan) {
-          console.log("req.files.company_pan",req.files.company_pan);
+          console.log("req.files.company_pan", req.files.company_pan);
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -562,9 +562,9 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.company_pan = imageName
 
         }
-        console.log("565 req.files",req.files)
+        console.log("565 req.files", req.files)
         if (req.files.company_registration) {
-          console.log("req.files.company_registration",req.files.company_registration);
+          console.log("req.files.company_registration", req.files.company_registration);
 
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
@@ -1009,6 +1009,7 @@ const totalTopSalesProducts = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("requestParam", requestParam);
         const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, dealer_id: 1 });
         if (!dealerData) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
@@ -1069,6 +1070,7 @@ const totalTopSalesProducts = (requestParam) => {
         resolve(product_list);
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

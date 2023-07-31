@@ -22,6 +22,7 @@ const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("requestParam", requestParam);
         const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1 });
         if (!customer) {
           reject(
@@ -248,6 +249,7 @@ const createOrder = (requestParam) => {
         resolve({ order_id, message: "Order created successfully" });
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

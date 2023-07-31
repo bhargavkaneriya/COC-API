@@ -142,6 +142,7 @@ const productDelete = (requestParam) => {
           );
           return;
         }
+        await query.removeMultiple(dbConstants.dbSchema.carts, { dealer_id: dealer.dealer_id, product_id: dealer.product_id })
         await query.removeMultiple(dbConstants.dbSchema.dealer_product, {
           dealer_product_id: requestParam.dealer_product_id,
         });

@@ -38,15 +38,15 @@ const createQuotation = (requestParam) => {
         //
 
         //start html-to-pdf
-        async function convertHtmlToPdf(htmlContent, outputPath) {
-          const browser = await puppeteer.launch();
-          const page = await browser.newPage();
+        // async function convertHtmlToPdf(htmlContent, outputPath) {
+        //   const browser = await puppeteer.launch();
+        //   const page = await browser.newPage();
 
-          await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-          await page.pdf({ path: outputPath });
+        //   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        //   await page.pdf({ path: outputPath });
 
-          await browser.close();
-        }
+        //   await browser.close();
+        // }
 
         const htmlContent = `<!DOCTYPE html>
           <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
@@ -121,10 +121,53 @@ const createQuotation = (requestParam) => {
           </body>
           </html>
           `;
+
         const outputPath = './quotation.pdf';
-        await convertHtmlToPdf(htmlContent, outputPath);
+
+        try {
+          const fs = require('fs');
+          const pdf = require('html-pdf');
+
+//           const htmlContent = `
+//   <!DOCTYPE html>
+//   <html>
+//   <head>
+//     <title>HTML to PDF Example</title>
+//   </head>
+//   <body>
+//     <h1>Hello, this is an example HTML content!</h1>
+//     <p>You can replace this with your own HTML content.</p>
+//   </body>
+//   </html>
+// `;
+
+          // Options for PDF generation
+          const pdfOptions = { height: "50in",
+          width: "12in",
+          childProcessOptions: {
+            env: {
+              OPENSSL_CONF: '/dev/null',
+            },
+          }, };
+
+          // Generate PDF from the HTML content
+          pdf.create(htmlContent, pdfOptions)
+          .toFile('output.pdf', (err, res) => {
+            if (err) {
+              console.error('Error occurred:', err);
+            } else {
+              console.log('PDF generated successfully.');
+            }
+          });
+
+        } catch (error) {
+          console.log("error", error);
+        }
+        // return false
+        // await convertHtmlToPdf(htmlContent, outputPath);
         const imageName = await new Promise((resolve, reject) => {
           uploadPDF(outputPath, (error, result) => {
+            console.log("result.file",result.file);
             resolve(result.file);
           });
         });

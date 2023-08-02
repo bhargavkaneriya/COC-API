@@ -146,7 +146,11 @@ const createQuotation = (requestParam) => {
               return;
             }
             var AWS = require("aws-sdk");
-            let s3 = new AWS.S3();
+            let s3 = new AWS.S3({
+              httpOptions: {
+                timeout: 600000, // Set timeout to 10 minutes (in milliseconds)
+              },
+            });
 
             const params = {
               Bucket: config.aws.s3.cocBucket,
@@ -158,13 +162,15 @@ const createQuotation = (requestParam) => {
 
             fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
               if (err) {
-                console.log("err",err);
+                console.log("err", err);
               };
             });
 
             let dataUpload = s3.upload(params, async (err, data) => {
               if (err) {
                 console.log("error", err);
+                reject(err); // If you're using promises, you can reject here.
+                return;
               }
               // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
               // console.log("data", data)

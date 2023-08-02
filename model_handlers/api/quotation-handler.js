@@ -146,12 +146,8 @@ const createQuotation = (requestParam) => {
               return;
             }
             var AWS = require("aws-sdk");
-            let s3 = new AWS.S3({
-              httpOptions: {
-                timeout: 600000, // Set timeout to 10 minutes (in milliseconds)
-              },
-            });
-
+            let s3 = new AWS.S3();
+            
             const params = {
               Bucket: config.aws.s3.cocBucket,
               Key: `${randomStr}.pdf`,

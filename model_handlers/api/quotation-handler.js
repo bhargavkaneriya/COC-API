@@ -124,7 +124,7 @@ const createQuotation = (requestParam) => {
           },
         };
 
-        let pdfPath = `./public/pdf/${randomStr}.pdf`
+        let pdfPath = `${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -156,7 +156,7 @@ const createQuotation = (requestParam) => {
               ACL: "public-read",
             };
 
-            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+            fs.unlink(`${randomStr}.pdf`, (err) => {
               if (err) {
                 console.log("err",err);
                 return

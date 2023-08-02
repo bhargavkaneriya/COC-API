@@ -11,12 +11,14 @@ const errors = errorHandler;
 const config = require('../../config');
 const pdf = require('html-pdf');
 const moment = require('moment');
+const fs = require("fs");
 
 const createQuotation = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
+        const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
         requestParam = { ...requestParam, quotation_id };
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1, name: 1 });
         requestParam = { ...requestParam, dealer_product_id: dealerProduct.dealer_product_id };
@@ -122,7 +124,7 @@ const createQuotation = (requestParam) => {
           },
         };
 
-        let pdfPath = `./public/pdf/${quotation_id}.pdf`
+        let pdfPath = `./public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -148,13 +150,13 @@ const createQuotation = (requestParam) => {
 
             const params = {
               Bucket: config.aws.s3.cocBucket,
-              Key: `${quotation_id}.pdf`,
+              Key: `${randomStr}.pdf`,
               Body: fs.readFileSync(pdfPath),
               ContentType: "application/pdf",
               ACL: "public-read",
             };
 
-            fs.unlink(`./public/pdf/${orderData.order_id}.pdf`, (err) => {
+            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
               if (err) throw err;
             });
 
@@ -164,8 +166,8 @@ const createQuotation = (requestParam) => {
               }
               // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
               // console.log("data", data)
-              console.log("data",data);
-              console.log("data.Location",data.Location);
+              console.log("data", data);
+              console.log("data.Location", data.Location);
               resolve(data.Location);
               return;
             });
@@ -180,7 +182,7 @@ const createQuotation = (requestParam) => {
         //     resolve(result.file);
         //   });
         // });
-        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: imageName }, { quotation_id: quotation_id })
+        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);

@@ -157,7 +157,9 @@ const createQuotation = (requestParam) => {
             };
 
             fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-              if (err) throw err;
+              if (err) {
+                console.log("err",err);
+              };
             });
 
             let dataUpload = s3.upload(params, async (err, data) => {

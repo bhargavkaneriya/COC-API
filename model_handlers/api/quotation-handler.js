@@ -9,7 +9,7 @@ const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, uploadPDF } = require("../../utils/common");
 const errors = errorHandler;
 const config = require('../../config');
-const puppeteer = require('puppeteer');
+const pdf = require('html-pdf');
 const moment = require('moment');
 
 const createQuotation = (requestParam) => {
@@ -38,16 +38,6 @@ const createQuotation = (requestParam) => {
         //
 
         //start html-to-pdf
-        // async function convertHtmlToPdf(htmlContent, outputPath) {
-        //   const browser = await puppeteer.launch();
-        //   const page = await browser.newPage();
-
-        //   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-        //   await page.pdf({ path: outputPath });
-
-        //   await browser.close();
-        // }
-
         const htmlContent = `<!DOCTYPE html>
           <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
           <head>
@@ -121,62 +111,81 @@ const createQuotation = (requestParam) => {
           </body>
           </html>
           `;
-
-        const outputPath = './quotation.pdf';
-
-        try {
-          const fs = require('fs');
-          const pdf = require('html-pdf');
-
-//           const htmlContent = `
-//   <!DOCTYPE html>
-//   <html>
-//   <head>
-//     <title>HTML to PDF Example</title>
-//   </head>
-//   <body>
-//     <h1>Hello, this is an example HTML content!</h1>
-//     <p>You can replace this with your own HTML content.</p>
-//   </body>
-//   </html>
-// `;
-
-          // Options for PDF generation
-          const pdfOptions = { height: "50in",
+        let imageName = "";
+        const pdfOptions = {
+          height: "50in",
           width: "12in",
           childProcessOptions: {
             env: {
               OPENSSL_CONF: '/dev/null',
             },
-          }, };
+          },
+        };
 
-          // Generate PDF from the HTML content
-          pdf.create(htmlContent, pdfOptions)
-          .toFile('output.pdf', (err, res) => {
+        let pdfPath = `./public/pdf/${quotation_id}.pdf`
+
+        // pdf.create(htmlContent, pdfOptions)
+        //   .toFile(pdfPath, (err, res) => {
+        //     if (err) {
+        //       console.error('Error occurred:', err);
+        //     } else {
+        //       console.log('PDF generated successfully.');
+        //     }
+        //   });
+
+        pdf
+          .create(htmlContent, pdfOptions)
+          .toFile(pdfPath, async function (
+            err,
+            res
+          ) {
             if (err) {
-              console.error('Error occurred:', err);
-            } else {
-              console.log('PDF generated successfully.');
+              reject(err);
+              return;
             }
+            var AWS = require("aws-sdk");
+            let s3 = new AWS.S3();
+
+            const params = {
+              Bucket: config.aws.s3.cocBucket,
+              Key: `${quotation_id}.pdf`,
+              Body: fs.readFileSync(pdfPath),
+              ContentType: "application/pdf",
+              ACL: "public-read",
+            };
+
+            fs.unlink(`./public/pdf/${orderData.order_id}.pdf`, (err) => {
+              if (err) throw err;
+            });
+
+            let dataUpload = s3.upload(params, async (err, data) => {
+              if (err) {
+                console.log("error", err);
+              }
+              // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+              // console.log("data", data)
+              console.log("data",data);
+              console.log("data.Location",data.Location);
+              resolve(data.Location);
+              return;
+            });
+            // resolve(imageRes.url);
+            // return;
           });
 
-        } catch (error) {
-          console.log("error", error);
-        }
-        // return false
-        // await convertHtmlToPdf(htmlContent, outputPath);
-        const imageName = await new Promise((resolve, reject) => {
-          uploadPDF(outputPath, (error, result) => {
-            console.log("result.file",result.file);
-            resolve(result.file);
-          });
-        });
+
+        // const imageName = await new Promise((resolve, reject) => {
+        //   uploadPDF(pdfPath, (error, result) => {
+        //     console.log("result.file", result.file);
+        //     resolve(result.file);
+        //   });
+        // });
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: imageName }, { quotation_id: quotation_id })
         //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
         await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-        await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
+        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
         await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Quotation sent successfully" });
         return;

@@ -188,60 +188,45 @@ const createQuotation = (requestParam) => {
           },
         };
         
-        let pdfPath = `./public/pdf/${randomStr}.pdf`;
-        
         const pdfDoc = pdf.create(htmlContent, pdfOptions);
         
-        const writeStream = fs.createWriteStream(pdfPath);
-        
-        pdfDoc.toStream((err, stream) => {
-          if (err) {
-            console.error('Error occurred:', err);
-            return;
-          }
-        
-          stream.pipe(writeStream);
-        
-          writeStream.on('finish', async () => {
-            try {
-              var AWS = require("aws-sdk");
-              let s3 = new AWS.S3();
-        
-              const params = {
-                Bucket: config.aws.s3.cocBucket,
-                Key: `${randomStr}.pdf`,
-                Body: fs.readFileSync(pdfPath),
-                ContentType: "application/pdf",
-                ACL: "public-read",
-              };
-        
-              fs.unlink(pdfPath, (err) => {
-                if (err) {
-                  console.error("Error while deleting the local PDF file:", err);
-                }
-              });
-        
-              let dataUpload = s3.upload(params, async (err, data) => {
-                if (err) {
-                  console.error("Error while uploading PDF to S3:", err);
-                  return;
-                }
-        
-                console.log("PDF uploaded to S3 successfully.");
-                console.log("S3 URL:", data.Location);
-                resolve(data.Location);
-              });
-        
-            } catch (err) {
-              console.error("Error occurred during AWS S3 upload:", err);
-              reject(err);
-            }
-          });
-        
-          writeStream.on('error', (err) => {
-            console.error('Error occurred while writing the PDF:', err);
-          });
+        const chunks = [];
+        pdfDoc.on('data', (chunk) => {
+          chunks.push(chunk);
         });
+        
+        pdfDoc.on('end', async () => {
+          const pdfBuffer = Buffer.concat(chunks);
+        
+          var AWS = require("aws-sdk");
+          let s3 = new AWS.S3();
+        
+          const params = {
+            Bucket: config.aws.s3.cocBucket,
+            Key: `${randomStr}.pdf`,
+            Body: pdfBuffer,
+            ContentType: "application/pdf",
+            ACL: "public-read",
+          };
+        
+          try {
+            const data = await s3.upload(params).promise();
+            console.log("PDF uploaded to S3 successfully.");
+            console.log("S3 URL:", data.Location);
+            resolve(data.Location);
+          } catch (err) {
+            console.error("Error while uploading PDF to S3:", err);
+            reject(err);
+          }
+        });
+        
+        pdfDoc.on('error', (err) => {
+          console.error('Error occurred during PDF generation:', err);
+          reject(err);
+        });
+        
+        pdfDoc.end();
+        
         
 
 

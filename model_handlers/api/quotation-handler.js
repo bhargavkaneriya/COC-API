@@ -114,70 +114,6 @@ const createQuotation = (requestParam) => {
           </html>
           `;
         let imageName = "";
-        // const pdfOptions = {
-        //   height: "50in",
-        //   width: "12in",
-        //   childProcessOptions: {
-        //     env: {
-        //       OPENSSL_CONF: '/dev/null',
-        //     },
-        //   },
-        // };
-
-        // let pdfPath = `./public/pdf/${randomStr}.pdf`
-
-        // // pdf.create(htmlContent, pdfOptions)
-        // //   .toFile(pdfPath, (err, res) => {
-        // //     if (err) {
-        // //       console.error('Error occurred:', err);
-        // //     } else {
-        // //       console.log('PDF generated successfully.');
-        // //     }
-        // //   });
-
-        // pdf
-        //   .create(htmlContent, pdfOptions)
-        //   .toFile(pdfPath, async function (
-        //     err,
-        //     res
-        //   ) {
-        //     if (err) {
-        //       reject(err);
-        //       return;
-        //     }
-        //     var AWS = require("aws-sdk");
-        //     let s3 = new AWS.S3();
-
-        //     const params = {
-        //       Bucket: config.aws.s3.cocBucket,
-        //       Key: `${randomStr}.pdf`,
-        //       Body: fs.readFileSync(pdfPath),
-        //       ContentType: "application/pdf",
-        //       ACL: "public-read",
-        //     };
-
-        //     fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-        //       if (err) {
-        //         console.log("err",err);
-        //       };
-        //     });
-
-        //     let dataUpload = s3.upload(params, async (err, data) => {
-        //       if (err) {
-        //         console.log("error", err);
-        //       }
-        //       // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-        //       // console.log("data", data)
-        //       console.log("data", data);
-        //       console.log("data.Location", data.Location);
-        //       resolve(data.Location);
-        //       return;
-        //     });
-        //     // resolve(imageRes.url);
-        //     // return;
-        //   });
-
-
         const pdfOptions = {
           height: "50in",
           width: "12in",
@@ -187,47 +123,59 @@ const createQuotation = (requestParam) => {
             },
           },
         };
-        
-        const pdfDoc = pdf.create(htmlContent, pdfOptions);
-        
-        const chunks = [];
-        pdfDoc.on('data', (chunk) => {
-          chunks.push(chunk);
-        });
-        
-        pdfDoc.on('end', async () => {
-          const pdfBuffer = Buffer.concat(chunks);
-        
-          var AWS = require("aws-sdk");
-          let s3 = new AWS.S3();
-        
-          const params = {
-            Bucket: config.aws.s3.cocBucket,
-            Key: `${randomStr}.pdf`,
-            Body: pdfBuffer,
-            ContentType: "application/pdf",
-            ACL: "public-read",
-          };
-        
-          try {
-            const data = await s3.upload(params).promise();
-            console.log("PDF uploaded to S3 successfully.");
-            console.log("S3 URL:", data.Location);
-            resolve(data.Location);
-          } catch (err) {
-            console.error("Error while uploading PDF to S3:", err);
-            reject(err);
-          }
-        });
-        
-        pdfDoc.on('error', (err) => {
-          console.error('Error occurred during PDF generation:', err);
-          reject(err);
-        });
-        
-        pdfDoc.end();
-        
-        
+
+        let pdfPath = `./public/pdf/${randomStr}.pdf`
+
+        // pdf.create(htmlContent, pdfOptions)
+        //   .toFile(pdfPath, (err, res) => {
+        //     if (err) {
+        //       console.error('Error occurred:', err);
+        //     } else {
+        //       console.log('PDF generated successfully.');
+        //     }
+        //   });
+
+        pdf
+          .create(htmlContent, pdfOptions)
+          .toFile(pdfPath, async function (
+            err,
+            res
+          ) {
+            if (err) {
+              reject(err);
+              return;
+            }
+            var AWS = require("aws-sdk");
+            let s3 = new AWS.S3();
+
+            const params = {
+              Bucket: config.aws.s3.cocBucket,
+              Key: `${randomStr}.pdf`,
+              Body: fs.readFileSync(pdfPath),
+              ContentType: "application/pdf",
+              ACL: "public-read",
+            };
+
+            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+              if (err) {
+                console.log("err",err);
+              };
+            });
+
+            let dataUpload = s3.upload(params, async (err, data) => {
+              if (err) {
+                console.log("error", err);
+              }
+              // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+              // console.log("data", data)
+              console.log("data", data);
+              console.log("data.Location", data.Location);
+              resolve(data.Location);
+              return;
+            });
+            // resolve(imageRes.url);
+            // return;
+          });
 
 
         // const imageName = await new Promise((resolve, reject) => {

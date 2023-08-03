@@ -114,7 +114,9 @@ const createQuotation = (requestParam) => {
           </html>
           `;
         let imageName = "";
+        var phantomjs = require('phantomjs');
         const pdfOptions = {
+          phantomPath: phantomjs.path,
           height: "50in",
           width: "12in",
           childProcessOptions: {
@@ -122,6 +124,8 @@ const createQuotation = (requestParam) => {
               OPENSSL_CONF: '/dev/null',
             },
           },
+          timeout: 50000
+
         };
 
         let pdfPath = `./public/pdf/${randomStr}.pdf`
@@ -142,18 +146,18 @@ const createQuotation = (requestParam) => {
             res
           ) {
             if (err) {
-              process.stdout.on('error', function( err ) {
+              process.stdout.on('error', function (err) {
                 if (err.code == "EPIPE") {
-                    process.exit(0);
+                  process.exit(0);
                 }
-            });
+              });
               reject(err);
               return;
             }
             console.log("pdf res", res);
             // var AWS = require("aws-sdk");
             // let s3 = new AWS.S3();
-            
+
             // const params = {
             //   Bucket: config.aws.s3.cocBucket,
             //   Key: `${randomStr}.pdf`,

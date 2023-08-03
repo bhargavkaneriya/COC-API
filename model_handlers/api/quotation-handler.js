@@ -123,7 +123,15 @@ const createQuotation = (requestParam) => {
             },
           },
         };
-console.log("randomStr",randomStr);
+        // Get the current file path
+        const currentFilePath = __filename;
+        console.log("Current File Path:", currentFilePath);
+
+        // Get the current directory path
+        const currentDirectoryPath = __dirname;
+        console.log("Current Directory Path:", currentDirectoryPath);
+
+        console.log("randomStr", randomStr);
         let pdfPath = `./public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)

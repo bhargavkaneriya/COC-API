@@ -122,6 +122,7 @@ const createQuotation = (requestParam) => {
               OPENSSL_CONF: '/dev/null',
             },
           },
+          phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
         };
 
         let pdfPath = `./public/pdf/${randomStr}.pdf`
@@ -147,7 +148,7 @@ const createQuotation = (requestParam) => {
             }
             var AWS = require("aws-sdk");
             let s3 = new AWS.S3();
-            
+
             const params = {
               Bucket: config.aws.s3.cocBucket,
               Key: `${randomStr}.pdf`,

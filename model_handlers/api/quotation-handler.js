@@ -124,7 +124,7 @@ const createQuotation = (requestParam) => {
           },
         };
 
-        // let pdfPath = `./public/pdf/${randomStr}.pdf`
+        let pdfPath = `./public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -168,46 +168,24 @@ const createQuotation = (requestParam) => {
         //         reject(err); // If you're using promises, you can reject here.
         //         return;
         //       }
-        //       // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-        //       // console.log("data", data)
         //       console.log("data", data);
         //       console.log("data.Location", data.Location);
         //       resolve(data.Location);
         //       return;
         //     });
-        //     // resolve(imageRes.url);
-        //     // return;
+
         //   });
 
+        try {
+          const { jsPDF } = require("jspdf");
+          // Default export is a4 paper, portrait, using millimeters for units
+          const doc = new jsPDF();
+          doc.text("Hello world!", 10, 10);
+          doc.save("a4.pdf");
 
-        const util = require('util');
-        const writeFileAsync = util.promisify(require('fs').writeFile);
-
-        async function generatePDF(htmlContent, pdfOptions) {
-          try {
-            const randomStr = generateRandomString(); // Replace this with your random string generation logic.
-            const pdfPath = `./public/pdf/${randomStr}.pdf`;
-            const pdfAsync = util.promisify(pdf.create);
-
-            const result = await pdfAsync(htmlContent, pdfOptions);
-
-            const writeFileAsync = util.promisify(require('fs').writeFile);
-            await writeFileAsync(pdfPath, result.toBuffer());
-
-            console.log('PDF generation successful!');
-          } catch (err) {
-            console.error('Error generating PDF:', err);
-            throw err;
-          }
+        } catch (error) {
+          console.log("error", error);
         }
-
-        generatePDF(htmlContent, pdfOptions)
-          .then(() => {
-            console.log('PDF generation complete!');
-          })
-          .catch((err) => {
-            console.error('PDF generation failed:', err);
-          });
 
 
         // const imageName = await new Promise((resolve, reject) => {
@@ -219,10 +197,10 @@ const createQuotation = (requestParam) => {
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
-        await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
-        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
-        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        // await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
+        // await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
+        // // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
+        // await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {

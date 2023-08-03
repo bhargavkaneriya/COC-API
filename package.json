@@ -23,6 +23,7 @@
     "html-pdf": "^3.0.1",
     "html2pdf": "^0.0.11",
     "https": "^1.0.0",
+    "jspdf": "^2.5.1",
     "moment": "^2.29.4",
     "mongoose": "^5.10.18",
     "nodemailer": "^6.9.3",

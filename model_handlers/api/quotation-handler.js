@@ -123,10 +123,8 @@ const createQuotation = (requestParam) => {
             },
           },
         };
-
-        // let pdfPath = `./public/pdf/${quotation_id}.pdf`
-        let pdfPath = `/home/ec2-user/COC-API/public/pdf/${quotation_id}.pdf`
-
+console.log("randomStr",randomStr);
+        let pdfPath = `./public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -144,41 +142,38 @@ const createQuotation = (requestParam) => {
             res
           ) {
             if (err) {
+              console.log("err", err);
               reject(err);
               return;
             }
-            var AWS = require("aws-sdk");
-            let s3 = new AWS.S3();
+            // var AWS = require("aws-sdk");
+            // let s3 = new AWS.S3();
 
-            const params = {
-              Bucket: config.aws.s3.cocBucket,
-              Key: `${quotation_id}.pdf`,
-              Body: fs.readFileSync(pdfPath),
-              ContentType: "application/pdf",
-              ACL: "public-read",
-            };
+            // const params = {
+            //   Bucket: config.aws.s3.cocBucket,
+            //   Key: `${randomStr}.pdf`,
+            //   Body: fs.readFileSync(pdfPath),
+            //   ContentType: "application/pdf",
+            //   ACL: "public-read",
+            // };
 
-            fs.unlink(`./public/pdf/${quotation_id}.pdf`, (err) => {
-              if (err) {
-                console.log("err", err);
-              };
-            });
+            // fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+            //   if (err) {
+            //     console.log("err", err);
+            //   };
+            // });
 
-            let dataUpload = s3.upload(params, async (err, data) => {
-              if (err) {
-                console.log("error", err);
-                reject(err); // If you're using promises, you can reject here.
-                return;
-              }
-              // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-              // console.log("data", data)
-              console.log("data", data);
-              console.log("data.Location", data.Location);
-              resolve(data.Location);
-              return;
-            });
-            // resolve(imageRes.url);
-            // return;
+            // let dataUpload = s3.upload(params, async (err, data) => {
+            //   if (err) {
+            //     console.log("error", err);
+            //     reject(err); // If you're using promises, you can reject here.
+            //     return;
+            //   }
+            //   console.log("data", data);
+            //   console.log("data.Location", data.Location);
+            //   resolve(data.Location);
+            //   return;
+            // });
           });
 
 
@@ -188,7 +183,7 @@ const createQuotation = (requestParam) => {
         //     resolve(result.file);
         //   });
         // });
-        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${quotation_id}.pdf` }, { quotation_id: quotation_id })
+        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
@@ -198,6 +193,7 @@ const createQuotation = (requestParam) => {
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

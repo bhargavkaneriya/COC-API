@@ -18,7 +18,6 @@ const createQuotation = (requestParam) => {
     async function main() {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
-        console.log("quotation_id", quotation_id);
         const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
         requestParam = { ...requestParam, quotation_id };
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1, name: 1 });
@@ -114,7 +113,7 @@ const createQuotation = (requestParam) => {
           </body>
           </html>
           `;
-        // let imageName = "";
+        let imageName = "";
         const pdfOptions = {
           height: "50in",
           width: "12in",
@@ -123,11 +122,10 @@ const createQuotation = (requestParam) => {
               OPENSSL_CONF: '/dev/null',
             },
           },
-          phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
         };
 
-        let pdfPath = `${randomStr}.pdf`
-        console.log("pdfPath", pdfPath);
+        let pdfPath = `./public/pdf/${randomStr}.pdf`
+
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
         //     if (err) {
@@ -144,58 +142,50 @@ const createQuotation = (requestParam) => {
             res
           ) {
             if (err) {
-              console.log("cretae pdf error", err);
               reject(err);
               return;
             }
-            // var AWS = require("aws-sdk");
-            // let s3 = new AWS.S3();
+            var AWS = require("aws-sdk");
+            let s3 = new AWS.S3();
+            
+            const params = {
+              Bucket: config.aws.s3.cocBucket,
+              Key: `${randomStr}.pdf`,
+              Body: fs.readFileSync(pdfPath),
+              ContentType: "application/pdf",
+              ACL: "public-read",
+            };
 
-            // const params = {
-            //   Bucket: config.aws.s3.cocBucket,
-            //   Key: `${randomStr}.pdf`,
-            //   Body: fs.readFileSync(pdfPath),
-            //   ContentType: "application/pdf",
-            //   ACL: "public-read",
-            // };
+            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+              if (err) {
+                console.log("err", err);
+              };
+            });
 
-            // fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-            //   if (err) {
-            //     console.log("err", err);
-            //   };
-            // });
-            // try {
-            //   let dataUpload = s3.upload(params, async (err, data) => {
-            //     if (err) {
-            //       console.log("error", err);
-            //       reject(err); // If you're using promises, you can reject here.
-            //       return;
-            //     }
-            //     // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-            //     // console.log("data", data)
-            //     console.log("175175", `${randomStr}.pdf`);
-            //     console.log("data", data);
-            //     console.log("data.Location", data.Location);
-            //     resolve(data.Location);
-            //     return;
-            //   });
-            // } catch (error) {
-            //   console.log("error", error);
-            // }
-
+            let dataUpload = s3.upload(params, async (err, data) => {
+              if (err) {
+                console.log("error", err);
+                reject(err); // If you're using promises, you can reject here.
+                return;
+              }
+              // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+              // console.log("data", data)
+              console.log("data", data);
+              console.log("data.Location", data.Location);
+              resolve(data.Location);
+              return;
+            });
             // resolve(imageRes.url);
             // return;
           });
 
-        console.log("175175", `${randomStr}.pdf`);
 
-        const imageName = await new Promise((resolve, reject) => {
-          uploadPDF(pdfPath, (error, result) => {
-            console.log("error", error);
-            console.log("result.file", result.file);
-            resolve(result.file);
-          });
-        });
+        // const imageName = await new Promise((resolve, reject) => {
+        //   uploadPDF(pdfPath, (error, result) => {
+        //     console.log("result.file", result.file);
+        //     resolve(result.file);
+        //   });
+        // });
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
@@ -206,7 +196,6 @@ const createQuotation = (requestParam) => {
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
-        console.log("error", error);
         reject(error);
         return;
       }

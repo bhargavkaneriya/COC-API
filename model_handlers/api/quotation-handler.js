@@ -126,7 +126,7 @@ const createQuotation = (requestParam) => {
           phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
         };
 
-        let pdfPath = `./public/pdf/${randomStr}.pdf`
+        let pdfPath = `${randomStr}.pdf`
         console.log("pdfPath", pdfPath);
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -191,6 +191,7 @@ const createQuotation = (requestParam) => {
 
         const imageName = await new Promise((resolve, reject) => {
           uploadPDF(pdfPath, (error, result) => {
+            console.log("error", error);
             console.log("result.file", result.file);
             resolve(result.file);
           });

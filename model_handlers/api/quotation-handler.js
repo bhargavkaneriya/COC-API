@@ -18,7 +18,7 @@ const createQuotation = (requestParam) => {
     async function main() {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
-        console.log("quotation_id",quotation_id);
+        console.log("quotation_id", quotation_id);
         const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
         requestParam = { ...requestParam, quotation_id };
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1, name: 1 });
@@ -123,7 +123,7 @@ const createQuotation = (requestParam) => {
               OPENSSL_CONF: '/dev/null',
             },
           },
-          // phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
+          phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
         };
 
         let pdfPath = `./public/pdf/${randomStr}.pdf`
@@ -163,26 +163,30 @@ const createQuotation = (requestParam) => {
                 console.log("err", err);
               };
             });
-
-            let dataUpload = s3.upload(params, async (err, data) => {
-              if (err) {
-                console.log("error", err);
-                reject(err); // If you're using promises, you can reject here.
+            try {
+              let dataUpload = s3.upload(params, async (err, data) => {
+                if (err) {
+                  console.log("error", err);
+                  reject(err); // If you're using promises, you can reject here.
+                  return;
+                }
+                // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+                // console.log("data", data)
+                console.log("175175", `${randomStr}.pdf`);
+                console.log("data", data);
+                console.log("data.Location", data.Location);
+                resolve(data.Location);
                 return;
-              }
-              // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-              // console.log("data", data)
-              console.log("175175",`${randomStr}.pdf`);
-              console.log("data", data);
-              console.log("data.Location", data.Location);
-              resolve(data.Location);
-              return;
-            });
+              });
+            } catch (error) {
+              console.log("error", error);
+            }
+
             // resolve(imageRes.url);
             // return;
           });
 
-          console.log("175175",`${randomStr}.pdf`);
+        console.log("175175", `${randomStr}.pdf`);
 
         // const imageName = await new Promise((resolve, reject) => {
         //   uploadPDF(pdfPath, (error, result) => {
@@ -200,6 +204,7 @@ const createQuotation = (requestParam) => {
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

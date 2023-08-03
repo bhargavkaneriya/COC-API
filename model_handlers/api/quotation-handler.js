@@ -146,11 +146,7 @@ const createQuotation = (requestParam) => {
               res
             ) {
               if (err) {
-                process.stdout.on('error', function (err) {
-                  if (err.code == "EPIPE") {
-                    process.exit(0);
-                  }
-                });
+                console.log("error", err);
                 reject(err);
                 return;
               }

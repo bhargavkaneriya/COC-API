@@ -123,7 +123,7 @@ const createQuotation = (requestParam) => {
               OPENSSL_CONF: '/dev/null',
             },
           },
-          phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
+          // phantomPath: "./node_modules/phantomjs-prebuilt/bin/phantomjs",
         };
 
         let pdfPath = `./public/pdf/${randomStr}.pdf`

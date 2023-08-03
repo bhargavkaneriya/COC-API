@@ -18,6 +18,7 @@ const createQuotation = (requestParam) => {
     async function main() {
       try {
         let quotation_id = await idGeneratorHandler.generateId("COCQ");
+        console.log("quotation_id",quotation_id);
         const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
         requestParam = { ...requestParam, quotation_id };
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, dealer_product_id: 1, name: 1 });
@@ -171,6 +172,7 @@ const createQuotation = (requestParam) => {
               }
               // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
               // console.log("data", data)
+              console.log("175175",`${randomStr}.pdf`);
               console.log("data", data);
               console.log("data.Location", data.Location);
               resolve(data.Location);
@@ -180,6 +182,7 @@ const createQuotation = (requestParam) => {
             // return;
           });
 
+          console.log("175175",`${randomStr}.pdf`);
 
         // const imageName = await new Promise((resolve, reject) => {
         //   uploadPDF(pdfPath, (error, result) => {

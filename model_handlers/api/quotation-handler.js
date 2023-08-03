@@ -124,7 +124,9 @@ const createQuotation = (requestParam) => {
           },
         };
 
-        let pdfPath = `./public/pdf/${randomStr}.pdf`
+        // let pdfPath = `./public/pdf/${quotation_id}.pdf`
+        let pdfPath = `/home/ec2-user/COC-API/public/pdf/${quotation_id}.pdf`
+
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -147,16 +149,16 @@ const createQuotation = (requestParam) => {
             }
             var AWS = require("aws-sdk");
             let s3 = new AWS.S3();
-            
+
             const params = {
               Bucket: config.aws.s3.cocBucket,
-              Key: `${randomStr}.pdf`,
+              Key: `${quotation_id}.pdf`,
               Body: fs.readFileSync(pdfPath),
               ContentType: "application/pdf",
               ACL: "public-read",
             };
 
-            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+            fs.unlink(`./public/pdf/${quotation_id}.pdf`, (err) => {
               if (err) {
                 console.log("err", err);
               };
@@ -186,7 +188,7 @@ const createQuotation = (requestParam) => {
         //     resolve(result.file);
         //   });
         // });
-        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
+        await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${quotation_id}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
         await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);

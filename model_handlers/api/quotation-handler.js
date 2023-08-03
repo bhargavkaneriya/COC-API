@@ -133,7 +133,7 @@ const createQuotation = (requestParam) => {
 
         console.log("randomStr", randomStr);
         let pdfPath = `../public/pdf/${randomStr}.pdf`
-
+console.log("pdfPath",pdfPath);
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
         //     if (err) {

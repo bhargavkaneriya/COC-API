@@ -114,7 +114,7 @@ const createQuotation = (requestParam) => {
           </body>
           </html>
           `;
-        let imageName = "";
+        // let imageName = "";
         const pdfOptions = {
           height: "50in",
           width: "12in",
@@ -127,7 +127,7 @@ const createQuotation = (requestParam) => {
         };
 
         let pdfPath = `./public/pdf/${randomStr}.pdf`
-
+        console.log("pdfPath", pdfPath);
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
         //     if (err) {
@@ -144,43 +144,44 @@ const createQuotation = (requestParam) => {
             res
           ) {
             if (err) {
+              console.log("cretae pdf error", err);
               reject(err);
               return;
             }
-            var AWS = require("aws-sdk");
-            let s3 = new AWS.S3();
+            // var AWS = require("aws-sdk");
+            // let s3 = new AWS.S3();
 
-            const params = {
-              Bucket: config.aws.s3.cocBucket,
-              Key: `${randomStr}.pdf`,
-              Body: fs.readFileSync(pdfPath),
-              ContentType: "application/pdf",
-              ACL: "public-read",
-            };
+            // const params = {
+            //   Bucket: config.aws.s3.cocBucket,
+            //   Key: `${randomStr}.pdf`,
+            //   Body: fs.readFileSync(pdfPath),
+            //   ContentType: "application/pdf",
+            //   ACL: "public-read",
+            // };
 
-            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-              if (err) {
-                console.log("err", err);
-              };
-            });
-            try {
-              let dataUpload = s3.upload(params, async (err, data) => {
-                if (err) {
-                  console.log("error", err);
-                  reject(err); // If you're using promises, you can reject here.
-                  return;
-                }
-                // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
-                // console.log("data", data)
-                console.log("175175", `${randomStr}.pdf`);
-                console.log("data", data);
-                console.log("data.Location", data.Location);
-                resolve(data.Location);
-                return;
-              });
-            } catch (error) {
-              console.log("error", error);
-            }
+            // fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+            //   if (err) {
+            //     console.log("err", err);
+            //   };
+            // });
+            // try {
+            //   let dataUpload = s3.upload(params, async (err, data) => {
+            //     if (err) {
+            //       console.log("error", err);
+            //       reject(err); // If you're using promises, you can reject here.
+            //       return;
+            //     }
+            //     // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+            //     // console.log("data", data)
+            //     console.log("175175", `${randomStr}.pdf`);
+            //     console.log("data", data);
+            //     console.log("data.Location", data.Location);
+            //     resolve(data.Location);
+            //     return;
+            //   });
+            // } catch (error) {
+            //   console.log("error", error);
+            // }
 
             // resolve(imageRes.url);
             // return;
@@ -188,12 +189,12 @@ const createQuotation = (requestParam) => {
 
         console.log("175175", `${randomStr}.pdf`);
 
-        // const imageName = await new Promise((resolve, reject) => {
-        //   uploadPDF(pdfPath, (error, result) => {
-        //     console.log("result.file", result.file);
-        //     resolve(result.file);
-        //   });
-        // });
+        const imageName = await new Promise((resolve, reject) => {
+          uploadPDF(pdfPath, (error, result) => {
+            console.log("result.file", result.file);
+            resolve(result.file);
+          });
+        });
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 

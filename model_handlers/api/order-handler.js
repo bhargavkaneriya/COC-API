@@ -149,17 +149,8 @@ const createOrder = (requestParam) => {
         //end invoice
 
         if (requestParam.payment_method === "online") {
+          const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
           //start html-to-pdf
-          async function convertHtmlToPdf(htmlContent, outputPath) {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-
-            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-            await page.pdf({ path: outputPath });
-
-            await browser.close();
-          }
-
           const htmlContent = `<!DOCTYPE html>
           <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
           <head>
@@ -234,16 +225,68 @@ const createOrder = (requestParam) => {
           </body>
           </html>
           `;
-          const outputPath = './invoice.pdf';
-          await convertHtmlToPdf(htmlContent, outputPath);
-          const imageName = await new Promise((resolve, reject) => {
-            uploadPDF(outputPath, (error, result) => {
-              resolve(result.file);
-            });
-          });
-          //end html-to-pdf
-          await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: imageName }, { invoice_id });
+          var phantomjs = require('phantomjs');
+          const pdfOptions = {
+            phantomPath: phantomjs.path,
+            height: "50in",
+            width: "12in",
+            childProcessOptions: {
+              env: {
+                OPENSSL_CONF: '/dev/null',
+              },
+            },
+            timeout: 50000
+
+          };
+
+          let pdfPath = `public/pdf/${randomStr}.pdf`
+          try {
+            pdf
+              .create(htmlContent, pdfOptions)
+              .toFile(pdfPath, async function (
+                err,
+                res
+              ) {
+                if (err) {
+                  console.log("error", err);
+                  reject(err);
+                  return;
+                }
+                let AWS = require("aws-sdk");
+                let s3 = new AWS.S3();
+
+                const params = {
+                  Bucket: config.aws.s3.cocBucket,
+                  Key: `${randomStr}.pdf`,
+                  Body: fs.readFileSync(pdfPath),
+                  ContentType: "application/pdf",
+                  ACL: "public-read",
+                };
+
+                fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+                  if (err) {
+                    console.log("err", err);
+                  };
+                });
+
+                let dataUpload = s3.upload(params, async (err, data) => {
+                  if (err) {
+                    console.log("error", err);
+                    reject(err); // If you're using promises, you can reject here.
+                    return;
+                  }
+                  resolve(data.Location);
+                  return;
+                });
+
+              });
+
+          } catch (error) {
+            console.log("error", error);
+          }
+          await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: `${randomStr}.pdf` }, { invoice_id });
         }
+        //end html-to-pdf
 
         resolve({ order_id, message: "Order created successfully" });
         return;

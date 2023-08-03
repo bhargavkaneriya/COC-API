@@ -113,7 +113,6 @@ const createQuotation = (requestParam) => {
           </body>
           </html>
           `;
-        let imageName = "";
         var phantomjs = require('phantomjs');
         const pdfOptions = {
           phantomPath: phantomjs.path,
@@ -129,15 +128,6 @@ const createQuotation = (requestParam) => {
         };
 
         let pdfPath = `public/pdf/${randomStr}.pdf`
-
-        // pdf.create(htmlContent, pdfOptions)
-        //   .toFile(pdfPath, (err, res) => {
-        //     if (err) {
-        //       console.error('Error occurred:', err);
-        //     } else {
-        //       console.log('PDF generated successfully.');
-        //     }
-        //   });
         try {
           pdf
             .create(htmlContent, pdfOptions)
@@ -150,8 +140,7 @@ const createQuotation = (requestParam) => {
                 reject(err);
                 return;
               }
-              // console.log("pdf res", res);
-              var AWS = require("aws-sdk");
+              let AWS = require("aws-sdk");
               let s3 = new AWS.S3();
 
               const params = {
@@ -174,8 +163,6 @@ const createQuotation = (requestParam) => {
                   reject(err); // If you're using promises, you can reject here.
                   return;
                 }
-                console.log("data", data);
-                console.log("data.Location", data.Location);
                 resolve(data.Location);
                 return;
               });
@@ -185,21 +172,13 @@ const createQuotation = (requestParam) => {
         } catch (error) {
           console.log("error", error);
         }
-
-
-        // const imageName = await new Promise((resolve, reject) => {
-        //   uploadPDF(pdfPath, (error, result) => {
-        //     console.log("result.file", result.file);
-        //     resolve(result.file);
-        //   });
-        // });
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
-        // await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
-        // await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-        // // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
-        // await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
+        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
+        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {

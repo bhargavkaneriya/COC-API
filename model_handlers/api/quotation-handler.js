@@ -181,7 +181,7 @@ const createQuotation = (requestParam) => {
           // Default export is a4 paper, portrait, using millimeters for units
           const doc = new jsPDF();
           doc.text("Hello world!", 10, 10);
-          doc.save("a4.pdf");
+          doc.save("public/pdf/a4.pdf");
 
         } catch (error) {
           console.log("error", error);

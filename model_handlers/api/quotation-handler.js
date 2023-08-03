@@ -123,17 +123,9 @@ const createQuotation = (requestParam) => {
             },
           },
         };
-        // Get the current file path
-        const currentFilePath = __filename;
-        console.log("Current File Path:", currentFilePath);
 
-        // Get the current directory path
-        const currentDirectoryPath = __dirname;
-        console.log("Current Directory Path:", currentDirectoryPath);
+        // let pdfPath = `./public/pdf/${randomStr}.pdf`
 
-        console.log("randomStr", randomStr);
-        let pdfPath = `${randomStr}.pdf`
-console.log("pdfPath",pdfPath);
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
         //     if (err) {
@@ -143,45 +135,78 @@ console.log("pdfPath",pdfPath);
         //     }
         //   });
 
-        pdf
-          .create(htmlContent, pdfOptions)
-          .toFile(pdfPath, async function (
-            err,
-            res
-          ) {
-            if (err) {
-              console.log("err", err);
-              reject(err);
-              return;
-            }
-            // var AWS = require("aws-sdk");
-            // let s3 = new AWS.S3();
+        // pdf
+        //   .create(htmlContent, pdfOptions)
+        //   .toFile(pdfPath, async function (
+        //     err,
+        //     res
+        //   ) {
+        //     if (err) {
+        //       reject(err);
+        //       return;
+        //     }
+        //     var AWS = require("aws-sdk");
+        //     let s3 = new AWS.S3();
 
-            // const params = {
-            //   Bucket: config.aws.s3.cocBucket,
-            //   Key: `${randomStr}.pdf`,
-            //   Body: fs.readFileSync(pdfPath),
-            //   ContentType: "application/pdf",
-            //   ACL: "public-read",
-            // };
+        //     const params = {
+        //       Bucket: config.aws.s3.cocBucket,
+        //       Key: `${randomStr}.pdf`,
+        //       Body: fs.readFileSync(pdfPath),
+        //       ContentType: "application/pdf",
+        //       ACL: "public-read",
+        //     };
 
-            // fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-            //   if (err) {
-            //     console.log("err", err);
-            //   };
-            // });
+        //     fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+        //       if (err) {
+        //         console.log("err", err);
+        //       };
+        //     });
 
-            // let dataUpload = s3.upload(params, async (err, data) => {
-            //   if (err) {
-            //     console.log("error", err);
-            //     reject(err); // If you're using promises, you can reject here.
-            //     return;
-            //   }
-            //   console.log("data", data);
-            //   console.log("data.Location", data.Location);
-            //   resolve(data.Location);
-            //   return;
-            // });
+        //     let dataUpload = s3.upload(params, async (err, data) => {
+        //       if (err) {
+        //         console.log("error", err);
+        //         reject(err); // If you're using promises, you can reject here.
+        //         return;
+        //       }
+        //       // let update = await queryApi.updateSingle(dbConstants.dbSchema.orders, { download_pdf_url: data.Location }, { order_id: orderData.order_id })
+        //       // console.log("data", data)
+        //       console.log("data", data);
+        //       console.log("data.Location", data.Location);
+        //       resolve(data.Location);
+        //       return;
+        //     });
+        //     // resolve(imageRes.url);
+        //     // return;
+        //   });
+
+
+        const util = require('util');
+        const writeFileAsync = util.promisify(require('fs').writeFile);
+
+        async function generatePDF(htmlContent, pdfOptions) {
+          try {
+            const randomStr = generateRandomString(); // Replace this with your random string generation logic.
+            const pdfPath = `./public/pdf/${randomStr}.pdf`;
+            const pdfAsync = util.promisify(pdf.create);
+
+            const result = await pdfAsync(htmlContent, pdfOptions);
+
+            const writeFileAsync = util.promisify(require('fs').writeFile);
+            await writeFileAsync(pdfPath, result.toBuffer());
+
+            console.log('PDF generation successful!');
+          } catch (err) {
+            console.error('Error generating PDF:', err);
+            throw err;
+          }
+        }
+
+        generatePDF(htmlContent, pdfOptions)
+          .then(() => {
+            console.log('PDF generation complete!');
+          })
+          .catch((err) => {
+            console.error('PDF generation failed:', err);
           });
 
 
@@ -201,7 +226,6 @@ console.log("pdfPath",pdfPath);
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
-        console.log("error", error);
         reject(error);
         return;
       }

@@ -150,35 +150,35 @@ const createQuotation = (requestParam) => {
                 reject(err);
                 return;
               }
-              console.log("pdf res", res);
-              // var AWS = require("aws-sdk");
-              // let s3 = new AWS.S3();
+              // console.log("pdf res", res);
+              var AWS = require("aws-sdk");
+              let s3 = new AWS.S3();
 
-              // const params = {
-              //   Bucket: config.aws.s3.cocBucket,
-              //   Key: `${randomStr}.pdf`,
-              //   Body: fs.readFileSync(pdfPath),
-              //   ContentType: "application/pdf",
-              //   ACL: "public-read",
-              // };
+              const params = {
+                Bucket: config.aws.s3.cocBucket,
+                Key: `${randomStr}.pdf`,
+                Body: fs.readFileSync(pdfPath),
+                ContentType: "application/pdf",
+                ACL: "public-read",
+              };
 
-              // fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-              //   if (err) {
-              //     console.log("err", err);
-              //   };
-              // });
+              fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+                if (err) {
+                  console.log("err", err);
+                };
+              });
 
-              // let dataUpload = s3.upload(params, async (err, data) => {
-              //   if (err) {
-              //     console.log("error", err);
-              //     reject(err); // If you're using promises, you can reject here.
-              //     return;
-              //   }
-              //   console.log("data", data);
-              //   console.log("data.Location", data.Location);
-              //   resolve(data.Location);
-              //   return;
-              // });
+              let dataUpload = s3.upload(params, async (err, data) => {
+                if (err) {
+                  console.log("error", err);
+                  reject(err); // If you're using promises, you can reject here.
+                  return;
+                }
+                console.log("data", data);
+                console.log("data.Location", data.Location);
+                resolve(data.Location);
+                return;
+              });
 
             });
 

@@ -128,7 +128,7 @@ const createQuotation = (requestParam) => {
 
         };
 
-        let pdfPath = `./public/pdf/${randomStr}.pdf`
+        let pdfPath = `public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {

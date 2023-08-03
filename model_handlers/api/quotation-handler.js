@@ -124,7 +124,7 @@ const createQuotation = (requestParam) => {
           },
         };
 
-        let pdfPath = `./public/pdf/${randomStr}.pdf`
+        let pdfPath = `public/pdf/${randomStr}.pdf`
 
         // pdf.create(htmlContent, pdfOptions)
         //   .toFile(pdfPath, (err, res) => {
@@ -135,57 +135,46 @@ const createQuotation = (requestParam) => {
         //     }
         //   });
 
-        // pdf
-        //   .create(htmlContent, pdfOptions)
-        //   .toFile(pdfPath, async function (
-        //     err,
-        //     res
-        //   ) {
-        //     if (err) {
-        //       reject(err);
-        //       return;
-        //     }
-        //     var AWS = require("aws-sdk");
-        //     let s3 = new AWS.S3();
+        pdf
+          .create(htmlContent, pdfOptions)
+          .toFile(pdfPath, async function (
+            err,
+            res
+          ) {
+            if (err) {
+              reject(err);
+              return;
+            }
+            var AWS = require("aws-sdk");
+            let s3 = new AWS.S3();
+            
+            const params = {
+              Bucket: config.aws.s3.cocBucket,
+              Key: `${randomStr}.pdf`,
+              Body: fs.readFileSync(pdfPath),
+              ContentType: "application/pdf",
+              ACL: "public-read",
+            };
 
-        //     const params = {
-        //       Bucket: config.aws.s3.cocBucket,
-        //       Key: `${randomStr}.pdf`,
-        //       Body: fs.readFileSync(pdfPath),
-        //       ContentType: "application/pdf",
-        //       ACL: "public-read",
-        //     };
+            fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
+              if (err) {
+                console.log("err", err);
+              };
+            });
 
-        //     fs.unlink(`./public/pdf/${randomStr}.pdf`, (err) => {
-        //       if (err) {
-        //         console.log("err", err);
-        //       };
-        //     });
+            let dataUpload = s3.upload(params, async (err, data) => {
+              if (err) {
+                console.log("error", err);
+                reject(err); // If you're using promises, you can reject here.
+                return;
+              }
+              console.log("data", data);
+              console.log("data.Location", data.Location);
+              resolve(data.Location);
+              return;
+            });
 
-        //     let dataUpload = s3.upload(params, async (err, data) => {
-        //       if (err) {
-        //         console.log("error", err);
-        //         reject(err); // If you're using promises, you can reject here.
-        //         return;
-        //       }
-        //       console.log("data", data);
-        //       console.log("data.Location", data.Location);
-        //       resolve(data.Location);
-        //       return;
-        //     });
-
-        //   });
-
-        try {
-          const { jsPDF } = require("jspdf");
-          // Default export is a4 paper, portrait, using millimeters for units
-          const doc = new jsPDF();
-          doc.text("Hello world!", 10, 10);
-          doc.save("public/pdf/a4.pdf");
-
-        } catch (error) {
-          console.log("error", error);
-        }
+          });
 
 
         // const imageName = await new Promise((resolve, reject) => {
@@ -197,10 +186,10 @@ const createQuotation = (requestParam) => {
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
-        // await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
-        // await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-        // // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
-        // await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
+        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
+        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {

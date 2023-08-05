@@ -463,7 +463,7 @@ const getProfile = (requestParam) => {
           {
             dealer_id: requestParam.dealer_id,
           },
-          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1, is_verified:1 }
+          { _id: 0, dealer_id: 1, name: 1, phone_number: 1, email: 1, is_verified: 1 }
         );
         resolve(resData);
         return;
@@ -551,9 +551,9 @@ const updateBusinessProfile = (requestParam, req) => {
           );
           return;
         }
-        console.log("req.files",req.files);
+        console.log("req.files", req.files);
         if (req.files.company_pan) {
-          console.log("req.files.company_pan",req.files.company_pan);
+          console.log("req.files.company_pan", req.files.company_pan);
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -563,9 +563,9 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.company_pan = imageName
 
         }
-        console.log("565 req.files",req.files)
+        console.log("565 req.files", req.files)
         if (req.files.company_registration) {
-          console.log("req.files.company_registration",req.files.company_registration);
+          console.log("req.files.company_registration", req.files.company_registration);
 
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
@@ -654,7 +654,7 @@ const notificationList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        const comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
+        const comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id, type: "dealer" };
         const totalRecords = await query.countRecord(dbConstants.dbSchema.notifications, comparisonColumnsAndValues);
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
 

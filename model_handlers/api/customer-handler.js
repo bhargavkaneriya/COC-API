@@ -564,7 +564,7 @@ const notificationList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        const comparisonColumnsAndValues = { customer_id: requestParam.customer_id };
+        const comparisonColumnsAndValues = { customer_id: requestParam.customer_id, type:"customer" };
         const totalRecords = await query.countRecord(dbConstants.dbSchema.notifications, comparisonColumnsAndValues);
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
 

@@ -18,6 +18,7 @@ var razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 const pdf = require('html-pdf');
+const fs = require("fs");
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {

@@ -17,11 +17,13 @@ var razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+const pdf = require('html-pdf');
 
 const createOrder = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("requestParam 2626",requestParam);
         const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1 });
         if (!customer) {
           reject(

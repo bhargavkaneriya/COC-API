@@ -436,8 +436,8 @@ const quotationList = (requestParam) => {
           joinArr
         );
         response.map((element) => {
-          element.product_image = config.aws.url + element.product_image
-          element.quotation_pdf = config.aws.url + element.quotation_pdf
+          element.product_image = config.aws.base_url + element.product_image
+          element.quotation_pdf = config.aws.base_url + element.quotation_pdf
         })
         resolve(response);
         return;

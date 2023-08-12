@@ -245,50 +245,87 @@ async function sendInWhatsUp(requestParam) {
   }
 }
 
-async function sendPushNotification(requestParam) {
-  try {
-    console.log("requestParam", requestParam);
-    const message = {
-      registration_ids: ['c_OZYI074kJhgQQG5ZPCVI:APA91bFM2K4bHkmOOp-p1VMNyDUVm1nbbLR2R9zriuKVcTYg_8o3nrTK9bbYB2xnIAa9AcSpZ7tnlEZgiDXq0ohx5nUzFYRK5Y4q3Fxha9LXxYD7pPMVzsSQOqqO6Gbkn4AezEH5Y-nk'],
-      collapse_key: 'green',
-      "mutable-content" : true,
-      data: {
-        data: {
-          'messageFrom': 'COC',
-          message: requestParam?.title,
-          body: requestParam?.description,
-          push_type: 'normal'
-        },
+// async function sendPushNotification(requestParam) {
+//   try {
+//     console.log("requestParam", requestParam);
+//     const message = {
+//       registration_ids: requestParam?.tokens,
+//       collapse_key: 'green',
+//       data: {
+//         data: {
+//           'messageFrom': 'COC',
+//           message: requestParam?.title,
+//           body: requestParam?.description,
+//           push_type: 'normal'
+//         },
+//       },
+//     };
+
+//     fcm.send(message, function (error, result) {
+//       let pushResult
+//       if (error) {
+//         pushResult = 'failed'
+//         console.error("error=>", error)
+//         // reject(errors.internalServer(true))
+//         // return
+//       } else {
+//         console.log("272",result);
+//         result = JSON.parse(result)
+//         if (result.success == 1) {
+//           console.log("275");
+//           pushResult = 'success'
+//         } else {
+//           console.log("278");
+
+//           pushResult = 'failed'
+//         }
+//       }
+//       return;
+//     });
+//   } catch (error) {
+//     console.log("error 282", error)
+//     reject(errors.internalServer(true))
+//     return
+//   }
+// }
+
+const sendPushNotification = (requestParam) => {
+  const message = {
+    registration_ids: ["c_OZYI074kJhgQQG5ZPCVI:APA91bFM2K4bHkmOOp-p1VMNyDUVm1nbbLR2R9zriuKVcTYg_8o3nrTK9bbYB2xnIAa9AcSpZ7tnlEZgiDXq0ohx5nUzFYRK5Y4q3Fxha9LXxYD7pPMVzsSQOqqO6Gbkn4AezEH5Y-nk"],
+    collapse_key: 'green',
+    priority: 10,
+    notification: {
+      title: requestParam.title,
+      body: requestParam.description,
+      sound: "",
+      // push_image: requestParam.pushImage,
+      type,
+      push_type
+    },
+    data: {
+      title: requestParam.title || 'COC',
+      body: requestParam.description,
+      sound: "",
+      type: 'normal',
+    },
+    android: {
+      notification: {
+        channel_id: "noti_push_app_1"
       },
-    };
+      priority: 'high'
+    }
+  };
 
-    fcm.send(message, function (error, result) {
-      let pushResult
-      if (error) {
-        pushResult = 'failed'
-        console.error("error=>", error)
-        // reject(errors.internalServer(true))
-        // return
-      } else {
-        console.log("272",result);
-        result = JSON.parse(result)
-        if (result.success == 1) {
-          console.log("275");
-          pushResult = 'success'
-        } else {
-          console.log("278");
+  fcm.send(message, function (error, result) {
+    if (error) {
+      console.log("------------------------FCM error-------------------");
+      console.error("error=>", error);
+      return error;
+    }
+    return result;
+  });
+};
 
-          pushResult = 'failed'
-        }
-      }
-      return;
-    });
-  } catch (error) {
-    console.log("error 282", error)
-    reject(errors.internalServer(true))
-    return
-  }
-}
 
 // const sendIOSPush = async (requestParam) => {
 //   return new Promise(async (resolve, reject) => {

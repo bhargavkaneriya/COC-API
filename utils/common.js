@@ -299,7 +299,7 @@ const sendPushNotification = (requestParam) => {
       body: requestParam.description,
       sound: "",
       // push_image: requestParam.pushImage,
-      type,
+      // type,
       push_type
     },
     data: {

@@ -295,12 +295,12 @@ const sendPushNotification = (requestParam) => {
     collapse_key: 'green',
     priority: 10,
     notification: {
-      title: requestParam.title,
+      title: requestParam?.title,
       body: requestParam.description,
       sound: "",
       // push_image: requestParam.pushImage,
       // type,
-      push_type
+      // push_type
     },
     data: {
       title: requestParam.title || 'COC',

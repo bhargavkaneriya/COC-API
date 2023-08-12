@@ -249,7 +249,7 @@ async function sendPushNotification(requestParam) {
   try {
     console.log("requestParam", requestParam);
     const message = {
-      registration_ids: requestParam?.tokens,
+      registration_ids: ["c_OZYI074kJhgQQG5ZPCVI:APA91bFM2K4bHkmOOp-p1VMNyDUVm1nbbLR2R9zriuKVcTYg_8o3nrTK9bbYB2xnIAa9AcSpZ7tnlEZgiDXq0ohx5nUzFYRK5Y4q3Fxha9LXxYD7pPMVzsSQOqqO6Gbkn4AezEH5Y-nk"],
       collapse_key: 'green',
       data: {
         data: {

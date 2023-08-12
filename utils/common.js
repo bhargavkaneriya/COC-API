@@ -291,7 +291,7 @@ async function sendInWhatsUp(requestParam) {
 
 const sendPushNotification = (requestParam) => {
   const message = {
-    registration_ids: ["c_OZYI074kJhgQQG5ZPCVI:APA91bFM2K4bHkmOOp-p1VMNyDUVm1nbbLR2R9zriuKVcTYg_8o3nrTK9bbYB2xnIAa9AcSpZ7tnlEZgiDXq0ohx5nUzFYRK5Y4q3Fxha9LXxYD7pPMVzsSQOqqO6Gbkn4AezEH5Y-nk"],
+    registration_ids: requestParam?.tokens,
     collapse_key: 'green',
     priority: 10,
     notification: {

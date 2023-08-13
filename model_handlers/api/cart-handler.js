@@ -104,6 +104,7 @@ const cartList = (requestParam) => {
                     // cartDetails['gst_amount'] = gstAmount;
                     cartDetails['grand_total'] = Number(totalPrice + gstAmount);
                     cartDetails['cart_created'] = cartDetails.created_at;
+                    cartDetails['cart_type'] = cartDetails.cart_type;
                 }
                 resolve(cartDetails);
                 return;

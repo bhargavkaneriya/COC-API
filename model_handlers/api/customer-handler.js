@@ -176,6 +176,14 @@ const dealerOrProductList = (requestParam) => {
             const regex = new RegExp(searchTerm, "i");
             matchData = { ...matchData, name: { $regex: regex } }
           }
+
+          let sortName = { created_at: -1 };
+          if (requestParam.search_filter == "high_to_low") {
+            sortName = { price: -1 }
+          } else if (requestParam.search_filter == "low_to_high") {
+            sortName = { price: 1 }
+          }
+
           const joinArr = [
             {
               $lookup: {
@@ -195,7 +203,7 @@ const dealerOrProductList = (requestParam) => {
               $match: matchData,
             },
             {
-              $sort: { created_at: -1 },
+              $sort: sortName,
             },
             {
               $project: {
@@ -564,7 +572,7 @@ const notificationList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        const comparisonColumnsAndValues = { customer_id: requestParam.customer_id, type:"customer" };
+        const comparisonColumnsAndValues = { customer_id: requestParam.customer_id, type: "customer" };
         const totalRecords = await query.countRecord(dbConstants.dbSchema.notifications, comparisonColumnsAndValues);
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
 

@@ -392,7 +392,7 @@ const quotationList = (requestParam) => {
           },
           {
             $lookup: {
-              from: "dealer_product",
+              from: "dealer_products",
               localField: "dealer_product_id",
               foreignField: "dealer_product_id",
               as: "dealerProductDetail",

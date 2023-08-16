@@ -151,6 +151,10 @@ const transactionList = (requestParam) => {
           dbConstants.dbSchema.transactions,
           joinArr
         );
+        response.map((element)=>{
+          element.image = config.aws.base_url + element.image
+          element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
+        })
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {
@@ -401,7 +405,9 @@ const totalTopSalesProducts = (requestParam) => {
         ];
 
         const product_list = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-
+        product_list.map((element)=>{
+          element.image =  config.aws.base_url + element.image
+        })
         resolve(product_list);
         return;
       } catch (error) {

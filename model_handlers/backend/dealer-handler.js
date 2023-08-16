@@ -101,6 +101,20 @@ const transactionList = (requestParam) => {
             },
           },
           {
+            $lookup: {
+              from: "dealers",
+              localField: "dealer_id",
+              foreignField: "dealer_id",
+              as: "dealerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$dealerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
             $match: comparisonColumnsAndValues,
           },
           {
@@ -121,7 +135,9 @@ const transactionList = (requestParam) => {
               grand_total: { $arrayElemAt: ["$orderDetail.grand_total", 0] },
               delivery_status: { $arrayElemAt: ["$orderDetail.delivery_status", 0] },
               transaction_date: "$created_at",
-              offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] }
+              status: "$status",
+              offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] },
+              dealer_name: "$dealerDetail.name"
             },
           },
           {

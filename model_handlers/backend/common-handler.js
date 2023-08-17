@@ -446,7 +446,7 @@ const verifyDealerDetail = (requestParam) => {
 
         await sendEmail({ toEmail: dealerData.email, subject: "Verification", text: emailMessage });
 
-        resolve({ message: "Document updated successfully" });
+        resolve({ message: "updated successfully" });
         return;
       } catch (error) {
         reject(error);

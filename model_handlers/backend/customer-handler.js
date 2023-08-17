@@ -124,18 +124,20 @@ const transactionList = (requestParam) => {
               _id: 0,
               transaction_id: "$transaction_id",
               order_id: "$order_id",
-              cart_id: { $arrayElemAt: ["$orderDetail.cart_id", 0] },
-              quotation_id: { $arrayElemAt: ["$orderDetail.quotation_id", 0] },
-              customer_name: { $arrayElemAt: ["$orderDetail.customer_name", 0] },
-              dealer_name: { $arrayElemAt: ["$dealerDetail.name", 0] },
-              name: { $arrayElemAt: ["$orderDetail.product_name", 0] },
-              image: { $arrayElemAt: ["$orderDetail.product_image", 0] },
-              qty: { $arrayElemAt: ["$orderDetail.product_qty", 0] },
-              total_price: { $arrayElemAt: ["$orderDetail.total_price", 0] },
-              grand_total: { $arrayElemAt: ["$orderDetail.grand_total", 0] },
-              delivery_status: { $arrayElemAt: ["$orderDetail.delivery_status", 0] },
+              // cart_id: { $arrayElemAt: ["$orderDetail.cart_id", 0] },
+              // cart_id: "$orderDetail.cart_id",
+              quotation_id: "$orderDetail.quotation_id",
+              customer_name: "$orderDetail.customer_name",
+              dealer_name: "$dealerDetail.name",
+              name: "$orderDetail.product_name",
+              image:"$orderDetail.product_image",
+              qty: "$orderDetail.product_qty",
+              total_price: "$orderDetail.total_price",
+              grand_total: "$orderDetail.grand_total",
+              delivery_status: "$orderDetail.delivery_status",
               transaction_date: "$created_at",
-              offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] }
+              // offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] }
+              offline_payment_doc: "$orderDetail.offline_payment_doc"
             },
           },
           {
@@ -149,6 +151,10 @@ const transactionList = (requestParam) => {
           dbConstants.dbSchema.transactions,
           joinArr
         );
+        response.map((element)=>{
+          element.image = config.aws.base_url + element.image
+          element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
+        })
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {
@@ -202,7 +208,7 @@ const quotationList = (requestParam) => {
           },
           {
             $lookup: {
-              from: "dealer_product",
+              from: "dealer_products",
               localField: "dealer_product_id",
               foreignField: "dealer_product_id",
               as: "dealerProductDetail",
@@ -236,7 +242,7 @@ const quotationList = (requestParam) => {
               dealer_name: "$dealerDetail.name",
               quotation_date: "$created_at",
               product_image: "$dealerProductDetail.image",
-              quotation_pdf: "https://drive.google.com/file/d/1JHacEfYcaTgaYzrkvUhL1okeRTzm8ssd/view?usp=sharing",
+              quo_doc: "$quo_doc",
               delete_allowed: "$delete_allowed"
             },
           },
@@ -251,6 +257,9 @@ const quotationList = (requestParam) => {
           dbConstants.dbSchema.quotations,
           joinArr
         );
+        response.map((element)=>{
+          element.quo_doc = config.aws.base_url + element.quo_doc
+        })
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {

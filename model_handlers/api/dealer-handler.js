@@ -58,7 +58,7 @@ const productAdd = (requestParam) => {
             product_id: requestParam.product_id,
             name: requestParam.name,
             image: productData.image,
-            code: requestParam.code,
+            code: requestParam.product_code,
             discount_percentage: requestParam.discount_percentage,
             discount_amount: requestParam.discount_amount,
             price: requestParam.price,
@@ -67,7 +67,7 @@ const productAdd = (requestParam) => {
           return;
         } else {
           const productData = await query.selectWithAndOne(dbConstants.dbSchema.products, { product_id: requestParam.product_id }, { _id: 0, image: 1 });
-          requestParam = { ...requestParam, image: productData.image };
+          requestParam = { ...requestParam, image: productData.image, code: requestParam?.product_code };
           await query.updateSingle(
             dbConstants.dbSchema.dealer_product,
             requestParam,

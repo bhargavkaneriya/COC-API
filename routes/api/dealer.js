@@ -11,7 +11,7 @@ const errors = errorHandler;
 
 router.post("/product-add", async (req, res) => {
   try {
-    if (!req.body.dealer_id || !req.body.product_id || !req.body.name || !req.body.code || !req.body.discount_percentage || !req.body.discount_amount || !req.body.price || !req.body.type) {
+    if (!req.body.dealer_id || !req.body.product_id || !req.body.name || !req.body.code || !req.body.price || !req.body.type) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

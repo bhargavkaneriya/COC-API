@@ -36,8 +36,8 @@ const dashboard = (requestParam) => {
         totalTransaction = totalTransaction[0].total
         const totalRequest = await query.countRecord(dbConstants.dbSchema.requests, {});
         const totalOrders = await query.countRecord(dbConstants.dbSchema.orders, {});
-        const totalQuotationWaitList = await query.countRecord(dbConstants.dbSchema.quotations, {}); //remaining confirmkrvu
-        const totalAbandonedCart = await query.countRecord(dbConstants.dbSchema.carts, {}); //remaining confirmkrvu
+        const totalQuotationWaitList = await query.countRecord(dbConstants.dbSchema.requests, {is_quotation_created:false});
+        const totalAbandonedCart = await query.countRecord(dbConstants.dbSchema.carts, {});
         resolve({ totalCustomer, totalTransaction, totalRequest, totalOrders, totalQuotationWaitList, totalAbandonedCart });
         return;
       } catch (error) {

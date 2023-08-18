@@ -215,6 +215,20 @@ const orderList = (requestParam) => {
               preserveNullAndEmptyArrays: true,
             },
           },
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customer_id",
+              foreignField: "customer_id",
+              as: "customerDetail",
+            },
+          },
+          {
+            $unwind: {
+              path: "$customerDetail",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
           // {
           //   $match: { customer_id: requestParam.customer_id, payment_method: requestParam.order_type },
           // },
@@ -231,6 +245,7 @@ const orderList = (requestParam) => {
               dealer_id: "$dealer_id",
               payment_method: "$payment_method",
               dealer_name: "$dealerDetail.name",
+              customer_name: "$customerDetail.name",
               name: "$product_name",
               qty: "$product_qty",
               image: "$product_image",
@@ -566,25 +581,13 @@ const quotationWaitingList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const requestList = await query.selectWithAnd(dbConstants.dbSchema.requests, {}, { _id: 0, request_id: 1 });
-        const quotationList = await query.selectWithAnd(dbConstants.dbSchema.quotations, {}, { _id: 0, quotation_id: 1, request_id: 1 });
-        let reqArr = [];
-        requestList.filter((element) => {
-          const even = _.find(quotationList, function (num) { return num.request_id !== element.request_id; });
-          if (even) {
-            reqArr.push(element.request_id)
-          }
-        });
-
-
-
         const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
         let page = requestParam.page ? parseInt(requestParam.page) : 0;
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
 
-        const totalRecords = await query.countRecord(dbConstants.dbSchema.requests, { request_id: { $in: reqArr } });
+        const totalRecords = await query.countRecord(dbConstants.dbSchema.requests, { is_quotation_created:false });
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
 
         if (requestParam.page && requestParam.page > total_page) {
@@ -636,7 +639,7 @@ const quotationWaitingList = (requestParam) => {
             },
           },
           {
-            $match: { request_id: { $in: reqArr } },
+            $match: { is_quotation_created:false },
           },
           {
             $sort: { created_at: -1 },

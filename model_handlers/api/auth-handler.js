@@ -189,6 +189,12 @@ const sendOTP = (requestParam) => {
           false,
           false
         );
+        if (requestParam.from_type == "forgot_password") {
+          await sendSMS(`${otp} is Your OTP to forget your cement on call password. OTP will expire in 60 seconds.`, requestParam.phone_number);
+        }else{
+          await sendSMS(`${otp} is for cement on call. OTP will expire in 60 seconds.`, requestParam.phone_number);
+        }
+
         await query.updateSingle(
           modelName,
           { otp: otp },

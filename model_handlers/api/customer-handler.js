@@ -151,7 +151,8 @@ const dealerOrProductList = (requestParam) => {
             $project: {
               _id: 0,
               dealer_id: "$dealer_id",
-              dealer_name: "$name"
+              dealer_name: "$name",
+              business_name:"$business_name"
             },
           },
           {
@@ -304,7 +305,8 @@ const dealerProductList = (requestParam) => {
               discount_amount: 1,
               price: 1,
               created_at: 1,
-              dealer_name: "$dealerDetail.name"
+              dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name"
             },
           },
         ];
@@ -333,8 +335,9 @@ const productDetail = (requestParam) => {
         let response = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_product_id: requestParam.dealer_product_id }, { _id: 0 }, { created_at: -1 });
         if (response) {
           response = JSON.parse(JSON.stringify(response));
-          const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: response.dealer_id }, { _id: 0, name: 1 })
+          const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: response.dealer_id }, { _id: 0, name: 1, business_name:1 })
           response.dealer_name = dealerDetail.name
+          response.business_name = dealerDetail.business_name
         }
         response.image = config.aws.base_url + response.image
         resolve(response);

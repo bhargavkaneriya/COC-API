@@ -456,7 +456,7 @@ const verifyDealerDetail = (requestParam) => {
         }
 
         if (requestParam.status == "rejected") {
-          updatedata = { ...updatedata, rejected_reason: requestParam.rejected_reason }
+          updatedata = { ...updatedata, rejected_reason: requestParam.rejected_reason, is_verified: false }
           message = `Dear Dealer, Your request for listing your business on cement on call has been rejected.${requestParam.rejected_reason}`;
           emailMessage = `Dear Dealer, Your request for listing your business on cement on call has been rejected.${requestParam.rejected_reason}`;
         }

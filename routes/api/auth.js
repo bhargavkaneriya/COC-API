@@ -63,6 +63,7 @@ router.post("/sign-in", async (req, res) => {
 
 router.post("/send-otp", async (req, res) => {
   try {
+    console.log("send otp");
     if (!req.body.phone_number || !req.body.user_type) {
       jsonResponse(
         res,
@@ -88,6 +89,8 @@ router.post("/send-otp", async (req, res) => {
 
 router.post("/verify-otp", async (req, res) => {
   try {
+    console.log("verify otp");
+
     if (!req.body.phone_number || !req.body.user_type || !req.body.otp) {
       jsonResponse(
         res,

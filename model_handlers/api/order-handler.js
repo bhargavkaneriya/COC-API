@@ -20,7 +20,7 @@ var razorpay = new Razorpay({
 const pdf = require('html-pdf');
 const fs = require("fs");
 
-const createOrder = (requestParam) => {
+const createOrder = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -69,13 +69,16 @@ const createOrder = (requestParam) => {
           payment_method: requestParam.payment_method,
         }
         if (requestParam.payment_method == "offline") {
+        if (req.files && req.files.offline_payment_doc) {
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
               resolve(result.file);
             });
           });
-          requestParam = { ...requestParam, offline_payment_doc: imageName, quotation_id: cartDetail.quotation_id }
+          requestParam.offline_payment_doc = imageName
+        }
+          requestParam = { ...requestParam, quotation_id: cartDetail.quotation_id }
         } else {
           requestParam = { ...requestParam, quotation_id: requestParam.quotation_id }
         }
@@ -412,7 +415,7 @@ const razorpayMethod = (requestParam) => {
     async function main() {
       try {
         const payment_capture = 1;
-        const amount = 500;
+        const amount = parseInt(Number(Number(requestParam.amount)*100));
         const currency = "INR";
 
         const options = {
@@ -434,6 +437,7 @@ const razorpayMethod = (requestParam) => {
           console.log(err);
         }
       } catch (error) {
+        console.log("error", error);
         reject(error);
         return;
       }

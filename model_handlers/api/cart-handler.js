@@ -36,9 +36,7 @@ const addToCart = (requestParam) => {
                     reject(errors(labels.LBL_PRODUCT_ALREADY_EXIST_IN_CART["EN"], responseCodes.Conflict));
                     return
                 }
-                console.log("requestParam.customer_id", requestParam.customer_id);
                 const otherProduct = await query.countRecord(dbConstants.dbSchema.carts, { customer_id: requestParam.customer_id });
-                console.log("otherProduct", otherProduct);
                 if (otherProduct > 0) {
                     reject(errors(labels.LBL_CART_NOT_EMPTY["EN"], responseCodes.Conflict));
                     return

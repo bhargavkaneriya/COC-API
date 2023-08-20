@@ -488,6 +488,19 @@ const abandonedCartList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        let compareData = {};
+        if (requestParam?.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          compareData = {
+            ...compareData,
+            $or: [
+              { "customerDetail.name": { $regex: regex } },
+              { "dealerDetail.name": { $regex: regex } },
+              { "dealerProductDetail.name": { $regex: regex } }
+            ]
+          }
+        }
 
         const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
         let page = requestParam.page ? parseInt(requestParam.page) : 0;
@@ -547,7 +560,7 @@ const abandonedCartList = (requestParam) => {
             },
           },
           {
-            $match: {},
+            $match: compareData,
           },
           {
             $sort: { created_at: -1 },

@@ -205,7 +205,7 @@ router.get("/quotation-waiting-list", async (req, res) => {
 
 router.post("/send-notification", async (req, res) => {
   try {
-    if (!req.body.ids || !req.body.type || !req.body.message) {
+    if (!req.body.ids || !req.body.message) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

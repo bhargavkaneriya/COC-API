@@ -170,13 +170,20 @@ const orderList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        // const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
-        // if (!customer) {
-        //   reject(
-        //     errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound)
-        //   );
-        //   return;
-        // }
+        let compareData = {};
+
+        if (requestParam?.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          compareData = {
+            ...compareData,
+            $or: [
+              { customer_name: { $regex: regex } },
+              { delivery_status: { $regex: regex } },
+              { "dealerDetail.name": { $regex: regex } }
+            ]
+          }
+        }
 
         const sizePerPage = requestParam.sizePerPage
           ? parseInt(requestParam.sizePerPage)
@@ -229,9 +236,9 @@ const orderList = (requestParam) => {
               preserveNullAndEmptyArrays: true,
             },
           },
-          // {
-          //   $match: { customer_id: requestParam.customer_id, payment_method: requestParam.order_type },
-          // },
+          {
+            $match: compareData,
+          },
           {
             $sort: { created_at: -1 },
           },
@@ -245,7 +252,7 @@ const orderList = (requestParam) => {
               dealer_id: "$dealer_id",
               payment_method: "$payment_method",
               dealer_name: "$dealerDetail.name",
-              customer_name: "$customerDetail.name",
+              customer_name: "$customer_name",
               name: "$product_name",
               qty: "$product_qty",
               image: "$product_image",
@@ -527,7 +534,7 @@ const abandonedCartList = (requestParam) => {
           },
           {
             $lookup: {
-              from: "dealer_product",
+              from: "dealer_products",
               localField: "dealer_product_id",
               foreignField: "dealer_product_id",
               as: "dealerProductDetail",
@@ -688,8 +695,6 @@ const sendNotification = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        requestParam.ids = JSON.parse(requestParam.ids);
-
         let modelName = dbConstants.dbSchema.customers;
         let compareData = {
           customer_id: { $in: requestParam.ids }
@@ -701,9 +706,11 @@ const sendNotification = (requestParam) => {
               dealer_id: { $in: requestParam.ids }
             }
         }
-        const response = await query.selectWithAnd(modelName, compareData, { _id: 0, device_token: 1 }, { created_at: -1 });
-        const deviceTokens = _.pluck(response, 'device_token');
-        await sendPushNotification({ tokens: deviceTokens, title: "Notification", description: requestParam.message });
+        const cartData = await query.selectWithAnd(dbConstants.dbSchema.carts, { cart_id: { $in: requestParam?.ids } }, { _id: 0, customer_id: 1 })
+        const customerIDs = _.pluck(cartData, 'customer_id')
+        const customerData = await query.selectWithAnd(dbConstants.dbSchema.customers, { customer_id: { $in: customerIDs } }, { _id: 0, device_token: 1 });
+        const customerTokens = _.pluck(customerData, 'device_token')
+        await sendPushNotification({ tokens: customerTokens, title: "Notification", description: requestParam.message });
         resolve({ message: "Send notification successfully" });
         return;
       } catch (error) {

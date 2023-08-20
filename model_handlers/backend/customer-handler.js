@@ -53,7 +53,23 @@ const list = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAnd(dbConstants.dbSchema.customers, {}, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
+        let compareData = {};
+        if (requestParam?.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          compareData = {
+            ...compareData,
+            $or: [
+              { name: { $regex: regex } },
+              { email: { $regex: regex } },
+              { phone_number: { $regex: regex } },
+              { pan_no: { $regex: regex } },
+              { gst_no: { $regex: regex } }
+            ]
+          }
+        }
+
+        const response = await query.selectWithAnd(dbConstants.dbSchema.customers, compareData, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
         resolve(response);
         return;
       } catch (error) {

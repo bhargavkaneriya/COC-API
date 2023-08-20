@@ -48,9 +48,25 @@ const list = (requestParam) => {
     async function main() {
       try {
         let compareData = {};
+        if (requestParam?.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          compareData = {
+            ...compareData,
+            $or: [
+              { name: { $regex: regex } },
+              { business_name: { $regex: regex } },
+              { state: { $regex: regex } },
+              { city: { $regex: regex } },
+              { pincode: { $regex: regex } }
+            ]
+          }
+        }
+
         if (requestParam.status) {
           compareData = { ...compareData, status: requestParam.status }
         }
+
         const response = await query.selectWithAnd(dbConstants.dbSchema.dealers, compareData, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
         resolve(response);
         return;
@@ -151,7 +167,7 @@ const transactionList = (requestParam) => {
           dbConstants.dbSchema.transactions,
           joinArr
         );
-        response.map((element)=>{
+        response.map((element) => {
           element.image = config.aws.base_url + element.image
           element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
         })
@@ -405,8 +421,8 @@ const totalTopSalesProducts = (requestParam) => {
         ];
 
         const product_list = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        product_list.map((element)=>{
-          element.image =  config.aws.base_url + element.image
+        product_list.map((element) => {
+          element.image = config.aws.base_url + element.image
         })
         resolve(product_list);
         return;

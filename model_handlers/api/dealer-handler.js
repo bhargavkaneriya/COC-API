@@ -1021,9 +1021,16 @@ const totalTopSalesProducts = (requestParam) => {
           );
           return;
         }
+        
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id
         };
+        
+        if (requestParam.search_key) {
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, product_name: { $regex: regex } }
+        }
 
         let totalRecords = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
 

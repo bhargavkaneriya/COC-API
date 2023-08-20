@@ -36,9 +36,9 @@ const addToCart = (requestParam) => {
                     reject(errors(labels.LBL_PRODUCT_ALREADY_EXIST_IN_CART["EN"], responseCodes.Conflict));
                     return
                 }
-                console.log("requestParam.customer_id",requestParam.customer_id);
+                console.log("requestParam.customer_id", requestParam.customer_id);
                 const otherProduct = await query.countRecord(dbConstants.dbSchema.carts, { customer_id: requestParam.customer_id });
-                console.log("otherProduct",otherProduct);
+                console.log("otherProduct", otherProduct);
                 if (otherProduct > 0) {
                     reject(errors(labels.LBL_CART_NOT_EMPTY["EN"], responseCodes.Conflict));
                     return
@@ -49,6 +49,15 @@ const addToCart = (requestParam) => {
                     reject(errors(labels.LBL_OTHER_PRODUCT_EXIST["EN"], responseCodes.Invalid));
                     return
                 }
+
+                if (requestParam.cart_type === "quotation") {
+                    const quoData = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0, product_price: 1 });
+                    requestParam = { ...requestParam, product_price: quoData.product_price }
+                } else {
+                    const dpData = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id, product_id: requestParam.product_id }, { _id: 0, price: 1 });
+                    requestParam = { ...requestParam, product_price: dpData?.price }
+                }
+
                 const cart_id = await idGeneratorHandler.generateId("COCC");
                 let insertRecord = {
                     cart_id: cart_id,
@@ -57,7 +66,8 @@ const addToCart = (requestParam) => {
                     product_id: requestParam.product_id,
                     qty: requestParam.qty,
                     dealer_product_id: requestParam.dealer_product_id,
-                    cart_type: requestParam.cart_type
+                    cart_type: requestParam.cart_type,
+                    price: requestParam?.product_price
                 }
 
                 if (requestParam.cart_type === "quotation") {
@@ -97,8 +107,8 @@ const cartList = (requestParam) => {
                     let dealerProductDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetails.dealer_id, product_id: cartDetails.product_id }, { _id: 0, name: 1, image: 1, price: 1 });
                     cartDetails.name = dealerProductDetail.name;
                     cartDetails.image = config.aws.base_url + dealerProductDetail.image;
-                    cartDetails.price = dealerProductDetail.price;
-                    const totalPrice = Number(cartDetails.qty * dealerProductDetail.price);
+                    // cartDetails.price = dealerProductDetail.price;
+                    const totalPrice = Number(cartDetails.qty * cartDetails.price);
                     cartDetails['total_price'] = totalPrice
                     const gstAmount = Number((totalPrice * 18) / 100)
                     // cartDetails['gst_amount'] = gstAmount;

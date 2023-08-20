@@ -106,7 +106,7 @@ const verifyPaymentDocument = (requestParam) => {
               <p style="position:absolute;top:1110px;left:351px;white-space:nowrap" class="ft12">+91&#160;9898989898</p>
               <p style="position:absolute;top:1110px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
               <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${orderData?.total_price}<br/>GST&#160;18%</p>
-              <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹${Number((orderData?.total_price * 100) / 18).toFixed(2)}</p>
+              <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹${Number((orderData?.total_price * 18) / 100).toFixed(2)}</p>
               <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;${orderData.product_discount_percentage}</p>
               
               <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹${orderData.product_discount_amount}</p>

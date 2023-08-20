@@ -17,6 +17,10 @@ const cartSchema = new Schema({
     type: String,
     default: "",
   },
+  price: {
+    type: Number,
+    default: 0,
+  },
   quotation_id:{
     type:String,
     default:""

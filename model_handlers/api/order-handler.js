@@ -46,6 +46,15 @@ const createOrder = (requestParam, req) => {
           );
           return;
         }
+
+        if (requestParam.quotation_id) {
+          const quoId = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0, quotation_id: 1 });
+          if (!quoId) {
+            reject(errors(labels.LBL_INVALID_QUOTATION_ID["EN"], responseCodes.ResourceNotFound));
+            return;
+          }
+        }
+        
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetail.dealer_id, product_id: cartDetail.product_id }, { _id: 0 });
         const order_id = await idGeneratorHandler.generateId("COCO");
         requestParam = {

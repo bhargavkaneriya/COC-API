@@ -1,17 +1,25 @@
 "use strict";
 const { Schema, model } = require("mongoose");
 const settingSchema = new Schema({
-    android_app_version: {
-        type: Number,
+    android_customer_version: {
+        type: String,
         default: 0,
     },
-    ios_app_version: {
-        type: Number,
+    android_dealer_version: {
+        type: String,
+        default: 0,
+    },
+    ios_customer_version: {
+        type: String,
+        default: 0,
+    },
+    ios_dealer_version: {
+        type: String,
         default: 0,
     },
     password: {
         type: String,
-        default: "",
+        default: "yymUc8qhGr",
     },
     created_at: {
         type: Date,

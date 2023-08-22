@@ -191,7 +191,7 @@ const sendOTP = (requestParam) => {
         );
         if (requestParam.from_type == "forgot_password") {
           await sendSMS(`${otp} is Your OTP to forget your cement on call password. OTP will expire in 60 seconds.`, requestParam.phone_number);
-        }else{
+        } else {
           await sendSMS(`${otp} is for cement on call. OTP will expire in 60 seconds.`, requestParam.phone_number);
         }
 
@@ -426,6 +426,22 @@ const updateAppVesrion = (requestParam, req2) => {
   });
 };
 
+const getAppVesrion = (requestParam, req2) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const settingData = await query.selectWithAndOne(dbConstants.dbSchema.settings, {}, { _id: 0 });
+        resolve(settingData);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
 module.exports = {
   signUp,
   sendOTP,
@@ -433,5 +449,6 @@ module.exports = {
   signIn,
   updateProfile,
   logout,
-  updateAppVesrion
+  updateAppVesrion,
+  getAppVesrion
 };

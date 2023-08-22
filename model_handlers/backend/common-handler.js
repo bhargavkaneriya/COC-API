@@ -299,7 +299,7 @@ const verificationRequestList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        const comparisonColumnsAndValues = { status: requestParam.status };
+        const comparisonColumnsAndValues = { "delivery_status": requestParam.status };
 
         let totalRecords = await query.countRecord(
           dbConstants.dbSchema.orders,

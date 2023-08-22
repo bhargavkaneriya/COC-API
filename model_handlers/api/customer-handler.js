@@ -692,7 +692,8 @@ const invoiceList = (requestParam) => {
               customer_id: "$customer_id",
               dealer_id: "$dealer_id",
               dealer_name: "$dealerDetail.name",
-              invoice_document: "$invoice_document"
+              business_name: "$dealerDetail.business_name",
+              invoice_document: "$invoice_document",
             },
           },
           {

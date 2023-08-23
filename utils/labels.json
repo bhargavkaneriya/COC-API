@@ -20,6 +20,9 @@
   "LBL_STATUS_INVALID": {
     "EN": "You entered status is invalid."
   },
+  "LBL_TYPE_INVALID": {
+    "EN": "You entered type is invalid."
+  },
   "LBL_CART_NOT_EMPTY": {
     "EN": "You need remove exist product."
   },

@@ -426,11 +426,21 @@ const updateAppVesrion = (requestParam, req2) => {
   });
 };
 
-const getAppVesrion = (requestParam, req2) => {
+const getAppVesrion = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const settingData = await query.selectWithAndOne(dbConstants.dbSchema.settings, {}, { _id: 0 });
+        let colomnSelect = { _id: 0 };
+        if(!(requestParam?.type == "ios" || requestParam?.type == "android")){
+          reject(errors(labels.LBL_TYPE_INVALID["EN"], responseCodes.Invalid));
+          return
+        }
+        if (requestParam?.type == "ios") {
+          colomnSelect = { ...colomnSelect, ios_customer_version: 1, ios_dealer_version: 1 }
+        } else {
+          colomnSelect = { ...colomnSelect, android_customer_version: 1, android_dealer_version: 1 }
+        }
+        const settingData = await query.selectWithAndOne(dbConstants.dbSchema.settings, {}, colomnSelect);
         resolve(settingData);
         return;
       } catch (error) {

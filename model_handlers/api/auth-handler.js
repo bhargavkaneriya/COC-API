@@ -408,13 +408,13 @@ const updateAppVesrion = (requestParam, req2) => {
           reject(errors(labels.LBL_INVALID_PASSWORD["EN"], responseCodes.Invalid));
           return;
         }
-        let updateData;
-        if (requestParam.type === "android") {
-          updateData = { android_app_version: requestParam.version }
-        } else if (requestParam.type === "ios") {
-          updateData = { ios_app_version: requestParam.version }
-        }
-        await query.updateSingle(dbConstants.dbSchema.settings, updateData, {});
+        // let updateData;
+        // if (requestParam.type === "android") {
+        //   updateData = { android_app_version: requestParam.version }
+        // } else if (requestParam.type === "ios") {
+        //   updateData = { ios_app_version: requestParam.version }
+        // }
+        await query.updateSingle(dbConstants.dbSchema.settings, requestParam, {});
         resolve({ message: "update version sucessfully" });
         return;
       } catch (error) {

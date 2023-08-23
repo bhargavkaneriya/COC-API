@@ -163,7 +163,7 @@ router.post("/logout", verifyToken, async (req, res) => {
 
 router.post("/update-app-version", async (req, res) => {
   try {
-    if (!req.body.type || !req.body.password || !req.body.version) {
+    if ( !req.body.password) {
       jsonResponse(
         res,
         responseCodes.BadRequest,

@@ -438,7 +438,8 @@ const quotationList = (requestParam) => {
               quotation_date: "$created_at",
               product_image: "$dealerProductDetail.image",
               quotation_pdf: "$quo_doc",
-              delete_allowed: "$delete_allowed"
+              delete_allowed: "$delete_allowed",
+              business_name:"$dealerDetail.business_name"
             },
           },
         ];

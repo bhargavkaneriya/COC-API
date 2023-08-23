@@ -13,7 +13,7 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const totalDealer = await query.countRecord(dbConstants.dbSchema.dealers, {});
+        const totalDealer = await query.countRecord(dbConstants.dbSchema.dealers, {is_verified: true});
         const joinArr = [
           // { $match: { dealer_id: requestParam.dealer_id } },
           {

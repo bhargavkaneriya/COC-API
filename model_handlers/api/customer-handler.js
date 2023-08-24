@@ -122,7 +122,7 @@ const dealerOrProductList = (requestParam) => {
           if (requestParam.search_key) {
             const searchTerm = requestParam.search_key;
             const regex = new RegExp(searchTerm, "i");
-            comparisonColumnsAndValues = { ...comparisonColumnsAndValues, name: { $regex: regex } }
+            comparisonColumnsAndValues = { ...comparisonColumnsAndValues, business_name: { $regex: regex } }
           }
         }
 

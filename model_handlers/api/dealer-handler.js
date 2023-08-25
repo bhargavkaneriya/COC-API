@@ -969,14 +969,24 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const total_transaction = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
-        const requestCustomers = await query.selectWithAnd(dbConstants.dbSchema.requests, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
-        const quationCustomers = await query.selectWithAnd(dbConstants.dbSchema.quotations, { dealer_id: requestParam.dealer_id }, { _id: 0, customer_id: 1 });
+        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
+        if (requestParam?.start_date && requestParam?.end_date) {
+          comparisonColumnsAndValues = {
+            ...comparisonColumnsAndValues,
+            created_at: {
+              $gte: requestParam.start_date,
+              $lt: requestParam.end_date
+            }
+          }
+        }
+        const total_transaction = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
+        const requestCustomers = await query.selectWithAnd(dbConstants.dbSchema.requests, comparisonColumnsAndValues, { _id: 0, customer_id: 1 });
+        const quationCustomers = await query.selectWithAnd(dbConstants.dbSchema.quotations, comparisonColumnsAndValues, { _id: 0, customer_id: 1 });
         let total_customer = requestCustomers.concat(quationCustomers);
         total_customer = _.uniq(_.pluck(total_customer, "customer_id"));
         total_customer = total_customer.length;
         const joinArr = [
-          { $match: { dealer_id: requestParam.dealer_id } },
+          { $match: comparisonColumnsAndValues },
           {
             $group:
             {
@@ -992,7 +1002,7 @@ const dashboard = (requestParam) => {
           }
         ];
         const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, { dealer_id: requestParam.dealer_id });
+        const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
         resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales });
         return;
       } catch (error) {
@@ -1020,11 +1030,11 @@ const totalTopSalesProducts = (requestParam) => {
           );
           return;
         }
-        
+
         let comparisonColumnsAndValues = {
           dealer_id: requestParam.dealer_id
         };
-        
+
         if (requestParam.search_key) {
           const searchTerm = requestParam.search_key;
           const regex = new RegExp(searchTerm, "i");

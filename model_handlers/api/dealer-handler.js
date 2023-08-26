@@ -1204,10 +1204,15 @@ const paymentReceiptList = (requestParam) => {
             $limit: sizePerPage,
           }
         ];
-        const response = await query.joinWithAnd(
+        let response = await query.joinWithAnd(
           dbConstants.dbSchema.orders,
           joinArr
         );
+
+        response.map((element) => {
+          element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
+        })
+
         resolve({ response_data: response, total_page });
         return;
       } catch (error) {

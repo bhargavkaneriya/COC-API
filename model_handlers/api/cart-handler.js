@@ -100,8 +100,9 @@ const cartList = (requestParam) => {
                 let cartDetails = await query.selectWithAndOne(dbConstants.dbSchema.carts, { customer_id: requestParam.customer_id }, { _id: 0 });
                 cartDetails = JSON.parse(JSON.stringify(cartDetails))
                 if (cartDetails) {
-                    let dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetails.dealer_id }, { _id: 0, name: 1 });
+                    let dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetails.dealer_id }, { _id: 0, name: 1, business_name:1 });
                     cartDetails.dealer_name = dealerDetail.name;
+                    cartDetails.business_name = dealerDetail.business_name;
                     let dealerProductDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetails.dealer_id, product_id: cartDetails.product_id }, { _id: 0, name: 1, image: 1, price: 1 });
                     cartDetails.name = dealerProductDetail.name;
                     cartDetails.image = config.aws.base_url + dealerProductDetail.image;

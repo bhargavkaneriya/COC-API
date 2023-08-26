@@ -26,12 +26,12 @@ const createQuotation = (requestParam) => {
         await query.updateSingle(dbConstants.dbSchema.requests, { is_quotation_created: true }, { request_id: requestParam.request_id });
         //notification add
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1, email: 1, phone_number: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: requestParam.dealer_id }, { _id: 0, name: 1, email: 1, phone_number: 1, business_name:1 });
         const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1, device_token: 1, email: 1 });
         let insertData = {
           notification_id,
           title: "Quotation send to customer",
-          description: `${dealerName.name} send quotation to ${customerName.name}`,
+          description: `${dealerName.business_name} send quotation to ${customerName.name}`,
           customer_id: requestParam.customer_id,
           dealer_id: requestParam.dealer_id,
           type: "customer"
@@ -95,9 +95,7 @@ const createQuotation = (requestParam) => {
           <p style="position:absolute;top:1100px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
           <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${requestParam?.total_price}<br/>GST&#160;18%</p>
           <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">${Number((requestParam?.total_price * 18) / 100).toFixed(2)}</p>
-          <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;%</p>
           
-          <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹0.00</p>
           <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹${requestParam?.grand_total}</p>
           <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
           
@@ -175,10 +173,10 @@ const createQuotation = (requestParam) => {
         await query.updateSingle(dbConstants.dbSchema.quotations, { quo_doc: `${randomStr}.pdf` }, { quotation_id: quotation_id })
         //end html-to-pdf
 
-        await sendSMS(`Dear customer, ${dealerName.name} sent a quotation`, customerName.phone_number);
-        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.name} sent a quotation.` });
-        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: imageName });
-        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
+        await sendSMS(`Dear customer, ${dealerName.business_name} sent a quotation`, customerName.phone_number);
+        await sendPushNotification({ tokens: [customerName.device_token], title: "Quotation Created", description: `${dealerName.business_name} sent a quotation.` });
+        // await sendEmail({ toEmail: customerName.email, subject: "Quotation Created", text: `Dear Customer, ${dealerName.business_name} sent a quotation. Note : file is attached here.`, filePath: imageName });
+        await sendInWhatsUp({ toNumber: customerName.phone_number, message: `Dear Customer, ${dealerName.business_name} sent a quotation. Note : file is attached here.`, filePath: "https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80" });
         resolve({ message: "Quotation sent successfully" });
         return;
       } catch (error) {
@@ -264,9 +262,7 @@ const updateQuotation = (requestParam) => {
                             <p style="position:absolute;top:1100px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
                             <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${requestParam?.total_price}<br/>GST&#160;18%</p>
                             <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">${Number((requestParam?.total_price * 18) / 100).toFixed(2)}</p>
-                            <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;%</p>
 
-                            <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹0.00</p>
                             <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹${requestParam?.grand_total}</p>
                             <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
 

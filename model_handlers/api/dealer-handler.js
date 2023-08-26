@@ -1194,7 +1194,7 @@ const paymentReceiptList = (requestParam) => {
               order_id: "$order_id",
               customer_id: "$customer_id",
               customer_name: "$customerDetail.name",
-              offline_payment_doc: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing"
+              offline_payment_doc: "$offline_payment_doc"
             },
           },
           {

@@ -9,7 +9,6 @@ const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const errors = errorHandler;
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, uploadPDF } = require('../../utils/common');
 const config = require('../../config');
-const puppeteer = require('puppeteer');
 const moment = require('moment');
 const Razorpay = require("razorpay");
 const shortid = require("shortid");
@@ -24,7 +23,7 @@ const createOrder = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        console.log("requestParam 2626",requestParam);
+        console.log("requestParam 2626", requestParam);
         const customer = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, phone_number: 1 });
         if (!customer) {
           reject(
@@ -54,7 +53,7 @@ const createOrder = (requestParam, req) => {
             return;
           }
         }
-        
+
         const dealerProduct = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_id: cartDetail.dealer_id, product_id: cartDetail.product_id }, { _id: 0 });
         const order_id = await idGeneratorHandler.generateId("COCO");
         requestParam = {
@@ -78,15 +77,15 @@ const createOrder = (requestParam, req) => {
           payment_method: requestParam.payment_method,
         }
         if (requestParam.payment_method == "offline") {
-        if (req.files && req.files.offline_payment_doc) {
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
+          if (req.files && req.files.offline_payment_doc) {
+            const imageName = await new Promise((resolve, reject) => {
+              uploadImage(req, (error, result) => {
+                console.log("error", error);
+                resolve(result.file);
+              });
             });
-          });
-          requestParam.offline_payment_doc = imageName
-        }
+            requestParam.offline_payment_doc = imageName
+          }
           requestParam = { ...requestParam, quotation_id: cartDetail.quotation_id }
         } else {
           requestParam = { ...requestParam, quotation_id: requestParam.quotation_id }
@@ -104,13 +103,13 @@ const createOrder = (requestParam, req) => {
 
         //notification add
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1, device_token: 1, email: 1, phone_number: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: cartDetail.dealer_id }, { _id: 0, name: 1, device_token: 1, email: 1, phone_number: 1, business_name: 1 });
         const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1, email: 1, phone_number: 1 });
 
         let insertData = {
           notification_id,
           title: "Order Placed",
-          description: `${customerName.name} placed order to ${dealerName.name}`,
+          description: `${customerName.name} placed order to ${dealerName.business_name}`,
           customer_id: requestParam.customer_id,
           dealer_id: cartDetail.dealer_id,
           type: "dealer"
@@ -158,12 +157,9 @@ const createOrder = (requestParam, req) => {
         }
         //
 
-        //start add invoice
-        const invoice_id = await idGeneratorHandler.generateId("COCI");
-        await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: requestParam.customer_id, dealer_id: cartDetail.dealer_id, order_id, invoice_document: "https://drive.google.com/file/d/1DFZggrcP9bYD4hASxpsJ5OQtKfjdFrH5/view?usp=sharing" });
-        //end invoice
-
         if (requestParam.payment_method === "online") {
+          
+
           const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
           //start html-to-pdf
           const htmlContent = `<!DOCTYPE html>
@@ -221,9 +217,7 @@ const createOrder = (requestParam, req) => {
           <p style="position:absolute;top:1110px;left:606px;white-space:nowrap" class="ft12">www.cementoncall.com</p>
           <p style="position:absolute;top:710px;left:670px;white-space:nowrap" class="ft110">SubTotal&#160;₹${requestParam?.total_price}<br/>GST&#160;18%</p>
           <p style="position:absolute;top:747px;left:740px;white-space:nowrap" class="ft12">₹${Number((requestParam?.total_price * 18) / 100).toFixed(2)}</p>
-          <p style="position:absolute;top:773px;left:662px;white-space:nowrap" class="ft12">Discount&#160;${dealerProduct.discount_percentage}</p>
           
-          <p style="position:absolute;top:773px;left:764px;white-space:nowrap" class="ft12">₹${dealerProduct.discount_amount}</p>
           <p style="position:absolute;top:813px;left:658px;white-space:nowrap" class="ft15">Total&#160;₹${(requestParam.grand_total)}</p>
           <p style="position:absolute;top:108px;left:653px;white-space:nowrap" class="ft11">Cement&#160;On&#160;Call</p>
           
@@ -235,7 +229,7 @@ const createOrder = (requestParam, req) => {
           
           <p style="position:absolute;top:880px;left:75px;white-space:nowrap" class="ft111">Razorpay&#160;Payment&#160;reference&#160;Id&#160;:<br/>#${requestParam.razorpay_transaction_id}</p>
           <p style="position:absolute;top:950px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
-          <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerName.name}<br/>${dealerName.email}<br/>+91&#160;${dealerName.phone_number}</p>
+          <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerName.business_name}<br/>${dealerName.email}<br/>+91&#160;${dealerName.phone_number}</p>
           </div>
           </body>
           </html>
@@ -299,7 +293,11 @@ const createOrder = (requestParam, req) => {
           } catch (error) {
             console.log("error", error);
           }
-          await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: `${randomStr}.pdf` }, { invoice_id });
+          // await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: `${randomStr}.pdf` }, { invoice_id });
+          //start add invoice
+          const invoice_id = await idGeneratorHandler.generateId("COCI");
+          await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: requestParam.customer_id, dealer_id: cartDetail.dealer_id, order_id, invoice_document: `${randomStr}.pdf` });
+          //end invoice
         }
         //end html-to-pdf
 
@@ -388,7 +386,7 @@ const orderList = (requestParam) => {
               verify_document_status: "$verify_document_status",
               delivery_status: "$delivery_status",
               order_created: "$created_at",
-              business_name:"$dealerDetail.business_name"
+              business_name: "$dealerDetail.business_name"
             },
           },
           {
@@ -425,7 +423,7 @@ const razorpayMethod = (requestParam) => {
     async function main() {
       try {
         const payment_capture = 1;
-        const amount = parseInt(Number(Number(requestParam.amount)*100));
+        const amount = parseInt(Number(Number(requestParam.amount) * 100));
         const currency = "INR";
 
         const options = {

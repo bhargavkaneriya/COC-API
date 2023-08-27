@@ -67,6 +67,10 @@ const list = (requestParam) => {
           compareData = { ...compareData, status: requestParam.status }
         }
 
+        if (requestParam.is_verified) {
+          compareData = { ...compareData, is_verified: true }
+        }
+
         const response = await query.selectWithAnd(dbConstants.dbSchema.dealers, compareData, { _id: 0, access_token: 0, password: 0 }, { created_at: -1 });
         resolve(response);
         return;

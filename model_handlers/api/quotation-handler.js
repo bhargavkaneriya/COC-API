@@ -242,7 +242,7 @@ const updateQuotation = (requestParam) => {
                             <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">${customerName?.name}</p>
                             <p style="position:absolute;top:354px;left:72px;white-space:nowrap" class="ft19"><br/>${customerName?.email}<br/>+91&#160;${customerName?.phone_number}</p>
                             <p style="position:absolute;top:314px;left:695px;white-space:nowrap" class="ft12">Quotation&#160;No.</p>
-                            <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${quotation_id}</p>
+                            <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${requestParam.quotation_id}</p>
                             <p style="position:absolute;top:365px;left:759px;white-space:nowrap" class="ft12">Date</p>
                             <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">${moment().format('DD/MM/YYYY')}</p>
 

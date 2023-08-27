@@ -936,6 +936,7 @@ const transactionList = (requestParam) => {
               grand_total: { $arrayElemAt: ["$orderDetail.grand_total", 0] },
               delivery_status: { $arrayElemAt: ["$orderDetail.delivery_status", 0] },
               transaction_date: "$created_at",
+              customer_id: "$customer_id"
             },
           },
           {

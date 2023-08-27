@@ -290,6 +290,7 @@ const orderList = (requestParam) => {
               dealer_id: "$dealer_id",
               payment_method: "$payment_method",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               customer_name: "$customer_name",
               name: "$product_name",
               qty: "$product_qty",
@@ -337,7 +338,7 @@ const verificationRequestList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        const comparisonColumnsAndValues = { "verify_document_status": requestParam.status };
+        const comparisonColumnsAndValues = { "verify_document_status": requestParam.status, "payment_method":"offline" };
 
         let totalRecords = await query.countRecord(
           dbConstants.dbSchema.orders,
@@ -397,6 +398,7 @@ const verificationRequestList = (requestParam) => {
               dealer_id: "$dealer_id",
               payment_method: "$payment_method",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               customer_name: "$customer_name",
               quo_doc: "$quotationsDetail.quo_doc",
               offline_payment_doc: "$offline_payment_doc",
@@ -611,6 +613,7 @@ const abandonedCartList = (requestParam) => {
               customer_name: "$customerDetail.name",
               dealer_id: "$dealer_id",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               qty: "$qty",
               name: "$dealerProductDetail.name",
               discount_percentage: "$dealerProductDetail.discount_percentage",
@@ -715,6 +718,7 @@ const quotationWaitingList = (requestParam) => {
               customer_name: "$customerDetail.name",
               dealer_id: "$dealer_id",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               qty: "$qty",
               product_name: "$productDetail.name",
               request_date: "$created_at"

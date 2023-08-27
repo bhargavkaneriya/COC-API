@@ -145,6 +145,7 @@ const transactionList = (requestParam) => {
               quotation_id: "$orderDetail.quotation_id",
               customer_name: "$orderDetail.customer_name",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               name: "$orderDetail.product_name",
               image:"$orderDetail.product_image",
               qty: "$orderDetail.product_qty",
@@ -153,7 +154,8 @@ const transactionList = (requestParam) => {
               delivery_status: "$orderDetail.delivery_status",
               transaction_date: "$created_at",
               // offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] }
-              offline_payment_doc: "$orderDetail.offline_payment_doc"
+              offline_payment_doc: "$orderDetail.offline_payment_doc",
+              status:"$status"
             },
           },
           {
@@ -256,6 +258,7 @@ const quotationList = (requestParam) => {
               grand_total: "$grand_total",
               product_name: "$dealerProductDetail.name",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               quotation_date: "$created_at",
               product_image: "$dealerProductDetail.image",
               quo_doc: "$quo_doc",
@@ -275,6 +278,7 @@ const quotationList = (requestParam) => {
         );
         response.map((element)=>{
           element.quo_doc = config.aws.base_url + element.quo_doc
+          element.product_image = config.aws.base_url + element.product_image
         })
         resolve({ response_data: response, total_page });
         return;
@@ -338,6 +342,7 @@ const invoiceList = (requestParam) => {
               customer_id: "$customer_id",
               dealer_id: "$dealer_id",
               dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name",
               invoice_document: "$invoice_document"
             },
           },

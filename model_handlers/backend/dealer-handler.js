@@ -153,7 +153,9 @@ const transactionList = (requestParam) => {
               transaction_date: "$created_at",
               status: "$status",
               offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] },
-              dealer_name: "$dealerDetail.name"
+              payment_method: { $arrayElemAt: ["$orderDetail.payment_method", 0] },
+              dealer_name: "$dealerDetail.name",
+              business_name: "$dealerDetail.business_name"
             },
           },
           {

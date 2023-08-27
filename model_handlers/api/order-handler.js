@@ -96,7 +96,7 @@ const createOrder = (requestParam, req) => {
         const transactionID = await idGeneratorHandler.generateId("COCT");
         let insertDataTxn = { transaction_id: transactionID, order_id, type: requestParam.payment_method, dealer_id: cartDetail.dealer_id, customer_id: cartDetail.customer_id };
         if (requestParam.payment_method == "online") {
-          insertDataTxn = { ...insertDataTxn, razorpay_transaction_id: requestParam.razorpay_transaction_id }
+          insertDataTxn = { ...insertDataTxn, razorpay_transaction_id: requestParam.razorpay_transaction_id, status: "success" }
         }
         await query.insertSingle(dbConstants.dbSchema.transactions, insertDataTxn);
         //
@@ -158,7 +158,7 @@ const createOrder = (requestParam, req) => {
         //
 
         if (requestParam.payment_method === "online") {
-          
+
 
           const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
           //start html-to-pdf

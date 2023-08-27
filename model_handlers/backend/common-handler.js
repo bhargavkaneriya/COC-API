@@ -178,6 +178,8 @@ const verifyPaymentDocument = (requestParam) => {
           await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: orderData.customer_id, dealer_id: orderData.dealer_id, order_id:orderData?.order_id, invoice_document: `${randomStr}.pdf` });
           //end pdf
 
+          await query.updateSingle(dbConstants.dbSchema.transactions, {status:"success"}, {transaction_id: orderData.transaction_id})
+
           let message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id}`;
           if (orderData.quotation_id) {
             message = `Dear Customer, Your offline/Bank payment of your order has been approved. Order id : ${orderData.order_id} and Quote id : ${orderData?.quotation_id}`;
@@ -186,6 +188,8 @@ const verifyPaymentDocument = (requestParam) => {
           await sendSMS(message, orderData.phone_number);
           await sendPushNotification({ tokens: [customerData.device_token], title: "Payment Verification", description: "Dear Customer, Your offline/bank payment verification has been successfully verified." });
         } else {
+          await query.updateSingle(dbConstants.dbSchema.transactions, {status:"failed"}, {transaction_id: orderData.transaction_id})
+
           let message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
           if (orderData.quotation_id) {
             message = `Dear Customer, Your offline/Bank payment of your order has been rejected. Order id : ${orderData?.order_id} and Quote id : ${orderData?.quotation_id}. Contact customer care : +91 9898989898 or mail : help@cementoncall.com`;
@@ -193,7 +197,7 @@ const verifyPaymentDocument = (requestParam) => {
           await sendSMS(message, orderData.phone_number);
           await sendPushNotification({ tokens: [customerData.device_token], title: "Payment Verification", description: "Dear Customer, Your offline/bank payment verification has been rejected." });
         }
-        resolve({ message: "Document status updated successfully" });
+        resolve({ message: "Payment verified successfully" });
         return;
       } catch (error) {
         reject(error);

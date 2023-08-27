@@ -36,8 +36,8 @@ const verifyPaymentDocument = (requestParam) => {
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: orderData.customer_id }, { _id: 0, customer_id: 1, name: 1, device_token: 1, email: 1 });
 
         if (requestParam.verify_document_status === "approved") {
+          const invoice_id = await idGeneratorHandler.generateId("COCI");
           //start pdf
-          const invoiceData = await query.selectWithAndOne(dbConstants.dbSchema.invoices, { order_id: requestParam.order_id }, { _id: 0, invoice_id: 1 });
           const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: orderData.dealer_id }, { _id: 0, dealer_id: 1, name: 1, device_token: 1, email: 1, phone_number: 1, business_name: 1 });
           //start html-to-pdf
           const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
@@ -76,7 +76,7 @@ const verifyPaymentDocument = (requestParam) => {
               <p style="position:absolute;top:348px;left:72px;white-space:nowrap" class="ft13">${orderData?.customer_name}</p>
               <p style="position:absolute;top:389px;left:72px;white-space:nowrap" class="ft19">${orderData?.shipping_address}<br/>${orderData?.city} ${orderData?.state}<br/>${orderData?.pincode}<br/>${orderData?.email}<br/>+91&#160;${orderData?.phone_number}</p>
               <p style="position:absolute;top:314px;left:712px;white-space:nowrap" class="ft12">Invoice&#160;No.</p>
-              <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${invoiceData?.invoice_id}</p>
+              <p style="position:absolute;top:340px;left:640px;white-space:nowrap" class="ft12">#${invoice_id}</p>
               <p style="position:absolute;top:365px;left:759px;white-space:nowrap" class="ft12">Date</p>
               <p style="position:absolute;top:391px;left:719px;white-space:nowrap" class="ft12">${moment().format('DD/MM/YYYY')}</p>
               
@@ -85,9 +85,9 @@ const verifyPaymentDocument = (requestParam) => {
               <p style="position:absolute;top:590px;left:660px;white-space:nowrap" class="ft12">Qty</p>
               <p style="position:absolute;top:590px;left:740px;white-space:nowrap" class="ft12">Amount</p>
               
-              <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${orderData.product_name}</p>
+              <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${orderData.product_name} (50 KG)</p>
               <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">${orderData.product_id}</p>
-              <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${orderData.product_price}</p>
+              <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${orderData.product_price} Bag</p>
               <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${orderData.product_qty}</p>
               <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">${orderData?.total_price}</p>
               
@@ -107,7 +107,7 @@ const verifyPaymentDocument = (requestParam) => {
               <p style="position:absolute;top:140px;left:668px;white-space:nowrap" class="ft12">28COCAC5252Q</p>
               
               <p style="position:absolute;top:950px;left:75px;white-space:nowrap" class="ft13">Dealer&#160;Info:</p>
-              <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerData.righr}<br/>${dealerData.email}<br/>+91&#160;${dealerData.phone_number}</p>
+              <p style="position:absolute;top:980px;left:75px;white-space:nowrap" class="ft112">${dealerData.business_name}<br/>${dealerData.email}<br/>+91&#160;${dealerData.phone_number}</p>
               </div>
               </body>
               </html>`;
@@ -174,7 +174,6 @@ const verifyPaymentDocument = (requestParam) => {
 
           //end html-to-pdf
           // await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: imageName }, { invoice_id: invoiceData.invoice_id });
-          const invoice_id = await idGeneratorHandler.generateId("COCI");
           await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: orderData.customer_id, dealer_id: orderData.dealer_id, order_id:orderData?.order_id, invoice_document: `${randomStr}.pdf` });
           //end pdf
 

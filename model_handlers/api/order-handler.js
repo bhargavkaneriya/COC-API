@@ -158,8 +158,7 @@ const createOrder = (requestParam, req) => {
         //
 
         if (requestParam.payment_method === "online") {
-
-
+          const invoice_id = await idGeneratorHandler.generateId("COCI");
           const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
           //start html-to-pdf
           const htmlContent = `<!DOCTYPE html>
@@ -206,10 +205,10 @@ const createOrder = (requestParam, req) => {
           <p style="position:absolute;top:590px;left:660px;white-space:nowrap" class="ft12">Qty</p>
           <p style="position:absolute;top:590px;left:740px;white-space:nowrap" class="ft12">Amount</p>
           
-          <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${dealerProduct.name}</p>
+          <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${dealerProduct.name} (50 KG)</p>
           <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">${dealerProduct.product_id}</p>
           <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${dealerProduct.price}</p>
-          <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${cartDetail.qty}</p>
+          <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${cartDetail.qty} Bag</p>
           <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">${requestParam?.total_price}</p>
           
           <p style="position:absolute;top:1110px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>
@@ -295,7 +294,6 @@ const createOrder = (requestParam, req) => {
           }
           // await query.updateSingle(dbConstants.dbSchema.invoices, { invoice_document: `${randomStr}.pdf` }, { invoice_id });
           //start add invoice
-          const invoice_id = await idGeneratorHandler.generateId("COCI");
           await query.insertSingle(dbConstants.dbSchema.invoices, { invoice_id, customer_id: requestParam.customer_id, dealer_id: cartDetail.dealer_id, order_id, invoice_document: `${randomStr}.pdf` });
           //end invoice
         }

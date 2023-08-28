@@ -192,7 +192,7 @@ const updateQuotation = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const quaData = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0, quotation_id: 1, dealer_id: 1, product_id: 1, customer_id: 1, });
+        const quaData = await query.selectWithAndOne(dbConstants.dbSchema.quotations, { quotation_id: requestParam.quotation_id }, { _id: 0, quotation_id: 1, dealer_id: 1, product_id: 1, customer_id: 1, qty:1 });
         if (!quaData) {
           reject(errors(labels.LBL_INVALID_QUOTATION_ID["EN"], responseCodes.ResourceNotFound));
           return;

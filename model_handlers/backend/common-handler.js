@@ -87,8 +87,8 @@ const verifyPaymentDocument = (requestParam) => {
               
               <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${orderData.product_name} (50 KG)</p>
               <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">${orderData.product_id}</p>
-              <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${orderData.product_price} Bag</p>
-              <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${orderData.product_qty}</p>
+              <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${orderData.product_price}</p>
+              <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${orderData.product_qty} Bag</p>
               <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">${orderData?.total_price}</p>
               
               <p style="position:absolute;top:1110px;left:68px;white-space:nowrap" class="ft12">help@cementoncall.com</p>

@@ -31,7 +31,7 @@ const createOrder = (requestParam, req) => {
           );
           return;
         }
-        const deliveryDetail = await query.selectWithAndOne(dbConstants.dbSchema.delivery_detail, { delivery_detail: requestParam.delivery_detail }, { _id: 0 });
+        const deliveryDetail = await query.selectWithAndOne(dbConstants.dbSchema.delivery_detail, { delivery_detail_id: requestParam.delivery_detail_id }, { _id: 0 });
         if (!deliveryDetail) {
           reject(
             errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound)

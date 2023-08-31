@@ -1004,7 +1004,7 @@ const dashboard = (requestParam) => {
         ];
         const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
         const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
-        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales });
+        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales:3 });
         return;
       } catch (error) {
         reject(error);

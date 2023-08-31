@@ -1045,7 +1045,7 @@ const totalTopSalesProducts = (requestParam) => {
         let totalRecords = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
 
         if (requestParam.type === "top_selling") {
-          totalRecords = 5
+          totalRecords = 3
         }
 
         const joinArr = [

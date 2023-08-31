@@ -140,10 +140,9 @@ const transactionList = (requestParam) => {
               _id: 0,
               transaction_id: "$transaction_id",
               order_id: "$order_id",
-              // cart_id: { $arrayElemAt: ["$orderDetail.cart_id", 0] },
-              // cart_id: "$orderDetail.cart_id",
               quotation_id: "$orderDetail.quotation_id",
               customer_name: "$orderDetail.customer_name",
+              dealer_id: "$dealerDetail.dealer_id",
               dealer_name: "$dealerDetail.name",
               business_name: "$dealerDetail.business_name",
               name: "$orderDetail.product_name",
@@ -153,7 +152,6 @@ const transactionList = (requestParam) => {
               grand_total: "$orderDetail.grand_total",
               delivery_status: "$orderDetail.delivery_status",
               transaction_date: "$created_at",
-              // offline_payment_doc: { $arrayElemAt: ["$orderDetail.offline_payment_doc", 0] }
               offline_payment_doc: "$orderDetail.offline_payment_doc",
               status:"$status"
             },

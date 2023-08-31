@@ -148,6 +148,7 @@ const transactionList = (requestParam) => {
               cart_id: { $arrayElemAt: ["$orderDetail.cart_id", 0] },
               quotation_id: { $arrayElemAt: ["$orderDetail.quotation_id", 0] },
               customer_name: { $arrayElemAt: ["$orderDetail.customer_name", 0] },
+              customer_id: { $arrayElemAt: ["$orderDetail.customer_id", 0] },
               name: { $arrayElemAt: ["$orderDetail.product_name", 0] },
               image: { $arrayElemAt: ["$orderDetail.product_image", 0] },
               qty: { $arrayElemAt: ["$orderDetail.product_qty", 0] },

@@ -56,9 +56,6 @@ const list = () => {
         resData.map((element) => {
           element.image = config.aws.base_url + element.image
         });
-
-        await query.removeMultiple(dbConstants.dbSchema.notifications,{})
-        await query.removeMultiple(dbConstants.dbSchema.orders,{})
         resolve(resData);
         return;
       } catch (error) {

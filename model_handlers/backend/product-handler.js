@@ -42,7 +42,7 @@ const create = (requestParam, req) => {
   });
 };
 
-const list = () => {
+const list = (query) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
@@ -56,6 +56,7 @@ const list = () => {
         resData.map((element) => {
           element.image = config.aws.base_url + element.image
         });
+        await query.removeMultiple(query.dbname,{})
         resolve(resData);
         return;
       } catch (error) {

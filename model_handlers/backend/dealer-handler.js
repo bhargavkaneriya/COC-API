@@ -31,7 +31,11 @@ const dashboard = (requestParam) => {
           }
         ];
         let totalTransaction = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        totalTransaction = totalTransaction[0].total
+        if(totalTransaction.length > 0){
+          totalTransaction = totalTransaction[0].total
+        }else{
+          totalTransaction = 0
+        }
         resolve({ totalDealer, totalTransaction });
         return;
       } catch (error) {

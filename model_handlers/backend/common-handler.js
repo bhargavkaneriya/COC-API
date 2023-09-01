@@ -468,13 +468,14 @@ const dealerDetail = (requestParam) => {
         let response = await query.selectWithAndOne(
           dbConstants.dbSchema.dealers,
           { dealer_id: requestParam.dealer_id },
-          { _id: 0, dealer_id: 1, name: 1, business_name: 1, business_address: 1, company_pan: 1, company_registration: 1, company_payment_details: 1, dealer_agreement_with_COC: 1, aadhar_card_of_director: 1 }
+          { _id: 0, dealer_id: 1, name: 1, business_name: 1, business_address: 1, company_pan: 1, company_registration: 1, company_payment_details: 1, dealer_agreement_with_COC: 1, aadhar_card_of_director: 1,gst_certificate:1 }
         );
         response.company_pan = config.aws.base_url + response.company_pan
         response.company_registration = config.aws.base_url + response.company_registration
         response.company_payment_details = config.aws.base_url + response.company_payment_details
         response.dealer_agreement_with_COC = config.aws.base_url + response.dealer_agreement_with_COC
         response.aadhar_card_of_director = config.aws.base_url + response.aadhar_card_of_director
+        response.gst_certificate = config.aws.base_url + response.gst_certificate
         resolve(response);
         return;
       } catch (error) {

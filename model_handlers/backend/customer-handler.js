@@ -33,10 +33,14 @@ const dashboard = (requestParam) => {
           }
         ];
         let totalTransaction = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        totalTransaction = totalTransaction[0].total
+        if (totalTransaction.length > 0) {
+          totalTransaction = totalTransaction[0].total
+        } else {
+          totalTransaction = 0
+        }
         const totalRequest = await query.countRecord(dbConstants.dbSchema.requests, {});
         const totalOrders = await query.countRecord(dbConstants.dbSchema.orders, {});
-        const totalQuotationWaitList = await query.countRecord(dbConstants.dbSchema.requests, {is_quotation_created:false});
+        const totalQuotationWaitList = await query.countRecord(dbConstants.dbSchema.requests, { is_quotation_created: false });
         const totalAbandonedCart = await query.countRecord(dbConstants.dbSchema.carts, {});
         resolve({ totalCustomer, totalTransaction, totalRequest, totalOrders, totalQuotationWaitList, totalAbandonedCart });
         return;
@@ -146,14 +150,14 @@ const transactionList = (requestParam) => {
               dealer_name: "$dealerDetail.name",
               business_name: "$dealerDetail.business_name",
               name: "$orderDetail.product_name",
-              image:"$orderDetail.product_image",
+              image: "$orderDetail.product_image",
               qty: "$orderDetail.product_qty",
               total_price: "$orderDetail.total_price",
               grand_total: "$orderDetail.grand_total",
               delivery_status: "$orderDetail.delivery_status",
               transaction_date: "$created_at",
               offline_payment_doc: "$orderDetail.offline_payment_doc",
-              status:"$status"
+              status: "$status"
             },
           },
           {
@@ -167,7 +171,7 @@ const transactionList = (requestParam) => {
           dbConstants.dbSchema.transactions,
           joinArr
         );
-        response.map((element)=>{
+        response.map((element) => {
           element.image = config.aws.base_url + element.image
           element.offline_payment_doc = config.aws.base_url + element.offline_payment_doc
         })
@@ -274,7 +278,7 @@ const quotationList = (requestParam) => {
           dbConstants.dbSchema.quotations,
           joinArr
         );
-        response.map((element)=>{
+        response.map((element) => {
           element.quo_doc = config.aws.base_url + element.quo_doc
           element.product_image = config.aws.base_url + element.product_image
         })

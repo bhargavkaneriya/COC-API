@@ -1004,7 +1004,7 @@ const dashboard = (requestParam) => {
         ];
         const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
         const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
-        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales: top_sales > 0? 3:0});
+        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales: top_sales > 3? 3:0});
         return;
       } catch (error) {
         reject(error);
@@ -1107,12 +1107,12 @@ const sendInvoice = (requestParam) => {
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1, device_token: 1 });
 
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1, business_name:1 });
         // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
         let insertData = {
           notification_id,
           title: "Send Invoice",
-          description: `${dealerName.name} send you invoice`,
+          description: `${dealerName.business_name} send you invoice`,
           customer_id: resData.customer_id,
           dealer_id: resData.dealer_id,
           type: "customer"
@@ -1120,12 +1120,12 @@ const sendInvoice = (requestParam) => {
         await query.insertSingle(dbConstants.dbSchema.notifications, insertData);
         //
 
-        await sendPushNotification({ tokens: [customerData.device_token], title: "Invoice", description: `${dealerName.name} sent a invoice.` })
+        await sendPushNotification({ tokens: [customerData.device_token], title: "Invoice", description: `${dealerName.business_name} sent a invoice.` })
         if (requestParam?.is_email) {
-          await sendEmail({ toEmail: customerData.email, subject: "Invoice", text: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
+          await sendEmail({ toEmail: customerData.email, subject: "Invoice", text: `Dear Customer, ${dealerName.business_name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
         }
         if (requestParam?.is_whatsapp) {
-          await sendInWhatsUp({ toNumber: customerData.phone_number, message: `Dear Customer, ${dealerName.name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
+          await sendInWhatsUp({ toNumber: customerData.phone_number, message: `Dear Customer, ${dealerName.business_name} sent a Invoice. Note : file is attached here.`, filePath: config.aws.base_url + resData.invoice_document });
         }
         resolve({ message: "Invoice send successfully" });
         return;

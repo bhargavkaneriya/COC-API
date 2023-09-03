@@ -89,9 +89,8 @@ const productList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const sizePerPage = requestParam.sizePerPage
-          ? requestParam.sizePerPage
-          : 10;
+        const totalData = await query.countRecord(dbConstants.dbSchema.dealer_product, { dealer_id: requestParam.dealer_id })
+        const sizePerPage = requestParam.sizePerPage ? requestParam.sizePerPage : totalData;
         let page = requestParam.page ? requestParam.page : 0;
         if (page >= 1) {
           page = parseInt(page) - 1;

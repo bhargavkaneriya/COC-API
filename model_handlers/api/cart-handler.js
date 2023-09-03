@@ -136,7 +136,7 @@ const deleteCart = (requestParam) => {
                     return;
                 }
                 if (response.quotation_id) {
-                    await query.updateSingle(dbConstants.dbSchema.quotations, { delete_allowed: true }, { quotation_id: requestParam.quotation_id })
+                    await query.updateSingle(dbConstants.dbSchema.quotations, { delete_allowed: true }, { quotation_id: response.quotation_id })
                 }
                 await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id })
                 resolve({ message: "Product removed from cart successfully" });

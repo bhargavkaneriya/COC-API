@@ -535,6 +535,7 @@ const updateBusinessProfile = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("req.files",req.files);
         const resData = await query.selectWithAndOne(
           dbConstants.dbSchema.dealers,
           {
@@ -575,6 +576,7 @@ const updateBusinessProfile = (requestParam, req) => {
 
         }
         if (req.files.company_payment_details) {
+          console.log("req.files.company_payment_details",req.files.company_payment_details)
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -584,6 +586,8 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.company_payment_details = imageName
         }
         if (req.files.dealer_agreement_with_COC) {
+          console.log("req.files.dealer_agreement_with_COC",req.files.dealer_agreement_with_COC)
+
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -593,6 +597,8 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.dealer_agreement_with_COC = imageName
         }
         if (req.files.aadhar_card_of_director) {
+          console.log("req.files.aadhar_card_of_director",req.files.aadhar_card_of_director)
+
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);
@@ -602,6 +608,8 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.aadhar_card_of_director = imageName
         }
         if (req.files.gst_certificate) {
+          console.log("req.files.gst_certificate",req.files.gst_certificate)
+
           const imageName = await new Promise((resolve, reject) => {
             uploadImage(req, (error, result) => {
               console.log("error", error);

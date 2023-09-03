@@ -729,7 +729,8 @@ const invoiceList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id }
+        let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
+
         if (requestParam.search_key) {
           const searchTerm = requestParam.search_key;
           const regex = new RegExp(searchTerm, "i");
@@ -772,7 +773,8 @@ const invoiceList = (requestParam) => {
               customer_id: "$customer_id",
               dealer_id: "$dealer_id",
               customer_name: "$customerDetail.name",
-              invoice_document: "$invoice_document"
+              invoice_document: "$invoice_document",
+              order_id: "$order_id"
             },
           },
           {
@@ -986,6 +988,7 @@ const dashboard = (requestParam) => {
         let total_customer = requestCustomers.concat(quationCustomers);
         total_customer = _.uniq(_.pluck(total_customer, "customer_id"));
         total_customer = total_customer.length;
+
         const joinArr = [
           { $match: comparisonColumnsAndValues },
           {
@@ -1002,9 +1005,21 @@ const dashboard = (requestParam) => {
             }
           }
         ];
-        const total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        const top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
-        resolve({ total_transaction, total_customer, total_sales: total_sales.length > 0 ? total_sales[0].total : 0, top_sales: top_sales > 3? 3:0});
+        let total_sales = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
+        if (total_sales.length > 0) {
+          total_sales = total_sales[0].total
+        } else {
+          total_sales = 0
+        }
+
+        let top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
+        if (top_sales > 3) {
+          top_sales = 3
+        } else {
+          top_sales = 0
+        }
+
+        resolve({ total_transaction, total_customer, total_sales, top_sales });
         return;
       } catch (error) {
         reject(error);
@@ -1107,7 +1122,7 @@ const sendInvoice = (requestParam) => {
         const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: resData.customer_id }, { _id: 0, email: 1, phone_number: 1, device_token: 1 });
 
         const notification_id = await idGeneratorHandler.generateId("COCN");
-        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1, business_name:1 });
+        const dealerName = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: resData.dealer_id }, { _id: 0, name: 1, business_name: 1 });
         // const customerName = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, name: 1 });
         let insertData = {
           notification_id,

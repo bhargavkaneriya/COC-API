@@ -653,8 +653,13 @@ const invoiceList = (requestParam) => {
         }
 
         let comparisonColumnsAndValues = { customer_id: requestParam.customer_id };
+        // if (requestParam.search_key) {
+        //   comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: requestParam.order_id }
+        // }
         if (requestParam.search_key) {
-          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: requestParam.order_id }
+          const searchTerm = requestParam.search_key;
+          const regex = new RegExp(searchTerm, "i");
+          comparisonColumnsAndValues = { ...comparisonColumnsAndValues, order_id: { $regex: regex } }
         }
 
         const totalRecords = await query.countRecord(dbConstants.dbSchema.invoices, comparisonColumnsAndValues);

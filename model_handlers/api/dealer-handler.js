@@ -535,6 +535,7 @@ const updateBusinessProfile = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("req.files",req.files);
         const resData = await query.selectWithAndOne(
           dbConstants.dbSchema.dealers,
           {

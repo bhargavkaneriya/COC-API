@@ -70,7 +70,7 @@ const createOrder = (requestParam, req) => {
           product_id: cartDetail.product_id,
           product_qty: cartDetail.qty,
           product_name: dealerProduct.name,
-          product_price: dealerProduct.price,
+          product_price: cartDetail.price,
           product_image: dealerProduct.image,
           product_discount_percentage: dealerProduct.discount_percentage,
           product_discount_amount: dealerProduct.discount_amount,

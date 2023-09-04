@@ -936,12 +936,15 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        console.log("requestParam",requestParam);
         const startDate = new Date(requestParam.start_date);
         const endDate = new Date(requestParam.end_date);
         let isStartDateSameAsEndDate = false;
         if (!isNaN(startDate) && !isNaN(endDate) && startDate.toDateString() === endDate.toDateString()) {
           isStartDateSameAsEndDate = true;
         }
+        console.log("requestParam?.start_date",requestParam?.start_date);
+        console.log("requestParam?.end_date",requestParam?.end_date);
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
         if (requestParam?.start_date && requestParam?.end_date) {
           if (isStartDateSameAsEndDate == true) {

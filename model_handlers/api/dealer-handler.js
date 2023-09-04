@@ -979,13 +979,16 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
+        const startDate = new Date(requestParam.start_date);
+        const endDate = new Date(requestParam.end_date);
+
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
         if (requestParam?.start_date && requestParam?.end_date) {
           comparisonColumnsAndValues = {
             ...comparisonColumnsAndValues,
             created_at: {
-              $gte: requestParam.start_date,
-              $lt: requestParam.end_date
+              $gte: startDate,
+              $lte: endDate
             }
           }
         }
@@ -995,7 +998,7 @@ const dashboard = (requestParam) => {
         let total_customer = requestCustomers.concat(quationCustomers);
         total_customer = _.uniq(_.pluck(total_customer, "customer_id"));
         total_customer = total_customer.length;
-
+        
         const joinArr = [
           { $match: comparisonColumnsAndValues },
           {

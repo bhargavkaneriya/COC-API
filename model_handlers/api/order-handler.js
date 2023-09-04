@@ -158,6 +158,7 @@ const createOrder = (requestParam, req) => {
         //
 
         if (requestParam.payment_method === "online") {
+          console.log("cartDetail.price",cartDetail.price);
           const invoice_id = await idGeneratorHandler.generateId("COCI");
           const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
           //start html-to-pdf

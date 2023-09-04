@@ -414,9 +414,6 @@ const totalTopSalesProducts = (requestParam) => {
             },
           },
           {
-            $sort: { created_at: -1 },
-          },
-          {
             $project: {
               _id: 0,
               "product_id": "$product_id",
@@ -425,6 +422,9 @@ const totalTopSalesProducts = (requestParam) => {
               "qty": "$qty",
               "grand_total": "$grand_total",
             },
+          },
+          {
+            $sort: { grand_total: -1 },
           },
           {
             $limit: totalRecords

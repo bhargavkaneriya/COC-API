@@ -999,12 +999,13 @@ const dashboard = (requestParam) => {
           total_sales = 0
         }
 
-        let top_sales = await query.countRecord(dbConstants.dbSchema.transactions, comparisonColumnsAndValues);
-        if (top_sales > 3) {
-          top_sales = 3
-        } else {
-          top_sales = 0
-        }
+        let top_sales = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
+        console.log("top_sales",typeof top_sales);
+          if (top_sales > 3) {
+            top_sales = 3
+          } else {
+            top_sales = top_sales
+          }
 
         resolve({ total_transaction, total_customer, total_sales, top_sales });
         return;

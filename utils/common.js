@@ -70,6 +70,27 @@ async function generatePDF() {
   }
 }
 
+async function uploadImage2(req) {
+  try {
+    let bucket = config.aws.s3.cocBucket;
+    const randomStr = await idGeneratorHandler.generateMediumId(); // length, number, letters, special
+    const file = req;
+    const fileType = file.name.split(".").pop();
+    file.file_name = `${randomStr}.${fileType}`;
+    file.bucket = bucket;
+    file.contentType = fileType;
+    if (fileType == "pdf") {
+      file.contentType = "application/pdf";
+    }
+    const imgData = await AWSHandler.imageUpload(file);
+    return ({ url: imgData.Location, file: file.file_name })
+  } catch (error) {
+    console.log("error", error);
+    reject(errors.internalServer(true))
+    return
+  }
+}
+
 const uploadImage = (req, done) => {
   async function main() {
     try {
@@ -431,5 +452,6 @@ module.exports = {
   sendInWhatsUp,
   sendPushNotification,
   sendEmail,
-  uploadPDF
+  uploadPDF,
+  uploadImage2
 };

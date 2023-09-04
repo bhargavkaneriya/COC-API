@@ -11,7 +11,7 @@ require("./../../models/notification");
 require("./../../models/transaction");
 const _ = require("underscore");
 const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage } = require("../../utils/common");
+const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, uploadImage2 } = require("../../utils/common");
 const errors = errorHandler;
 const config = require("../../config");
 
@@ -535,7 +535,6 @@ const updateBusinessProfile = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        console.log("req.files",req.files);
         const resData = await query.selectWithAndOne(
           dbConstants.dbSchema.dealers,
           {
@@ -550,73 +549,30 @@ const updateBusinessProfile = (requestParam, req) => {
           );
           return;
         }
-        console.log("req.files", req.files);
+
         if (req.files.company_pan) {
-          console.log("req.files.company_pan", req.files.company_pan);
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.company_pan = imageName
-
+          const imgUploadNewFun = await uploadImage2(req.files.company_pan);
+          requestParam.company_pan = imgUploadNewFun.file
         }
-        console.log("565 req.files", req.files)
         if (req.files.company_registration) {
-          console.log("req.files.company_registration", req.files.company_registration);
-
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.company_registration = imageName
-
+          const imgUploadNewFun = await uploadImage2(req.files.company_registration);
+          requestParam.company_registration = imgUploadNewFun.file
         }
         if (req.files.company_payment_details) {
-          console.log("req.files.company_payment_details",req.files.company_payment_details)
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.company_payment_details = imageName
+          const imgUploadNewFun = await uploadImage2(req.files.company_payment_details);
+          requestParam.company_payment_details = imgUploadNewFun.file
         }
         if (req.files.dealer_agreement_with_COC) {
-          console.log("req.files.dealer_agreement_with_COC",req.files.dealer_agreement_with_COC)
-
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.dealer_agreement_with_COC = imageName
+          const imgUploadNewFun = await uploadImage2(req.files.dealer_agreement_with_COC);
+          requestParam.dealer_agreement_with_COC = imgUploadNewFun.file
         }
         if (req.files.aadhar_card_of_director) {
-          console.log("req.files.aadhar_card_of_director",req.files.aadhar_card_of_director)
-
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.aadhar_card_of_director = imageName
+          const imgUploadNewFun = await uploadImage2(req.files.aadhar_card_of_director);
+          requestParam.aadhar_card_of_director = imgUploadNewFun.file
         }
         if (req.files.gst_certificate) {
-          console.log("req.files.gst_certificate",req.files.gst_certificate)
-
-          const imageName = await new Promise((resolve, reject) => {
-            uploadImage(req, (error, result) => {
-              console.log("error", error);
-              resolve(result.file);
-            });
-          });
-          requestParam.gst_certificate = imageName
+          const imgUploadNewFun = await uploadImage2(req.files.gst_certificate);
+          requestParam.gst_certificate = imgUploadNewFun.file
         }
 
         await query.updateSingle(
@@ -987,7 +943,7 @@ const dashboard = (requestParam) => {
         }
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
         if (requestParam?.start_date && requestParam?.end_date) {
-          if(isStartDateSameAsEndDate == true){
+          if (isStartDateSameAsEndDate == true) {
             startDate.setHours(0, 0, 0, 0);
             endDate.setHours(23, 59, 59, 999);
             comparisonColumnsAndValues = {
@@ -997,7 +953,7 @@ const dashboard = (requestParam) => {
                 $lte: endDate,
               }
             }
-          }else{
+          } else {
             comparisonColumnsAndValues = {
               ...comparisonColumnsAndValues,
               created_at: {
@@ -1013,7 +969,7 @@ const dashboard = (requestParam) => {
         let total_customer = requestCustomers.concat(quationCustomers);
         total_customer = _.uniq(_.pluck(total_customer, "customer_id"));
         total_customer = total_customer.length;
-        
+
         const joinArr = [
           { $match: comparisonColumnsAndValues },
           {

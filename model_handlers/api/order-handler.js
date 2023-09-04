@@ -207,7 +207,7 @@ const createOrder = (requestParam, req) => {
           
           <p style="position:absolute;top:631px;left:67px;white-space:nowrap" class="ft12">${dealerProduct.name} (50 KG)</p>
           <p style="position:absolute;top:662px;left:67px;white-space:nowrap" class="ft14">${dealerProduct.product_id}</p>
-          <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${dealerProduct.price}</p>
+          <p style="position:absolute;top:632px;left:521px;white-space:nowrap" class="ft12">${cartDetail.price}</p>
           <p style="position:absolute;top:632px;left:675px;white-space:nowrap" class="ft12">${cartDetail.qty} Bag</p>
           <p style="position:absolute;top:632px;left:745px;white-space:nowrap" class="ft12">${requestParam?.total_price}</p>
           

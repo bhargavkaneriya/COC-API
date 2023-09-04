@@ -981,14 +981,29 @@ const dashboard = (requestParam) => {
       try {
         const startDate = new Date(requestParam.start_date);
         const endDate = new Date(requestParam.end_date);
-
+        let isStartDateSameAsEndDate = false;
+        if (!isNaN(startDate) && !isNaN(endDate) && startDate.toDateString() === endDate.toDateString()) {
+          isStartDateSameAsEndDate = true;
+        }
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
         if (requestParam?.start_date && requestParam?.end_date) {
-          comparisonColumnsAndValues = {
-            ...comparisonColumnsAndValues,
-            created_at: {
-              $gte: startDate,
-              $lte: endDate
+          if(isStartDateSameAsEndDate == true){
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            comparisonColumnsAndValues = {
+              ...comparisonColumnsAndValues,
+              created_at: {
+                $gte: startDate,
+                $lte: endDate,
+              }
+            }
+          }else{
+            comparisonColumnsAndValues = {
+              ...comparisonColumnsAndValues,
+              created_at: {
+                $gte: startDate,
+                $lte: endDate
+              }
             }
           }
         }

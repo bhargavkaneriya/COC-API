@@ -13,7 +13,7 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const totalDealer = await query.countRecord(dbConstants.dbSchema.dealers, {is_verified: true});
+        const totalDealer = await query.countRecord(dbConstants.dbSchema.dealers, { is_verified: true });
         const joinArr = [
           // { $match: { dealer_id: requestParam.dealer_id } },
           {
@@ -31,9 +31,9 @@ const dashboard = (requestParam) => {
           }
         ];
         let totalTransaction = await query.joinWithAnd(dbConstants.dbSchema.orders, joinArr);
-        if(totalTransaction.length > 0){
+        if (totalTransaction.length > 0) {
           totalTransaction = totalTransaction[0].total
-        }else{
+        } else {
           totalTransaction = 0
         }
         resolve({ totalDealer, totalTransaction });
@@ -68,7 +68,11 @@ const list = (requestParam) => {
         }
 
         if (requestParam.status) {
-          compareData = { ...compareData, status: requestParam.status }
+          if (requestParam.status == "active") {
+            compareData = { ...compareData, status: requestParam.status, is_verified: false }
+          } else {
+            compareData = { ...compareData, status: requestParam.status }
+          }
         }
 
         if (requestParam.is_verified) {

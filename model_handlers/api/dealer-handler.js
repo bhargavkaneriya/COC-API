@@ -535,7 +535,6 @@ const updateBusinessProfile = (requestParam, req) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        console.log("req.files",req.files);
         const resData = await query.selectWithAndOne(
           dbConstants.dbSchema.dealers,
           {
@@ -591,6 +590,8 @@ const updateBusinessProfile = (requestParam, req) => {
             dealer_agreement_with_COC: requestParam.dealer_agreement_with_COC,
             aadhar_card_of_director: requestParam.aadhar_card_of_director,
             gst_certificate: requestParam.gst_certificate,
+            is_verified: false,
+            status: "active"
           },
           { dealer_id: requestParam.dealer_id }
         );
@@ -936,15 +937,15 @@ const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        console.log("requestParam",requestParam);
+        console.log("requestParam", requestParam);
         const startDate = new Date(requestParam.start_date);
         const endDate = new Date(requestParam.end_date);
         let isStartDateSameAsEndDate = false;
         if (!isNaN(startDate) && !isNaN(endDate) && startDate.toDateString() === endDate.toDateString()) {
           isStartDateSameAsEndDate = true;
         }
-        console.log("requestParam?.start_date",requestParam?.start_date);
-        console.log("requestParam?.end_date",requestParam?.end_date);
+        console.log("requestParam?.start_date", requestParam?.start_date);
+        console.log("requestParam?.end_date", requestParam?.end_date);
         let comparisonColumnsAndValues = { dealer_id: requestParam.dealer_id };
         if (requestParam?.start_date && requestParam?.end_date) {
           if (isStartDateSameAsEndDate == true) {
@@ -1000,12 +1001,12 @@ const dashboard = (requestParam) => {
         }
 
         let top_sales = await query.countRecord(dbConstants.dbSchema.orders, comparisonColumnsAndValues);
-        console.log("top_sales",typeof top_sales);
-          if (top_sales > 3) {
-            top_sales = 3
-          } else {
-            top_sales = top_sales
-          }
+        console.log("top_sales", typeof top_sales);
+        if (top_sales > 3) {
+          top_sales = 3
+        } else {
+          top_sales = top_sales
+        }
 
         resolve({ total_transaction, total_customer, total_sales, top_sales });
         return;

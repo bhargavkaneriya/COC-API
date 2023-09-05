@@ -35,16 +35,11 @@ async function verifyToken(req, res, next) {
   }
   const tokenBearer = token.split(' ')[1];
   const decodedToken = jwt.decode(tokenBearer, secretKey);
-console.log("tokenBearer",tokenBearer);
-console.log("decodedToken",decodedToken);
+
   if (decodedToken.user_type === "customer") {
     const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: decodedToken.id }, { _id: 0, access_token: 1 })
-    console.log("customerData.access_token",customerData.access_token);
     if (customerData.access_token !== tokenBearer) {
-      console.log("44");
-      // return (errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
-    return res.status(203).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
-
+      return (errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
     }
   } else if (decodedToken.user_type == "dealer") {
     const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: decodedToken.id }, { _id: 0, access_token: 1 })

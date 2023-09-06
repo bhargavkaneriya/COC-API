@@ -33,18 +33,24 @@ async function verifyToken(req, res, next) {
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });
   }
+
   const tokenBearer = token.split(' ')[1];
   const decodedToken = jwt.decode(tokenBearer, secretKey);
+
+  if (!(decodedToken || tokenBearer)) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
 
   if (decodedToken.user_type === "customer") {
     const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: decodedToken.id }, { _id: 0, access_token: 1 })
     if (customerData.access_token !== tokenBearer) {
-      return (errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
+      return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
     }
+
   } else if (decodedToken.user_type == "dealer") {
     const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: decodedToken.id }, { _id: 0, access_token: 1 })
     if (dealerData.access_token !== tokenBearer) {
-      return (errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized));
+      return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
     }
   }
 

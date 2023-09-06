@@ -76,6 +76,7 @@ const createOrder = (requestParam, req) => {
           product_discount_amount: dealerProduct.discount_amount,
           payment_method: requestParam.payment_method,
         }
+
         if (requestParam.payment_method == "offline") {
           if (req.files && req.files.offline_payment_doc) {
             const imageName = await new Promise((resolve, reject) => {
@@ -152,7 +153,8 @@ const createOrder = (requestParam, req) => {
         await sendInWhatsUp({ toNumber: customerName.phone_number, message: wpMessage });
         //
         await query.removeMultiple(dbConstants.dbSchema.carts, { cart_id: requestParam.cart_id });
-        if (requestParam.payment_method == "offline") {
+
+        if (requestParam.payment_method == "offline" || requestParam.quotation_id) {
           await query.updateSingle(dbConstants.dbSchema.quotations, { is_deleted: true }, { quotation_id: requestParam.quotation_id });
         }
         //

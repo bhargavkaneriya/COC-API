@@ -776,7 +776,7 @@ const updatedeliveryStatus = (requestParam) => {
           {
             order_id: requestParam.order_id,
           },
-          { _id: 0, order_id: 1, delivery_status: 1, dealer_id: 1, customer_id: 1, phone_number: 1 }
+          { _id: 0, order_id: 1, delivery_status: 1, dealer_id: 1, customer_id: 1, phone_number: 1, payment_method: 1, verify_document_status: 1 }
         );
 
         if (!resData) {
@@ -785,7 +785,20 @@ const updatedeliveryStatus = (requestParam) => {
           );
           return;
         }
-
+        if (resData.payment_method == "offline") {
+          if (resData.verify_document_status === "pending") {
+            reject(
+              errors(labels.LBL_ORDER_PENDING["EN"], responseCodes.Invalid)
+            );
+            return;
+          }
+          if (resData.verify_document_status === "rejected") {
+            reject(
+              errors(labels.LBL_ORDER_REJECTED["EN"], responseCodes.Invalid)
+            );
+            return;
+          }
+        }
         if (!(requestParam.delivery_status == "accepted" || requestParam.delivery_status == "pending" || requestParam.delivery_status == "in_transit" || requestParam.delivery_status == "delivered")) {
           reject(
             errors(labels.LBL_STATUS_INVALID["EN"], responseCodes.Invalid)

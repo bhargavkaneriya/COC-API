@@ -187,5 +187,11 @@
   },
   "LBL_SERVICE_ALREADY_EXIST": {
     "EN": "service already exits"
+  },
+  "LBL_ORDER_PENDING":{
+    "EN": "Your order`s payment verification is pending"
+  },
+  "LBL_ORDER_REJECTED":{
+    "EN": "Your order`s payment verification is rejected"
   }
 }

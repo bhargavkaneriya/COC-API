@@ -1,5 +1,6 @@
 "use strict";
-const { errorHandler, awsHandler, idGeneratorHandler } = require("xlcoreservice");
+const { errorHandler, awsHandler, idGeneratorHandler,jsonResponseHandler } = require("xlcoreservice");
+const jsonResponse = jsonResponseHandler;
 const jwt = require('jsonwebtoken');
 const query = require("./../utils/query-creator");
 const dbConstants = require("./../constants/db-constants");
@@ -21,6 +22,7 @@ AWSHandler.config({
   key: config.aws.secretAccessKey,
   region: config.aws.region,
 });
+
 
 // Function to generate a JWT token
 function generateToken(payload) {
@@ -44,13 +46,29 @@ async function verifyToken(req, res, next) {
   if (decodedToken.user_type === "customer") {
     const customerData = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: decodedToken.id }, { _id: 0, access_token: 1 })
     if (customerData.access_token !== tokenBearer) {
-      return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
+      jsonResponse(
+        res,
+        responseCodes.Unauthorized,
+        errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized),
+        null
+      );
+      return;
+
+      // return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
     }
 
   } else if (decodedToken.user_type == "dealer") {
     const dealerData = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: decodedToken.id }, { _id: 0, access_token: 1 })
     if (dealerData.access_token !== tokenBearer) {
-      return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
+      jsonResponse(
+        res,
+        responseCodes.Unauthorized,
+        errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized),
+        null
+      );
+      return;
+
+      // return res.status(401).json({ message: errors(labels.LBL_JWT_TOKEN_INVALID["EN"], responseCodes.Unauthorized) });
     }
   }
 

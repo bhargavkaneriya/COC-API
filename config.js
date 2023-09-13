@@ -39,7 +39,8 @@ module.exports = {
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
-    mobileNo: process.env.TWILIO_MOBILE_NO
+    mobileNo: process.env.TWILIO_MOBILE_NO,
+    whatsUpNo: process.env.TWILIO_WHATSUP_MOBILE_NO
   },
   nodeMailer: {
     fromEmail: process.env.FROM_EMAIL,

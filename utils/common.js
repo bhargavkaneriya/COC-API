@@ -248,14 +248,14 @@ async function sendInWhatsUp(requestParam) {
   try {
     let sendParams = {
       body: requestParam?.message,
-      from: `whatsapp:${config.twilio.mobileNo}`,
+      from: `whatsapp:${config.twilio.whatsUpNo}`,
       to: `whatsapp:${requestParam?.toNumber}`
     };
 
     if (requestParam.filePath) {
       sendParams = {
         body: requestParam?.message,
-        from: `whatsapp:${config.twilio.mobileNo}`,
+        from: `whatsapp:${config.twilio.whatsUpNo}`,
         // mediaUrl: ['https://images.unsplash.com/photo-1545093149-618ce3bcf49d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80'],
         mediaUrl: requestParam?.filePath,
         to: `whatsapp:${requestParam?.toNumber}`

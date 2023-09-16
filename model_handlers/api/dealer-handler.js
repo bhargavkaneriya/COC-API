@@ -10,9 +10,9 @@ require("./../../models/invoice");
 require("./../../models/notification");
 require("./../../models/transaction");
 const _ = require("underscore");
-const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, uploadImage2 } = require("../../utils/common");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");;
+const idGeneratorHandler = require("../../utils/id-generator-handler");;
 const config = require("../../config");
 
 const productAdd = (requestParam) => {

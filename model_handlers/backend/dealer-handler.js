@@ -6,8 +6,7 @@ const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/product");
 const _ = require("underscore");
-const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
 
 const dashboard = (requestParam) => {
   return new Promise((resolve, reject) => {

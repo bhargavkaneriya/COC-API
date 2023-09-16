@@ -6,8 +6,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const coreServices = require("xlcoreservice");
-const logger = coreServices.loggerHandler;
+const logger = require('./utils/logger-handler');
 global.basedir = __dirname;
 const { verifyToken } = require('./utils/common');
 

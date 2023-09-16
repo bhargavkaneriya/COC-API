@@ -6,11 +6,8 @@ const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/product");
 const _ = require("underscore");
-const {
-  errorHandler,
-  idGeneratorHandler,
-} = require("xlcoreservice");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
+const idGeneratorHandler = require("../../utils/id-generator-handler");
 const { uploadImage, deleteImage } = require('../../utils/common');
 
 const create = (requestParam, req) => {

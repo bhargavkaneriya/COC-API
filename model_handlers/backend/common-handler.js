@@ -6,12 +6,10 @@ const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/product");
 const _ = require("underscore");
-const {
-  errorHandler,
-  idGeneratorHandler,
-} = require("xlcoreservice");
 const { sendSMS, sendPushNotification, sendEmail } = require("../../utils/common");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
+const idGeneratorHandler = require("../../utils/id-generator-handler");
+
 const moment = require('moment');
 const pdf = require('html-pdf');
 const fs = require("fs");

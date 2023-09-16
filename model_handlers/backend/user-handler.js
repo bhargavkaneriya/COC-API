@@ -6,12 +6,9 @@ const query = require("./../../utils/query-creator");
 const labels = require("./../../utils/labels.json");
 require("./../../models/product");
 const _ = require("underscore");
-const {
-  errorHandler,
-  passwordHandler,
-} = require("xlcoreservice");
-const { decrypt } = require("xlcoreservice/handlers/password-handler");
-const errors = errorHandler;
+const { decrypt } = require("../../utils/password-handler");
+const errors = require("../../utils/error-handler");
+const passwordHandler = require("../../utils/password-handler");
 const { generateToken } = require('../../utils/common');
 
 const signIn = (requestParam) => {

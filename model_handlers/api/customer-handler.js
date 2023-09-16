@@ -8,8 +8,7 @@ require("./../../models/dealer");
 require("./../../models/invoice");
 require("./../../models/notification");
 const _ = require("underscore");
-const { errorHandler } = require("xlcoreservice");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
 const request = require('request');
 const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");

@@ -1,10 +1,12 @@
 "use strict";
-const { errorHandler, awsHandler, idGeneratorHandler,jsonResponseHandler } = require("xlcoreservice");
-const jsonResponse = jsonResponseHandler;
+const jsonResponse = require("../utils/json-response-handler");;
 const jwt = require('jsonwebtoken');
 const query = require("./../utils/query-creator");
 const dbConstants = require("./../constants/db-constants");
-const errors = errorHandler;
+const errors = require("../utils/error-handler");
+const errorHandler = require("../utils/error-handler");
+const awsHandler = require("../utils/aws-handler");
+const idGeneratorHandler = require("../utils/id-generator-handler");
 const labels = require("./../utils/labels.json");
 const responseCodes = require("./../helpers/response-codes");
 const config = require("../config");

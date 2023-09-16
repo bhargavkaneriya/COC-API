@@ -8,9 +8,9 @@ require("./../../models/customer");
 require("./../../models/product");
 require("./../../models/dealer_product");
 const _ = require("underscore");
-const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
 const { sendSMS, sendPushNotification } = require("../../utils/common");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
+const idGeneratorHandler = require("../../utils/id-generator-handler");
 const config = require('../../config');
 
 const createRequest = (requestParam) => {

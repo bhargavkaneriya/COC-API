@@ -8,9 +8,8 @@ require("./../../models/product");
 require("./../../models/dealer_product");
 require("./../../models/cart");
 const _ = require("underscore");
-const { errorHandler, idGeneratorHandler } = require("xlcoreservice");
-const errors = errorHandler;
-const { forEach } = require("p-iteration");
+const errors = require("../../utils/error-handler");
+const idGeneratorHandler =require("../../utils/id-generator-handler");
 const config = require('../../config');
 
 const addToCart = (requestParam) => {

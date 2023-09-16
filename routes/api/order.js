@@ -2,12 +2,10 @@
 const responseCodes = require("../../helpers/response-codes");
 const express = require("express");
 const router = express.Router();
-const coreServices = require("xlcoreservice");
-const jsonResponse = coreServices.jsonResponseHandler;
+const jsonResponse = require("../../utils/json-response-handler");
 const orderHandler = require("../../model_handlers/api/order-handler");
 const labels = require("./../../utils/labels.json");
-const { errorHandler } = require("xlcoreservice");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
 
 router.post("/create-order", async (req, res) => {
   try {

@@ -8,12 +8,9 @@ require("./../../models/customer");
 require("./../../models/dealer");
 require("./../../models/setting");
 const _ = require("underscore");
-const {
-  errorHandler,
-  passwordHandler,
-  idGeneratorHandler,
-} = require("xlcoreservice");
-const errors = errorHandler;
+const errors = require("../../utils/error-handler");
+const passwordHandler = require("../../utils/password-handler")
+const idGeneratorHandler = require("../../utils/id-generator-handler")
 const { generateToken, sendSMS } = require('../../utils/common');
 
 const signUp = (requestParam) => {

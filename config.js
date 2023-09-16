@@ -1,8 +1,8 @@
 "use strict";
 const _ = require("underscore");
 
-// const dotenv = require("dotenv");
-// dotenv.config()
+const dotenv = require("dotenv");
+dotenv.config()
 
 const requiredParams = [
   "API_BASE_URL",

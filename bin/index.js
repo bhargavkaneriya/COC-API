@@ -1,5 +1,4 @@
 'use strict';
-const coreServices = require("xlcoreservice");
 const logger = require("../utils/logger-handler");
 const config = require("./../config");
 

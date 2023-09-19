@@ -12,7 +12,7 @@ const errors = require("../../utils/error-handler");
 const request = require('request');
 const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");
-// const axios = require('axios');
+const axios = require('axios');
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -33,25 +33,22 @@ const popularProductList = (requestParam) => {
   });
 };
 
-// const getLatLngFromPincode = async (pincode) => {
-//   try {
-//     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
-//     const response = await axios.get(url);
-//     if (response.status === 200) {
-//       const data = response.data;
-//       console.log("response.data", response.data);
-//       const lat = data.results[0].geometry.location.lat;
-//       const lng = data.results[0].geometry.location.lng;
-//       console.log("Latitude:", lat);
-//       console.log("Longitude:", lng);
-//       return { lat, lng };
-//     } else {
-//       throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
-//     }
-//   } catch (error) {
-//     console.log("Error:", error.message);
-//   }
-// };
+const getLatLngFromPincode = async (pincode) => {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
+    const response = await axios.get(url);
+    if (response.status === 200) {
+      const data = response.data;
+      const lat = data.results[0].geometry.location.lat;
+      const lng = data.results[0].geometry.location.lng;
+      return { lat, lng };
+    } else {
+      throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
+    }
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
 
 // const getPincodesAroundLatLng = async (lat, lng, radius) => {
 //   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
@@ -66,21 +63,76 @@ const popularProductList = (requestParam) => {
 //   }
 // };
 
+
+// Function to calculate a destination point given a starting point, bearing, and distance
+function calculateDestinationPoint(lat, lng, bearing, distance) {
+  const R = 6371; // Earth's radius in kilometers
+  const radianBearing = (bearing * Math.PI) / 180; // Convert bearing to radians
+  const lat1 = (lat * Math.PI) / 180; // Convert latitude to radians
+  const lng1 = (lng * Math.PI) / 180; // Convert longitude to radians
+
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) + Math.cos(lat1) * Math.sin(distance / R) * Math.cos(radianBearing));
+  const lng2 = lng1 + Math.atan2(Math.sin(radianBearing) * Math.sin(distance / R) * Math.cos(lat1), Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
+
+  // Convert back from radians to degrees
+  return { lat: (lat2 * 180) / Math.PI, lng: (lng2 * 180) / Math.PI };
+}
+
 const dealerOrProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        // const pincode = '380052';
-        // const { lat, lng } = await getLatLngFromPincode(pincode);
-        // console.log("49 lat",lat);
-        // console.log("49 lng",lng);
-        // console.log(`The latitude and longitude of pincode ${pincode} is ${lat}, ${lng}`);
+        const pincode = requestParam.pincode;
+        const { lat, lng } = await getLatLngFromPincode(pincode);
+        let nearbyPostalCodes = [];
 
-        // if(lat && lng){
-        //   const radius = 100;
-        //   const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
-        //   console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
-        // }
+        if (lat && lng) {
+          // const radius = 100;
+          // const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
+          // console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
+          async function getPostalCodeFromLatLng(lat, lng) {
+            const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.GOOGLE_API_KEY}`);
+            if (response.data && response.data.results.length > 0) {
+              const results = response.data.results;
+              for (const result of results) {
+                for (const component of result.address_components) {
+                  if (component.types.includes('postal_code')) {
+                    return component.long_name;
+                  }
+                }
+              }
+            }
+            return null;
+          }
+          const currentLat = lat;
+          const currentLng = lng;
+          async function findNearbyPostalCodes() {
+            const radiusKm = 100;
+            const numberOfPoints = 10;
+            for (let i = 0; i < numberOfPoints; i++) {
+              const bearing = (360 / numberOfPoints) * i;
+              const newLatLng = calculateDestinationPoint(currentLat, currentLng, bearing, radiusKm);
+              const postalCode = await getPostalCodeFromLatLng(newLatLng.lat, newLatLng.lng);
+              if (postalCode) {
+                nearbyPostalCodes.push(postalCode);
+              }
+            }
+            return nearbyPostalCodes;
+          }
+
+          // const demo = await findNearbyPostalCodes()
+          // console.log("demo", demo);
+          nearbyPostalCodes = await findNearbyPostalCodes()
+          // findNearbyPostalCodes()
+          //   .then(nearbyPostalCodes => {
+          //     console.log('Nearby Postal Codes:');
+          //     console.log("122", nearbyPostalCodes);
+          //     if(nearbyPostalCodes){}
+          //   })
+          //   .catch(error => {
+          //     console.error('Error:', error);
+          //   });
+        }
 
         const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, pincode: 1 });
         if (!customerDetails) {
@@ -93,9 +145,10 @@ const dealerOrProductList = (requestParam) => {
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
-
+        console.log("nearbyPostalCodes",nearbyPostalCodes);
         let comparisonColumnsAndValues = {
-          "pincode": { $in: ['360450', '360005'] },
+          // "pincode": { $in: ['360450', '360005'] },
+          "pincode": nearbyPostalCodes,
         };
 
         let model_name = "";
@@ -151,7 +204,7 @@ const dealerOrProductList = (requestParam) => {
               _id: 0,
               dealer_id: "$dealer_id",
               dealer_name: "$name",
-              business_name:"$business_name"
+              business_name: "$business_name"
             },
           },
           {
@@ -334,7 +387,7 @@ const productDetail = (requestParam) => {
         let response = await query.selectWithAndOne(dbConstants.dbSchema.dealer_product, { dealer_product_id: requestParam.dealer_product_id }, { _id: 0 }, { created_at: -1 });
         if (response) {
           response = JSON.parse(JSON.stringify(response));
-          const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: response.dealer_id }, { _id: 0, name: 1, business_name:1 })
+          const dealerDetail = await query.selectWithAndOne(dbConstants.dbSchema.dealers, { dealer_id: response.dealer_id }, { _id: 0, name: 1, business_name: 1 })
           response.dealer_name = dealerDetail.name
           response.business_name = dealerDetail.business_name
         }
@@ -438,7 +491,7 @@ const quotationList = (requestParam) => {
               product_image: "$dealerProductDetail.image",
               quotation_pdf: "$quo_doc",
               delete_allowed: "$delete_allowed",
-              business_name:"$dealerDetail.business_name"
+              business_name: "$dealerDetail.business_name"
             },
           },
         ];

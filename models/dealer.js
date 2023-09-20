@@ -135,5 +135,6 @@ const dealerSchema = new Schema({
   },
 });
 
+dealerSchema.index({ location: '2dsphere' });
 const Dealer = model("Dealer", dealerSchema);
 module.exports = Dealer;

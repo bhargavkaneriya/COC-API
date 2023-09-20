@@ -95,5 +95,6 @@ const customerSchema = new Schema({
 },
 });
 
+customerSchema.index({ location: '2dsphere' });
 const Customer = model("Customer", customerSchema);
 module.exports = Customer;

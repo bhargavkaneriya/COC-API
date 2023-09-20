@@ -9,9 +9,10 @@ require("./../../models/invoice");
 require("./../../models/notification");
 const _ = require("underscore");
 const errors = require("../../utils/error-handler");
+const request = require('request');
+const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");
-const axios = require('axios');
-const { getLatLngFromPincode } = require("./../../utils/common");
+// const axios = require('axios');
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -32,40 +33,27 @@ const popularProductList = (requestParam) => {
   });
 };
 
-// const getPincodesAroundLatLng = async (lat, lng, radius) => {
-//   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
-//   const response = await axios.get(url);
-//   if (response.statusCode === 200) {
-//     const data = await response.json();
-//     const pincodes = data.results.map(result => result.formatted_address);
-//     console.log("pincodes 34", pincodes);
-//     return pincodes;
-//   } else {
-//     throw new Error(`Error getting pincodes around lat ${lat} and lng ${lng}`);
-//   }
-// };
-
 const dealerOrProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        // const pincode = '380052';
-        // const { lat, lng } = await getLatLngFromPincode(pincode);
-        // console.log("49 lat",lat);
-        // console.log("49 lng",lng);
-        // console.log(`The latitude and longitude of pincode ${pincode} is ${lat}, ${lng}`);
-
-        // if(lat && lng){
-        //   const radius = 100;
-        //   const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
-        //   console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
-        // }
-
         const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, pincode: 1, location: 1 });
         if (!customerDetails) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
+        let dealer_ids = await query.selectWithAnd(dbConstants.dbSchema.dealers, {
+          location: {
+            $near: {
+              $geometry: {
+                type: "Point",
+                coordinates: [customerDetails.location.coordinates[0], customerDetails.location.coordinates[1]]
+              },
+              $maxDistance: (100) * 1000
+            }
+          }
+        }, { _id: 0, dealer_id: 1 })
+        dealer_ids = _.pluck(dealer_ids, 'dealer_id');
 
         const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
         let page = requestParam.page ? parseInt(requestParam.page) : 0;
@@ -73,19 +61,9 @@ const dealerOrProductList = (requestParam) => {
           page = parseInt(page) - 1;
         }
 
-        // "pincode": { $in: ['360450', '360005'] },
-        let comparisonColumnsAndValues = {};
-        console.log("customerDetails.location.coordinates 7979", customerDetails.location.coordinates);
-        comparisonColumnsAndValues.location = {
-          $near: {
-            $geometry: {
-              type: "Point",
-              coordinates: [customerDetails.location.coordinates[0], customerDetails.location.coordinates[1]]
-            },
-            $maxDistance: (100) * 1000
-          }
-        }
-
+        let comparisonColumnsAndValues = {
+          "dealer_id": { $in: dealer_ids },
+        };
 
         let model_name = "";
         if (requestParam.search_type === "product") {
@@ -475,18 +453,28 @@ const getProfile = (requestParam) => {
   });
 };
 
+
 const updatePincode = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, password: 0, otp: 0, role_id: 0 });
+        const response = await query.selectWithAndOne(
+          dbConstants.dbSchema.customers,
+          {
+            customer_id: requestParam.customer_id
+          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
+        );
         if (!response) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        const dataLatLng = await getLatLngFromPincode(requestParam.pincode);
-        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode, location: { type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat] } }, { customer_id: requestParam.customer_id });
-        const sendRes = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, password: 0, otp: 0, role_id: 0 });
+        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode }, { customer_id: requestParam.customer_id });
+        const sendRes = await query.selectWithAndOne(
+          dbConstants.dbSchema.customers,
+          {
+            customer_id: requestParam.customer_id
+          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
+        );
         resolve(sendRes);
         return;
       } catch (error) {

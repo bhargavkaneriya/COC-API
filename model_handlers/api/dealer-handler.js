@@ -14,6 +14,7 @@ const { sendSMS, sendPushNotification, sendEmail, sendInWhatsUp, uploadImage, up
 const errors = require("../../utils/error-handler");;
 const idGeneratorHandler = require("../../utils/id-generator-handler");;
 const config = require("../../config");
+const { getLatLngFromPincode } = require("../../utils/common");
 
 const productAdd = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -575,27 +576,30 @@ const updateBusinessProfile = (requestParam, req) => {
           requestParam.gst_certificate = imgUploadNewFun.file
         }
 
-        await query.updateSingle(
-          dbConstants.dbSchema.dealers,
-          {
-            business_name: requestParam.business_name,
-            business_address: requestParam.business_address,
-            state: requestParam.state,
-            city: requestParam.city,
-            pincode: requestParam.pincode,
-            business_profile_status: "added",
-            company_pan: requestParam.company_pan,
-            company_registration: requestParam.company_registration,
-            company_payment_details: requestParam.company_payment_details,
-            dealer_agreement_with_COC: requestParam.dealer_agreement_with_COC,
-            aadhar_card_of_director: requestParam.aadhar_card_of_director,
-            gst_certificate: requestParam.gst_certificate,
-            is_verified: false,
-            status: "active"
-          },
-          { dealer_id: requestParam.dealer_id }
-        );
+        let updateData = {
+          business_name: requestParam.business_name,
+          business_address: requestParam.business_address,
+          state: requestParam.state,
+          city: requestParam.city,
+          pincode: requestParam.pincode,
+          business_profile_status: "added",
+          company_pan: requestParam.company_pan,
+          company_registration: requestParam.company_registration,
+          company_payment_details: requestParam.company_payment_details,
+          dealer_agreement_with_COC: requestParam.dealer_agreement_with_COC,
+          aadhar_card_of_director: requestParam.aadhar_card_of_director,
+          gst_certificate: requestParam.gst_certificate,
+          is_verified: false,
+          status: "active"
+        }
 
+        if (requestParam.pincode) {
+          const dataLatLng = await getLatLngFromPincode(requestParam.pincode);
+          updateData.location = {
+            type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat]
+          }
+        }
+        await query.updateSingle(dbConstants.dbSchema.dealers, updateData, { dealer_id: requestParam.dealer_id });
         resolve({ message: "Profile details updated successfully" });
         return;
       } catch (error) {

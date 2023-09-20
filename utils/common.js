@@ -24,6 +24,7 @@ AWSHandler.config({
   key: config.aws.secretAccessKey,
   region: config.aws.region,
 });
+const axios = require('axios');
 
 
 // Function to generate a JWT token
@@ -467,6 +468,23 @@ async function sendEmail(requestParam) {
 }
 
 
+async function getLatLngFromPincode(pincode) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
+    const response = await axios.get(url);
+    if (response.status === 200) {
+      const data = response.data;
+      const lat = data.results[0].geometry.location.lat;
+      const lng = data.results[0].geometry.location.lng;
+      return { lat, lng };
+    } else {
+      throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
+    }
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
 module.exports = {
   generateToken,
   verifyToken,
@@ -479,5 +497,6 @@ module.exports = {
   sendPushNotification,
   sendEmail,
   uploadPDF,
-  uploadImage2
+  uploadImage2,
+  getLatLngFromPincode
 };

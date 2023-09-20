@@ -9,10 +9,9 @@ require("./../../models/invoice");
 require("./../../models/notification");
 const _ = require("underscore");
 const errors = require("../../utils/error-handler");
-const request = require('request');
-const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");
 const axios = require('axios');
+const { getLatLngFromPincode } = require("./../../utils/common");
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -33,23 +32,6 @@ const popularProductList = (requestParam) => {
   });
 };
 
-const getLatLngFromPincode = async (pincode) => {
-  try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`;
-    const response = await axios.get(url);
-    if (response.status === 200) {
-      const data = response.data;
-      const lat = data.results[0].geometry.location.lat;
-      const lng = data.results[0].geometry.location.lng;
-      return { lat, lng };
-    } else {
-      throw new Error(`Error getting latitude and longitude for pincode ${pincode}`);
-    }
-  } catch (error) {
-    console.log("Error:", error.message);
-  }
-};
-
 // const getPincodesAroundLatLng = async (lat, lng, radius) => {
 //   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&radius=${radius}&key=${apiKey}`;
 //   const response = await axios.get(url);
@@ -63,78 +45,23 @@ const getLatLngFromPincode = async (pincode) => {
 //   }
 // };
 
-
-// Function to calculate a destination point given a starting point, bearing, and distance
-function calculateDestinationPoint(lat, lng, bearing, distance) {
-  const R = 6371; // Earth's radius in kilometers
-  const radianBearing = (bearing * Math.PI) / 180; // Convert bearing to radians
-  const lat1 = (lat * Math.PI) / 180; // Convert latitude to radians
-  const lng1 = (lng * Math.PI) / 180; // Convert longitude to radians
-
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) + Math.cos(lat1) * Math.sin(distance / R) * Math.cos(radianBearing));
-  const lng2 = lng1 + Math.atan2(Math.sin(radianBearing) * Math.sin(distance / R) * Math.cos(lat1), Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
-
-  // Convert back from radians to degrees
-  return { lat: (lat2 * 180) / Math.PI, lng: (lng2 * 180) / Math.PI };
-}
-
 const dealerOrProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const pincode = requestParam.pincode;
-        const { lat, lng } = await getLatLngFromPincode(pincode);
-        let nearbyPostalCodes = [];
+        // const pincode = '380052';
+        // const { lat, lng } = await getLatLngFromPincode(pincode);
+        // console.log("49 lat",lat);
+        // console.log("49 lng",lng);
+        // console.log(`The latitude and longitude of pincode ${pincode} is ${lat}, ${lng}`);
 
-        if (lat && lng) {
-          // const radius = 100;
-          // const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
-          // console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
-          async function getPostalCodeFromLatLng(lat, lng) {
-            const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.GOOGLE_API_KEY}`);
-            if (response.data && response.data.results.length > 0) {
-              const results = response.data.results;
-              for (const result of results) {
-                for (const component of result.address_components) {
-                  if (component.types.includes('postal_code')) {
-                    return component.long_name;
-                  }
-                }
-              }
-            }
-            return null;
-          }
-          const currentLat = lat;
-          const currentLng = lng;
-          async function findNearbyPostalCodes() {
-            const radiusKm = 100;
-            const numberOfPoints = 10;
-            for (let i = 0; i < numberOfPoints; i++) {
-              const bearing = (360 / numberOfPoints) * i;
-              const newLatLng = calculateDestinationPoint(currentLat, currentLng, bearing, radiusKm);
-              const postalCode = await getPostalCodeFromLatLng(newLatLng.lat, newLatLng.lng);
-              if (postalCode) {
-                nearbyPostalCodes.push(postalCode);
-              }
-            }
-            return nearbyPostalCodes;
-          }
+        // if(lat && lng){
+        //   const radius = 100;
+        //   const pincodes = await getPincodesAroundLatLng(lat, lng, radius);
+        //   console.log(`The pincodes around lat ${lat} and lng ${lng} within 100 km are: ${pincodes}`);
+        // }
 
-          // const demo = await findNearbyPostalCodes()
-          // console.log("demo", demo);
-          nearbyPostalCodes = await findNearbyPostalCodes()
-          // findNearbyPostalCodes()
-          //   .then(nearbyPostalCodes => {
-          //     console.log('Nearby Postal Codes:');
-          //     console.log("122", nearbyPostalCodes);
-          //     if(nearbyPostalCodes){}
-          //   })
-          //   .catch(error => {
-          //     console.error('Error:', error);
-          //   });
-        }
-
-        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, pincode: 1 });
+        const customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, pincode: 1, location: 1 });
         if (!customerDetails) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
@@ -145,11 +72,20 @@ const dealerOrProductList = (requestParam) => {
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
-        console.log("nearbyPostalCodes",nearbyPostalCodes);
-        let comparisonColumnsAndValues = {
-          // "pincode": { $in: ['360450', '360005'] },
-          "pincode": nearbyPostalCodes,
-        };
+
+        // "pincode": { $in: ['360450', '360005'] },
+        let comparisonColumnsAndValues = {};
+        console.log("customerDetails.location.coordinates 7979", customerDetails.location.coordinates);
+        comparisonColumnsAndValues.location = {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [customerDetails.location.coordinates[0], customerDetails.location.coordinates[1]]
+            },
+            $maxDistance: (100) * 1000
+          }
+        }
+
 
         let model_name = "";
         if (requestParam.search_type === "product") {
@@ -539,28 +475,18 @@ const getProfile = (requestParam) => {
   });
 };
 
-
 const updatePincode = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        const response = await query.selectWithAndOne(
-          dbConstants.dbSchema.customers,
-          {
-            customer_id: requestParam.customer_id
-          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
-        );
+        const response = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, password: 0, otp: 0, role_id: 0 });
         if (!response) {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode }, { customer_id: requestParam.customer_id });
-        const sendRes = await query.selectWithAndOne(
-          dbConstants.dbSchema.customers,
-          {
-            customer_id: requestParam.customer_id
-          }, { _id: 0, password: 0, otp: 0, role_id: 0 }
-        );
+        const dataLatLng = await getLatLngFromPincode(requestParam.pincode);
+        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode, location: { type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat] } }, { customer_id: requestParam.customer_id });
+        const sendRes = await query.selectWithAndOne(dbConstants.dbSchema.customers, { customer_id: requestParam.customer_id }, { _id: 0, password: 0, otp: 0, role_id: 0 });
         resolve(sendRes);
         return;
       } catch (error) {

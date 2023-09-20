@@ -83,6 +83,16 @@ const customerSchema = new Schema({
     type: String,
     default: "",
   },
+  location: {
+    type: {
+        type: String,
+        default: "Point",
+    },
+    coordinates: {
+        type: [Number],
+        default: [0, 0],
+    },
+},
 });
 
 const Customer = model("Customer", customerSchema);

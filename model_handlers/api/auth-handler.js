@@ -11,7 +11,7 @@ const _ = require("underscore");
 const errors = require("../../utils/error-handler");
 const passwordHandler = require("../../utils/password-handler")
 const idGeneratorHandler = require("../../utils/id-generator-handler")
-const { generateToken, sendSMS } = require('../../utils/common');
+const { generateToken, sendSMS, getLatLngFromPincode } = require('../../utils/common');
 
 const signUp = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -50,6 +50,13 @@ const signUp = (requestParam) => {
         } else if (requestParam.user_type === "dealer") {
           user_id = await idGeneratorHandler.generateId("COCD");
           request_param = { ...request_param, dealer_id: user_id };
+
+          if (requestParam.pincode) {
+            const dataLatLng = await getLatLngFromPincode(requestParam.pincode);
+            request_param.location = {
+              type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat]
+            }
+          }
         }
         const otp = await idGeneratorHandler.generateString(4, true, false, false);
         request_param = { ...request_param, otp }

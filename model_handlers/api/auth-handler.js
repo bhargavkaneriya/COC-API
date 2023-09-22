@@ -45,18 +45,18 @@ const signUp = (requestParam) => {
         if (requestParam.user_type === "customer") {
           user_id = await idGeneratorHandler.generateId("COCB");
           request_param = { ...request_param, customer_id: user_id };
-          const delivery_detail_id = await idGeneratorHandler.generateId("COCDD");
-          await query.insertSingle(dbConstants.dbSchema.delivery_detail, { delivery_detail_id, customer_id: user_id });
-        } else if (requestParam.user_type === "dealer") {
-          user_id = await idGeneratorHandler.generateId("COCD");
-          request_param = { ...request_param, dealer_id: user_id };
-
           if (requestParam.pincode) {
             const dataLatLng = await getLatLngFromPincode(requestParam.pincode);
             request_param.location = {
               type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat]
             }
           }
+          
+          const delivery_detail_id = await idGeneratorHandler.generateId("COCDD");
+          await query.insertSingle(dbConstants.dbSchema.delivery_detail, { delivery_detail_id, customer_id: user_id });
+        } else if (requestParam.user_type === "dealer") {
+          user_id = await idGeneratorHandler.generateId("COCD");
+          request_param = { ...request_param, dealer_id: user_id };
         }
         const otp = await idGeneratorHandler.generateString(4, true, false, false);
         request_param = { ...request_param, otp }

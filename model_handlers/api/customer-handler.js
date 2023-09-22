@@ -9,10 +9,8 @@ require("./../../models/invoice");
 require("./../../models/notification");
 const _ = require("underscore");
 const errors = require("../../utils/error-handler");
-const request = require('request');
-const apiKey = config.google_api_key
 const { forEach } = require("p-iteration");
-// const axios = require('axios');
+const { getLatLngFromPincode } = require("../../utils/common");
 
 const popularProductList = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -42,6 +40,8 @@ const dealerOrProductList = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
+        console.log("customerDetails.location.coordinates[0]", customerDetails.location.coordinates[0]);
+        console.log("customerDetails.location.coordinates[1]", customerDetails.location.coordinates[1]);
         let dealer_ids = await query.selectWithAnd(dbConstants.dbSchema.dealers, {
           location: {
             $near: {
@@ -60,6 +60,7 @@ const dealerOrProductList = (requestParam) => {
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
+        console.log("dealer_ids", dealer_ids);
 
         let comparisonColumnsAndValues = {
           "dealer_id": { $in: dealer_ids },
@@ -468,7 +469,19 @@ const updatePincode = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        await query.updateSingle(dbConstants.dbSchema.customers, { pincode: requestParam.pincode }, { customer_id: requestParam.customer_id });
+
+        let dataLatLng;
+        if (requestParam.pincode) {
+          dataLatLng = await getLatLngFromPincode(requestParam.pincode);
+        }
+
+        await query.updateSingle(dbConstants.dbSchema.customers, {
+          pincode: requestParam.pincode,
+          location: {
+            type: "Point", coordinates: [dataLatLng.lng, dataLatLng.lat]
+          }
+
+        }, { customer_id: requestParam.customer_id });
         const sendRes = await query.selectWithAndOne(
           dbConstants.dbSchema.customers,
           {

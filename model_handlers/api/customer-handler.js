@@ -56,7 +56,7 @@ const dealerOrProductList = (requestParam) => {
         dealer_ids = _.pluck(dealer_ids, 'dealer_id');
 
         const sizePerPage = requestParam.sizePerPage ? parseInt(requestParam.sizePerPage) : 10;
-        let page = requestParam.page ? parseInt(requestParam.page) : 0;
+        let page = requestParam.page ? parseInt(requestParam.page) : 1;
         if (page >= 1) {
           page = parseInt(page) - 1;
         }

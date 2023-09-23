@@ -40,8 +40,6 @@ const dealerOrProductList = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
-        console.log("customerDetails.location.coordinates[0]", customerDetails.location.coordinates[0]);
-        console.log("customerDetails.location.coordinates[1]", customerDetails.location.coordinates[1]);
         let dealer_ids = await query.selectWithAnd(dbConstants.dbSchema.dealers, {
           location: {
             $near: {
@@ -60,7 +58,6 @@ const dealerOrProductList = (requestParam) => {
         if (page >= 1) {
           page = parseInt(page) - 1;
         }
-        console.log("dealer_ids", dealer_ids);
 
         let comparisonColumnsAndValues = {
           "dealer_id": { $in: dealer_ids },
@@ -79,7 +76,7 @@ const dealerOrProductList = (requestParam) => {
         let totalRecords = await query.countRecord(model_name, {});
 
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
-        if (requestParam.page && requestParam.page > total_page) {
+        if (parseInt(requestParam.page) && parseInt(requestParam.page) > (total_page+1)) {
           reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
           return;
         }

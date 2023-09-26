@@ -40,6 +40,7 @@ const dealerOrProductList = (requestParam) => {
           reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
           return;
         }
+
         let dealer_ids = await query.selectWithAnd(dbConstants.dbSchema.dealers, {
           location: {
             $near: {
@@ -76,7 +77,7 @@ const dealerOrProductList = (requestParam) => {
         let totalRecords = await query.countRecord(model_name, {});
 
         const total_page = totalRecords <= 10 ? 0 : Math.ceil(totalRecords / sizePerPage);
-        if (parseInt(requestParam.page) && parseInt(requestParam.page) > (total_page+1)) {
+        if (parseInt(requestParam.page) && parseInt(requestParam.page) > (total_page + 1)) {
           reject(errors(labels.LBL_RECORD_NOT_AVAILABLE["EN"], responseCodes.Invalid));
           return;
         }
@@ -521,16 +522,28 @@ const verifyPincode = (requestParam) => {
   return new Promise((resolve, reject) => {
     async function main() {
       try {
-        // const response = await query.selectWithAndOne(
-        //   dbConstants.dbSchema.customers,
-        //   { customer_id: requestParam.customer_id },
-        //   { _id: 0, customer_id: 1, name: 1, phone_number: 1, email: 1, is_company: 1, pan_no: 1, gst_no: 1 }
-        // );
-        // console.log("response", response);
-        // if (!response) {
-        //   reject(errors(labels.LBL_INVALID_PINCODE["EN"], responseCodes.Invalid));
-        //   return;
-        // }
+        const details = await getLatLngFromPincode(requestParam.pincode);
+        if (!details) {
+          reject(errors(labels.LBL_INVALID_PINCODE["EN"], responseCodes.Invalid));
+          return;
+        }
+
+        let customerDetails = await query.selectWithAndOne(dbConstants.dbSchema.customers, {
+          location: {
+            $near: {
+              $geometry: {
+                type: "Point",
+                coordinates: [details.lng, details.lat] //first pass lng, then lat
+              },
+              $maxDistance: (100) * 1000
+            }
+          },
+          customer_id: requestParam.customer_id
+        }, { _id: 0, customer_id: 1 })
+        if (!customerDetails) {
+          reject(errors(labels.LBL_INVALID_PINCODE["EN"], responseCodes.Invalid));
+          return;
+        }
         resolve({ message: "Entered pincode is valid" });
         return;
       } catch (error) {

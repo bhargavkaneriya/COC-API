@@ -107,4 +107,71 @@ router.post("/logout", verifyToken, async (req, res) => {
     }
   }
 });
+
+router.post("/create", verifyToken, async (req, res) => {
+  try {
+    if (!req.body.name || !req.body.email || !req.body.password || !req.body.role_name) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await userHandler.create(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.get("/list", verifyToken, async (req, res) => {
+  try {
+    const response = await userHandler.list(req.query);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
+router.delete("/delete-user", verifyToken, async (req, res) => {
+  try {
+    if (!req.body.user_id) {
+      jsonResponse(
+        res,
+        responseCodes.BadRequest,
+        errors(labels.LBL_MISSING_PARAMETERS["EN"], responseCodes.BadRequest),
+        null
+      );
+      return;
+    }
+    const response = await userHandler.deleteUser(req.body);
+    jsonResponse(res, responseCodes.OK, null, response);
+  } catch (error) {
+    console.log("error", error);
+    try {
+      jsonResponse(res, responseCodes.Conflict, error, null);
+      return;
+    } catch (err) {
+      jsonResponse(res, responseCodes.InternalServer, err, null);
+      return;
+    }
+  }
+});
+
 module.exports = router;

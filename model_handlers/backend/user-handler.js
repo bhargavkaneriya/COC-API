@@ -10,6 +10,7 @@ const { decrypt } = require("../../utils/password-handler");
 const errors = require("../../utils/error-handler");
 const passwordHandler = require("../../utils/password-handler");
 const { generateToken } = require('../../utils/common');
+const idGeneratorHandler = require("../../utils/id-generator-handler");
 
 const signIn = (requestParam) => {
   return new Promise((resolve, reject) => {
@@ -75,6 +76,12 @@ const updateProfile = (requestParam) => {
         if (requestParam.email) {
           columnToUpdate = { ...columnToUpdate, email: requestParam.email }
         }
+        if (requestParam.name) {
+          columnToUpdate = { ...columnToUpdate, name: requestParam.name }
+        }
+        if (requestParam.phone_number) {
+          columnToUpdate = { ...columnToUpdate, phone_number: requestParam.phone_number }
+        }
         if (requestParam.password) {
           requestParam.password = await passwordHandler.encrypt(requestParam.password);
           columnToUpdate = { ...columnToUpdate, password: requestParam.password }
@@ -113,10 +120,67 @@ const logout = (requestParam, req2) => {
   });
 };
 
+const create = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const user_id = await idGeneratorHandler.generateId('COCU');
+        requestParam.user_id = user_id
+        await query.insertSingle(dbConstants.dbSchema.users, requestParam);
+        resolve({});
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const list = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const response = await query.selectWithAnd(dbConstants.dbSchema.users, {}, { _id: 0 }, { created_at: -1 })
+        resolve(response);
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
+
+const deleteUser = (requestParam) => {
+  return new Promise((resolve, reject) => {
+    async function main() {
+      try {
+        const exist_user = await query.selectWithAndOne(dbConstants.dbSchema.users, { user_id: requestParam.user_id }, { _id: 0 });
+        if (!exist_user) {
+          reject(errors(labels.LBL_USER_NOT_FOUND["EN"], responseCodes.ResourceNotFound));
+          return;
+        }
+        await query.removeMultiple(dbConstants.dbSchema.users, { user_id: requestParam.user_id });
+        resolve({});
+        return;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+    }
+    main();
+  });
+};
 
 module.exports = {
   signIn,
   details,
   updateProfile,
-  logout
+  logout,
+  create,
+  list,
+  deleteUser
 };

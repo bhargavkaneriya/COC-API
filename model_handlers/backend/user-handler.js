@@ -126,6 +126,9 @@ const create = (requestParam) => {
       try {
         const user_id = await idGeneratorHandler.generateId('COCU');
         requestParam.user_id = user_id
+        if (requestParam.password) {
+          requestParam.password = await passwordHandler.encrypt(requestParam.password);
+        }
         await query.insertSingle(dbConstants.dbSchema.users, requestParam);
         resolve({});
         return;
